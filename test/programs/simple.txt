@@ -1,3 +1,2 @@
 get_data;
-filter_data;
-return_data
+filter_data
