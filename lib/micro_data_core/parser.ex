@@ -102,13 +102,14 @@ defmodule MicroDataCore.Parser do
 
   def process_request(policy, [command | program], data) do
     IO.puts("\n-----------------------------\n")
-    IO.inspect({policy, program}, label: "Performing step on (policy, program): \n")
+    IO.inspect({policy, [command | program]}, label: "Performing step on (policy, program): \n")
     IO.puts("\n-----------------------------\n")
     case d_step(policy, command) do
       :error -> {:error}
+      0 -> IO.puts("Early stop. No need to proceed as policy doesn't match.")
+           {:error}
       policy -> process_request(policy, program, execute_command(command, data))
-#      0 -> IO.puts("Early stop. No need to proceed as policy doesn't match.")
-#           {:error}
+      #           {:error}
     end
   end
 
@@ -119,9 +120,16 @@ defmodule MicroDataCore.Parser do
       [:exec, c] when command == c -> 1
       [:exec, c] when command != c -> 0
       [:exec, :anyf] -> 1
-      [:concat, p1, p2] -> simplify([:union, [:concat, d_step(p1, command), p2], [:concat, e_step(p1), d_step(p2, command)]])
+      [:concat, p1, p2] ->
+        simplify(
+          [
+            :union,
+            simplify([:concat, d_step(p1, command), p2]),
+            simplify([:concat, e_step(p1), d_step(p2, command)])
+          ]
+        )
       [:union, p1, p2] -> simplify([:union, d_step(p1, command), d_step(p2, command)])
-      [:star, p] -> [:concat, d_step([:exec, p], command), [:star, p]]
+      [:star, p] -> simplify([:concat, d_step([:exec, p], command), [:star, p]])
       1 -> 0
       # because D(1,C) = D(0*,C) = D(0, C).0* = 0.0* = 0
       0 -> 0
