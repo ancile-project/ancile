@@ -59,6 +59,7 @@ defmodule MicroDataCore.Parser do
           [p, sub_tree] -> [:union, parse_policy(p, counter - 1), parse_policy(sub_tree, counter - 1)]
           ["0"] -> 0
           ["1"] -> 1
+          ["0*"] -> 1
           ["ANYF"] -> :anyf
           [p] ->
             cond  do
