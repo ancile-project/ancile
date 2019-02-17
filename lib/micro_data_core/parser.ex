@@ -58,6 +58,7 @@ defmodule MicroDataCore.Parser do
         case  String.split(p, "+", parts: 2, trim: true) do
           [p, sub_tree] -> [:union, parse_policy(p, counter - 1), parse_policy(sub_tree, counter - 1)]
           ["0"] -> 0
+          ["1"] -> 1
           ["ANYF"] -> :anyf
           [p] ->
             cond  do
@@ -138,6 +139,7 @@ defmodule MicroDataCore.Parser do
   end
 
   def simplify(policy) do
+    IO.inspect(policy, label: "reducing: ")
     case policy do
       [:concat, 0, _] -> 0
       [:concat, _, 0] -> 0
