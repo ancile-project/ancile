@@ -53,10 +53,10 @@ defmodule MicroDataCore.Parser do
 
     # match for concatenation
     case String.split(policy, ".", parts: 2, trim: true) do
-      [p, sub_tree] -> [:concat, [parse_policy(p, counter - 1), parse_policy(sub_tree, counter - 1)]]
+      [p, sub_tree] -> [:concat, parse_policy(p, counter - 1), parse_policy(sub_tree, counter - 1)]
       [p] ->
         case  String.split(p, "+", parts: 2, trim: true) do
-          [p, sub_tree] -> [:union, [parse_policy(p, counter - 1), parse_policy(sub_tree, counter - 1)]]
+          [p, sub_tree] -> [:union, parse_policy(p, counter - 1), parse_policy(sub_tree, counter - 1)]
           ["0"] -> :null
           [p] ->
             cond  do
@@ -64,13 +64,9 @@ defmodule MicroDataCore.Parser do
               true ->
                 [:exec, String.trim(p)]
             end
-
         end
-
       _ -> raise "Syntax error. Check your program syntax."
-
     end
-
   end
 
   def parse_policy(policy, counter) when counter == 0 do
@@ -89,7 +85,6 @@ defmodule MicroDataCore.Parser do
       {:error} -> IO.puts("Policy didn't match submitted program. ")
       _ -> IO.puts("Error")
     end
-
     IO.puts("completed")
     :ok
   end
@@ -101,29 +96,46 @@ defmodule MicroDataCore.Parser do
   def process_request(policy, program, data) do
     IO.inspect({policy, program}, label: "Performing step on (policy, program): \n")
     with [hd | tl] <- program,
-         {:one, policy} <- step(policy, hd) do
+         policy <- d_step(policy, hd) do
       process_request(policy, tl, execute_command(hd, data))
     else
-      [] -> {:ok, data}
-      {:error} -> {:error}
+      [] ->
+        case e_step(policy) do
+          1 -> {:ok, data}
+          0 -> {:error}
+        end
+      {:error} -> throw "Some problem with matching."
     end
   end
 
+  def d_step(policy, command) do
+    IO.inspect({policy, command}, label: "D step on (policy, program): \n")
+    case policy do
+      [:exec, c] when command == c -> [:star, 0]
+      [:concat, p1, p2] -> [:union, [:concat, d_step(p1, command), p2], [:concat, e_step(p1), d_step(p2, command)]]
+      [:union, p1, p2] -> [:union, d_step(p1, command), d_step(p2, command)]
+      [:star, p] -> [:concat, d_step([:exec, p], command), [:star, p]]
+      [0] -> 0
+      0 -> 0
+      [:exec, c] when command != c -> 0
+    end
+  end
 
-
-  def step(policy, command) do
-
-    IO.inspect({policy, command}, label: "Performing step on (policy, program): \n")
-    # [:exec, command] when command == hd(program) -> {:ok, execute_command(command, data)}
-
-    {:one, []}
-
+  def e_step(policy) do
+    IO.inspect(policy, label: "E Step received: ")
+    case policy do
+      0 -> 0
+      1 -> 1
+      [:concat, p1, p2] -> e_step(p1) * e_step(p2)
+      [:union, p1, p2] -> max(e_step(p1), e_step(p2))
+      [:star, p] -> 1
+      _ -> 0
+    end
   end
 
 
   def execute_command(function, data) do
     IO.inspect({function, data}, label: "Function and data: ")
-    #    %{data | :data => 200}
     Map.put(data, Time.utc_now(), {function})
   end
 
