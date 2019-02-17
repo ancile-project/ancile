@@ -14,7 +14,7 @@ defmodule Parser do
     {:ok, text} = File.read(file)
     text
     |> String.downcase()
-    |> parse_policy([], 10)
+    |> parse_policy(10)
   end
 
   @doc """
@@ -30,7 +30,7 @@ defmodule Parser do
     program = String.split(program, ";\n", parts: 2, trim: true)
     IO.inspect(program)
     case program do
-      [command, prog] -> [parse_program(command, nil) | parse_program(prog,  state)]
+      [command, prog] -> [parse_program(command, nil) | parse_program(prog, state)]
 
       [command] ->
         case state do
@@ -46,24 +46,24 @@ defmodule Parser do
   @doc """
   parse policies initial format:
   """
-  def parse_policy(policy, state, counter) when counter > 0 do
+  def parse_policy(policy, counter) when counter > 0 do
 
-    policy = String.split(policy, ".", parts: 2, trim: true)
     IO.inspect(policy, label: "policy: ")
-    IO.inspect(state, label: "state: ")
     IO.inspect(counter, label: "counter: ")
 
-    case policy do
-      [p, sub_tree ] -> [:concat, [parse_policy(p, nil, counter-1)  , parse_policy(sub_tree, nil, counter-1)  ]]
+    # match for concatenation
+    case String.split(policy, ".", parts: 2, trim: true) do
+      [p, sub_tree] -> [:concat, [parse_policy(p, counter - 1), parse_policy(sub_tree, counter - 1)]]
       [p] ->
         case  String.split(p, "+", parts: 2, trim: true) do
-          [p, sub_tree ] -> [:union, [parse_policy(p, nil, counter-1), parse_policy(sub_tree, nil, counter-1)  ]]
+          [p, sub_tree] -> [:union, [parse_policy(p, counter - 1), parse_policy(sub_tree, counter - 1)]]
           ["0"] -> :null
           [p] ->
             cond  do
-              String.ends_with?(p, "*") -> [:star, p |> String.slice(0..-2)]
-              true -> [:exec, String.trim(p)]
-             end
+              String.ends_with?(p, "*") -> [:star, String.slice(p, 0..-2)]
+              true ->
+                [:exec, String.trim(p)]
+            end
 
         end
 
@@ -73,14 +73,14 @@ defmodule Parser do
 
   end
 
-  def parse_policy(policy, state, counter) when counter == 0 do
+  def parse_policy(policy, counter) when counter == 0 do
     IO.inspect(policy, label: "last policy: ")
     policy
-    end
+  end
 
 
 end
 
 System.argv()
 |> Parser.parse_policy()
-|> IO.inspect()
+|> IO.inspect(label: "Parsed tree: \n")
