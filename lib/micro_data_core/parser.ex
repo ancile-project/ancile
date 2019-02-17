@@ -48,8 +48,8 @@ defmodule MicroDataCore.Parser do
   """
   def parse_policy(policy, counter) when counter > 0 do
 
-    #    IO.inspect(policy, label: "policy: ")
-    #    IO.inspect(counter, label: "counter: ")
+#    IO.inspect(policy, label: "policy: ")
+#    IO.inspect(counter, label: "counter: ")
 
     # match for concatenation
     case String.split(policy, ".", parts: 2, trim: true) do
@@ -60,7 +60,8 @@ defmodule MicroDataCore.Parser do
           ["0"] -> 0
           ["1"] -> 1
           ["0*"] -> 1
-          ["ANYF"] -> :anyf
+          ["anyf"] -> [:exec, :anyf]
+          ["anyf*"] -> [:star, :anyf]
           [p] ->
             cond  do
               String.ends_with?(p, "*") -> [:star, String.slice(p, 0..-2)]
@@ -119,9 +120,9 @@ defmodule MicroDataCore.Parser do
   def d_step(policy, command) do
     IO.inspect({policy, command}, label: "D step on (policy, command): ")
     case policy do
+      [:exec, :anyf] -> 1
       [:exec, c] when command == c -> 1
       [:exec, c] when command != c -> 0
-      [:exec, :anyf] -> 1
       [:concat, p1, p2] ->
         simplify(
           [
