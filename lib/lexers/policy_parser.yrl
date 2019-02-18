@@ -1,16 +1,20 @@
-Nonterminals list elems elem.
-Terminals '[' ']' ',' int atom.
-Rootsymbol list.
+Nonterminals clause func.
+Terminals '(' ')' atom anyf concat union star 0.
+Rootsymbol clause.
 
-list -> '[' ']'       : [].
-list -> '[' elems ']' : '$2'.
+clause -> clause concat clause : [concat, '$1', '$3']. % to simplify syntax
 
-elems -> elem           : ['$1'].
-elems -> elem ',' elems : ['$1'|'$3'].
+clause -> '(' clause concat clause ')' : [concat, '$2', '$4'].
+clause -> '(' clause union clause ')' : [union, '$2', '$4'].
+clause -> '(' clause ')' star : [star, '$1'].
+clause -> func : '$1'.
 
-elem -> int  : extract_token('$1').
-elem -> atom : extract_token('$1').
-elem -> list : '$1'.
+
+func -> anyf : [exec, '$1'].
+func -> func star : [star, '$1'].
+func -> 0 : '$1'.
+func -> atom : [exec, extract_token('$1')].
+
 
 Erlang code.
 
