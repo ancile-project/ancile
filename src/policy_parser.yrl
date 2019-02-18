@@ -10,12 +10,13 @@ clause -> '(' clause ')' star : [star, '$1'].
 clause -> func : '$1'.
 
 
-func -> anyf : [exec, '$1'].
+func -> anyf : [exec, extract_token_name('$1')].
 func -> func star : [star, '$1'].
-func -> 0 : '$1'.
+func -> 0 : extract_token_name('$1').
 func -> atom : [exec, extract_token('$1')].
 
 
 Erlang code.
 
 extract_token({_Token, _Line, Value}) -> Value.
+extract_token_name({Token, _Line}) -> Token.

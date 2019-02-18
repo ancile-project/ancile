@@ -1,88 +1,29 @@
 defmodule MicroDataCore.Parser do
   @moduledoc false
+  use Application
 
 
   def parse_program(file) do
-    {:ok, text_program} = File.read(file)
-    text_program
-    |> String.downcase()
-    |> parse_program([])
-
+    {:ok, text} = File.read(file)
+    {:ok, tokens, _} = text |> to_charlist() |> :program_lexer.string()
+    {:ok, list} = :program_parser.parse(tokens)
+    list
   end
 
   def parse_policy(file) do
     {:ok, text} = File.read(file)
-    text
-    |> String.downcase()
-    |> parse_policy(10)
+    {:ok, tokens, _} = text |> to_charlist() |> :policy_lexer.string()
+    {:ok, list} = :policy_parser.parse(tokens)
+    list
   end
 
-  @doc """
-  Just parses programs like:
-    c1;
-    c2;
-    c3
-  Will add more complex logic later
-  """
-  def parse_program(program, state) do
-    #    IO.inspect(program)
-    #    IO.inspect(state)
-    program = String.split(program, ";\n", parts: 2, trim: true)
-    #    IO.inspect(program)
-    case program do
-      [command, prog] -> [parse_program(command, nil) | parse_program(prog, state)]
-
-      [command] ->
-        case state do
-          nil -> String.trim(command)
-          _ -> [String.trim(command) | state]
-        end
-
-      _ -> raise "Syntax error. Check your program syntax."
-    end
-
-  end
-
-  @doc """
-  parse policies initial format:
-  """
-  def parse_policy(policy, counter) when counter > 0 do
-
-#    IO.inspect(policy, label: "policy: ")
-#    IO.inspect(counter, label: "counter: ")
-
-    # match for concatenation
-    case String.split(policy, ".", parts: 2, trim: true) do
-      [p, sub_tree] -> [:concat, parse_policy(p, counter - 1), parse_policy(sub_tree, counter - 1)]
-      [p] ->
-        case  String.split(p, "+", parts: 2, trim: true) do
-          [p, sub_tree] -> [:union, parse_policy(p, counter - 1), parse_policy(sub_tree, counter - 1)]
-          ["0"] -> 0
-          ["1"] -> 1
-          ["0*"] -> 1
-          ["anyf"] -> [:exec, :anyf]
-          ["anyf*"] -> [:star, :anyf]
-          [p] ->
-            cond  do
-              String.ends_with?(p, "*") -> [:star, String.slice(p, 0..-2)]
-              true -> [:exec, String.trim(p)]
-            end
-        end
-      _ -> raise "Syntax error. Check your program syntax."
-    end
-  end
-
-  def parse_policy(policy, counter) when counter == 0 do
-    #    IO.inspect(policy, label: "last policy: ")
-    policy
-  end
 
 
   def entry_point([policy_file, program_file]) do
     policy = parse_policy(policy_file)
     program = parse_program(program_file)
-    #    IO.inspect(policy, label: "policy: ")
-    #    IO.inspect(program, label: "program: ")
+    IO.inspect(policy, label: "policy: ")
+    IO.inspect(program, label: "program: ")
     case process_request(policy, program, %{:data => true}) do
       {:ok, data} -> IO.inspect(data, label: "Success. Received data: ")
       {:error} -> IO.puts("Policy didn't match submitted program. ")
@@ -180,8 +121,11 @@ defmodule MicroDataCore.Parser do
     Map.put(data, Time.utc_now(), {function})
   end
 
+  def start(_type, _args) do
+    MicroDataCore.Parser.entry_point(["/Users/ebagdasaryan/Documents/development/ancile/ancile/test/policies/simple.txt",
+      "/Users/ebagdasaryan/Documents/development/ancile/ancile/test/programs/simple.txt"])
+  end
 
 end
 
-System.argv()
-|> MicroDataCore.Parser.entry_point()
+
