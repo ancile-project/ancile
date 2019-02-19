@@ -35,7 +35,10 @@ defmodule MicroDataCore.Core do
   """
   def d_step(policy, command) do
     Logger.debug("D step on (policy, command): #{inspect({policy, command})}")
-    case policy do
+    res = case policy do
+      # because D(1,C) = D(0*,C) = D(0, C).0* = 0.0* = 0. Sorry :)
+      1 -> 0
+      0 -> 0
       [:exec, :anyf] -> 1
       [:exec, c] when command == c -> 1
       [:exec, c] when command != c -> 0
@@ -49,11 +52,22 @@ defmodule MicroDataCore.Core do
         )
       [:union, p1, p2] -> simplify([:union, d_step(p1, command), d_step(p2, command)])
       [:star, p] -> simplify([:concat, d_step(p, command), [:star, p]])
-      1 -> 0
-      # because D(1,C) = D(0*,C) = D(0, C).0* = 0.0* = 0. Sorry :)
-      0 -> 0
-      _ -> :error
+
+      [:neg, [:concat, p1, p2]] -> [:union, [:concat,  d_step([:neg, p1], command), [:exec, :anyf]],
+                                    [:concat,  d_step(p1, command), [:neg, p2]]
+                                   ]
+
+      [:neg, [:union, p1, p2]] -> [:concat, d_step([:neg, p1], command), d_step([:neg, p2], command)]
+      [:neg, 0] -> 1
+      [:neg, 1] -> 0
+      [:neg, [:exec, c]] -> abs(d_step([:exec, c], command) - 1)
+      [:neg, [:star, p]] -> d_step([:star, [:neg, p]], command)
+#      [:neg, p] -> [:neg, simplify(d_step(p, command))]
+
+      _ -> throw "Error parsing"
     end
+    Logger.debug("Output D step (REVERSE ORDER): #{inspect({policy, command, res})}")
+    res
   end
 
   @doc """
@@ -62,7 +76,8 @@ defmodule MicroDataCore.Core do
   trivial logical expressions.
   """
   def simplify(policy) do
-    Logger.debug("reducing: #{inspect(policy)}")
+#    policy
+    #    Logger.debug("reducing: #{inspect(policy)}")
     case policy do
       [:concat, 0, _] -> 0
       [:concat, _, 0] -> 0
@@ -74,6 +89,8 @@ defmodule MicroDataCore.Core do
       [:union, 1, _] -> 1
       [:union, _, 1] -> 1
       [:union, 0, 0] -> 0
+      [:neg, 1] -> 0
+      [:neg, 0] -> 1
       [:concat, p1, p2] -> [:concat, simplify(p1), simplify(p2)]
       [:union, p1, p2] -> [:union, simplify(p1), simplify(p2)]
       [:star, p] -> [:star, simplify(p)]
@@ -93,9 +110,7 @@ defmodule MicroDataCore.Core do
   def e_step(policy) do
 
     res = case policy do
-
       0 -> 0
-
       # E(1) = E(0*) = 1, unlike D(1,C) = 0
       1 -> 1
       # conjunction
@@ -103,6 +118,8 @@ defmodule MicroDataCore.Core do
       # disjunction
       [:union, p1, p2] -> max(e_step(p1), e_step(p2))
       [:star, _] -> 1
+      # negate the result
+      [:neg, p] -> abs(e_step(p) - 1)
       _ -> 0
     end
     Logger.debug("E Step received [policy, res] (REVERSE ORDER!): #{inspect({policy, res})}")
