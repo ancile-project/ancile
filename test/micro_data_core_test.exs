@@ -5,8 +5,7 @@ defmodule MicroDataCoreTest do
   test "first_test" do
     {:ok, policy_text} = File.read("test/policies/simple.txt")
     {:ok, program_text} = File.read("test/programs/simple.txt")
-    {result, data} = MicroDataCore.Core.entry_point([policy_text, program_text])
-    IO.inspect(data)
+    {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
     assert result == :ok
   end
 
@@ -48,14 +47,14 @@ defmodule MicroDataCoreTest do
   end
 
   #unsuccessful tests
-  test "wrong_func" do
+  test "err_wrong_func" do
     policy_text = "get_data.get_data.WRONG.remove_data.get_data.return_data"
     {:ok, program_text} = File.read("test/programs/complex.txt")
     {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
     assert result == :error
   end
 
-  test "force_filter_get_data" do
+  test "err_force_filter_get_data" do
     policy_text = "(skip*.(get_data.filter_data)*.skip*)*"
     program_text = "skip\nskip\nget_data\nfilter_data\nskip\nget_data\nskip"
     {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])

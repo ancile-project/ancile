@@ -1,9 +1,9 @@
 Definitions.
 
-%INT        = [0-9]+
+INT        = [0-9]+
 ATOM       = [a-zA-Z_]+
 WHITESPACE = [\s\t\r]
-%C   = (<|<=|=|=>|>)
+C   = (<|<=|=|=>|>)
 
 
 
