@@ -66,6 +66,13 @@ defmodule MicroDataCoreTest do
     assert result == :ok
   end
 
+  test "ok_intersect_union" do
+    policy_text = "(a&(b+a)).d"
+    program_text = "a\nd"
+    {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
+    assert result == :ok
+  end
+
   test "err_intersect" do
     policy_text = "(a&b)"
     program_text = "a"
@@ -74,5 +81,73 @@ defmodule MicroDataCoreTest do
   end
 
 
+
+  ##############################
+  # NEGATION TESTS
+  ##############################
+
+  test "ok_neg_concat" do
+    policy_text = "k.!((g.f)).k"
+    program_text = "k\nf\ng\nk"
+    {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
+    assert result == :ok
+  end
+
+  test "err_neg_concat" do
+    policy_text = "!(g.f)"
+    program_text = "g\nf"
+    {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
+    assert result == :error
+  end
+
+  test "ok_neg_concat_first_match" do
+    policy_text = "!((g.f))"
+    program_text = "g\nq"
+    {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
+    assert result == :ok
+  end
+  #
+  test "ok_neg_union" do
+    policy_text = "!((g+f)).m"
+    program_text = "d\nm"
+    {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
+    assert result == :ok
+  end
+
+  test "err_neg_union" do
+    policy_text = "!((g+f)).m.k"
+    program_text = "f\nm\nk"
+    {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
+    assert result == :error
+  end
+
+
+  test "ok_neg_star_inside" do
+    policy_text = "!(a*)"
+    program_text = "b\nb\nb"
+    {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
+    assert result == :ok
+  end
+
+  test "err_neg_star_inside" do
+    policy_text = "!(a*)"
+    program_text = "a\na\na"
+    {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
+    assert result == :error
+  end
+
+  test "ok_neg_star_outside" do
+    policy_text = "(!(a))*.m"
+    program_text = "d\nm"
+    {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
+    assert result == :ok
+  end
+
+  test "err_neg_outside" do
+    policy_text = "(!(a))*.m"
+    program_text = "a\na\nm"
+    {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
+    assert result == :error
+  end
 
 end

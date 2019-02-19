@@ -68,28 +68,34 @@ defmodule MicroDataCore.Core do
   def simplify(policy) do
     Logger.debug("reducing: #{inspect(policy)}")
     case policy do
+
+      [_, [c, p1, p2], [c, p2, p1]] -> simplify([c, p1, p2])
+      [c, 0, 0] -> 0
+      [c, 1, 1] -> 1
+
       [:concat, 0, _] -> 0
       [:concat, _, 0] -> 0
       [:concat, 1, p] -> simplify(p)
       [:concat, p, 1] -> simplify(p)
-      [:concat, 1, 1] -> 1
       [:concat, p1, p2] -> [:concat, simplify(p1), simplify(p2)]
 
       [:intersect, 0, _] -> 0
       [:intersect, _, 0] -> 0
       [:intersect, 1, p] -> simplify(p)
       [:intersect, p, 1] -> simplify(p)
-      [:intersect, 1, 1] -> 1
+      [:intersect, p, p] -> simplify(p)
       [:intersect, p1, p2] -> [:intersect, simplify(p1), simplify(p2)]
+
 
       [:union, 0, p] -> simplify(p)
       [:union, p, 0] -> simplify(p)
       [:union, 1, _] -> 1
       [:union, _, 1] -> 1
-      [:union, 0, 0] -> 0
-
+      [:union, p, p] -> simplify(p)
       [:union, p1, p2] -> [:union, simplify(p1), simplify(p2)]
+
       [:star, p] -> [:star, simplify(p)]
+
       p -> p
     end
   end
