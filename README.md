@@ -1,21 +1,12 @@
-# MicroDataCore
+# Ancile
 
-**TODO: Add description**
+Run tests using `mix test`.
 
-## Installation
+Should add more documentation as we go. 
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `core` to your list of dependencies in `mix.exs`:
+So far we have: 
 
-```elixir
-def deps do
-  [
-    {:core, "~> 0.1.0"}
-  ]
-end
-```
+* Simple policy, program parser
 
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at [https://hexdocs.pm/core](https://hexdocs.pm/core).
+* Stepping policies and running dumb functions 
 
