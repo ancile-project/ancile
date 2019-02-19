@@ -16,6 +16,7 @@ ANYF          : {token, {anyf,  TokenLine}}.
 \+            : {token, {union,  TokenLine}}.
 \*            : {token, {star,  TokenLine}}.
 \!            : {token, {neg,  TokenLine}}.
+\&            : {token, {intersect,  TokenLine}}.
 {WHITESPACE}+ : skip_token.
 
 % we will need them for parameters:

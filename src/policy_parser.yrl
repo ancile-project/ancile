@@ -1,5 +1,5 @@
 Nonterminals clause func.
-Terminals '(' ')' atom anyf concat union star neg 0.
+Terminals '(' ')' atom anyf concat union intersect star neg 0.
 Rootsymbol clause.
 
 clause -> neg clause : [neg, '$2'].
@@ -10,6 +10,7 @@ clause -> neg '(' clause ')' : [neg, '$3'].
 clause -> '(' clause ')' star : [star, '$2'].
 clause -> '(' clause concat clause ')' : [concat, '$2', '$4'].
 clause -> '(' clause union clause ')' : [union, '$2', '$4'].
+clause -> '(' clause intersect clause ')' : [intersect, '$2', '$4'].
 clause -> func : '$1'.
 
 

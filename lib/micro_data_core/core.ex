@@ -52,18 +52,8 @@ defmodule MicroDataCore.Core do
         )
       [:union, p1, p2] -> simplify([:union, d_step(p1, command), d_step(p2, command)])
       [:star, p] -> simplify([:concat, d_step(p, command), [:star, p]])
-
-      [:neg, [:concat, p1, p2]] -> [:union, [:concat,  d_step([:neg, p1], command), [:exec, :anyf]],
-                                    [:concat,  d_step(p1, command), [:neg, p2]]
-                                   ]
-
-      [:neg, [:union, p1, p2]] -> [:concat, d_step([:neg, p1], command), d_step([:neg, p2], command)]
-      [:neg, 0] -> 1
-      [:neg, 1] -> 0
-      [:neg, [:exec, c]] -> abs(d_step([:exec, c], command) - 1)
-      [:neg, [:star, p]] -> d_step([:star, [:neg, p]], command)
-#      [:neg, p] -> [:neg, simplify(d_step(p, command))]
-
+      [:intersect, p1, p2] -> [:intersect, d_step(p1, command), d_step(p2, command)]
+      [:neg, p] -> [:neg, d_step(p, command)]
       _ -> throw "Error parsing"
     end
     Logger.debug("Output D step (REVERSE ORDER): #{inspect({policy, command, res})}")
@@ -76,22 +66,28 @@ defmodule MicroDataCore.Core do
   trivial logical expressions.
   """
   def simplify(policy) do
-#    policy
-    #    Logger.debug("reducing: #{inspect(policy)}")
+    Logger.debug("reducing: #{inspect(policy)}")
     case policy do
       [:concat, 0, _] -> 0
       [:concat, _, 0] -> 0
       [:concat, 1, p] -> simplify(p)
       [:concat, p, 1] -> simplify(p)
       [:concat, 1, 1] -> 1
+      [:concat, p1, p2] -> [:concat, simplify(p1), simplify(p2)]
+
+      [:intersect, 0, _] -> 0
+      [:intersect, _, 0] -> 0
+      [:intersect, 1, p] -> simplify(p)
+      [:intersect, p, 1] -> simplify(p)
+      [:intersect, 1, 1] -> 1
+      [:intersect, p1, p2] -> [:intersect, simplify(p1), simplify(p2)]
+
       [:union, 0, p] -> simplify(p)
       [:union, p, 0] -> simplify(p)
       [:union, 1, _] -> 1
       [:union, _, 1] -> 1
       [:union, 0, 0] -> 0
-      [:neg, 1] -> 0
-      [:neg, 0] -> 1
-      [:concat, p1, p2] -> [:concat, simplify(p1), simplify(p2)]
+
       [:union, p1, p2] -> [:union, simplify(p1), simplify(p2)]
       [:star, p] -> [:star, simplify(p)]
       p -> p
@@ -113,12 +109,10 @@ defmodule MicroDataCore.Core do
       0 -> 0
       # E(1) = E(0*) = 1, unlike D(1,C) = 0
       1 -> 1
-      # conjunction
       [:concat, p1, p2] -> e_step(p1) * e_step(p2)
-      # disjunction
+      [:intersect, p1, p2] -> e_step(p1) * e_step(p2)
       [:union, p1, p2] -> max(e_step(p1), e_step(p2))
       [:star, _] -> 1
-      # negate the result
       [:neg, p] -> abs(e_step(p) - 1)
       _ -> 0
     end

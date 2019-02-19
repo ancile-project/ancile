@@ -1,1 +1,19 @@
-ANYF.(filter_data+wrong).return_data
+!!! Just experiments
+
+get_data.ANYF*.filter_data.return_data -- user
+
+ANYF* -- app
+
+(get_data.ANYF*.filter_data.return_data)&ANYF* + ANYF*.(get_data.ANYF*.filter_data.return_data)
+
+
+policy:
+get_data.filter_data.(ANYF-get_data)*.return_data
+
+
+program:
+
+get_data
+filter_data
+get_data
+return_data
