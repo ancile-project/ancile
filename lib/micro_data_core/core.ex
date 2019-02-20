@@ -69,9 +69,10 @@ defmodule MicroDataCore.Core do
     Logger.debug("reducing: #{inspect(policy)}")
     case policy do
 
+      # if it changes, i.e. we add XOR, need to be specific
       [_, [c, p1, p2], [c, p2, p1]] -> simplify([c, p1, p2])
-      [c, 0, 0] -> 0
-      [c, 1, 1] -> 1
+      [_, 0, 0] -> 0
+      [_, 1, 1] -> 1
 
       [:concat, 0, _] -> 0
       [:concat, _, 0] -> 0
