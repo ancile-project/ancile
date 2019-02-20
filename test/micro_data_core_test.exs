@@ -150,4 +150,17 @@ defmodule MicroDataCoreTest do
     assert result == :error
   end
 
+  test "big_case" do
+    policy_text = "(((((a.a.m)* + (a.m)*)) * + (((a.m*)* + (a.a.b.m)*)) *))*"
+    program_text = "a\na\nm\na\na\nm\na\na\nm\na\na\nm\na\na\nm\na\na\nm"
+    {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
+    assert result == :ok
+  end
+
+  test "big_case_2" do
+    policy_text = "((((((a.a.m)* + (a.m)*)) * + (((a.m*)* + (a.a.b.m)*)) *))* + (((((a.b.m)* + (a.c)*)) * + (((k.m*)* + (k.a.b.j)*)) *))*)"
+    program_text = "a\na\nm\na\na\nm\na\na\nm\na\na\nm\na\na\nm\na\na\nm"
+    {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
+    assert result == :ok
+  end
 end

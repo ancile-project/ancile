@@ -1,4 +1,5 @@
 defmodule MicroDataCore.Core do
+  use Memoize
   require Logger
   @moduledoc false
 
@@ -33,7 +34,7 @@ defmodule MicroDataCore.Core do
   @doc """
   Perform policy advancement step to decide if we can evaluate the program.
   """
-  def d_step(policy, command) do
+  defmemo d_step(policy, command) do
     Logger.debug("D step on (policy, command): #{inspect({policy, command})}")
     res = case policy do
       1 -> 1
@@ -65,7 +66,7 @@ defmodule MicroDataCore.Core do
   This is an effort to keep it small and readable by removing
   trivial logical expressions.
   """
-  def simplify(policy) do
+  defmemo simplify(policy) do
     Logger.debug("reducing: #{inspect(policy)}")
     case policy do
 
@@ -110,7 +111,7 @@ defmodule MicroDataCore.Core do
     E(P*) = 1
   """
 
-  def e_step(policy) do
+  defmemo e_step(policy) do
 
     res = case policy do
       0 -> 0
@@ -162,7 +163,6 @@ defmodule MicroDataCore.Core do
            {:error, %{}}
 
     end
-
   end
 
 end
