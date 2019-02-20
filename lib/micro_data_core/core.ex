@@ -70,7 +70,6 @@ defmodule MicroDataCore.Core do
     case policy do
 
       # if it changes, i.e. we add XOR, need to be specific
-      [_, [c, p1, p2], [c, p2, p1]] -> simplify([c, p1, p2])
       [_, 0, 0] -> 0
       [_, 1, 1] -> 1
 
@@ -85,14 +84,15 @@ defmodule MicroDataCore.Core do
       [:intersect, 1, p] -> simplify(p)
       [:intersect, p, 1] -> simplify(p)
       [:intersect, p, p] -> simplify(p)
+      [:intersect, [c, p1, p2], [c, p2, p1]] when c in [:union, :intersect] -> simplify([c, p1, p2])
       [:intersect, p1, p2] -> [:intersect, simplify(p1), simplify(p2)]
-
 
       [:union, 0, p] -> simplify(p)
       [:union, p, 0] -> simplify(p)
       [:union, 1, _] -> 1
       [:union, _, 1] -> 1
       [:union, p, p] -> simplify(p)
+      [:union, [c, p1, p2], [c, p2, p1]] when c in [:union, :intersect] -> simplify([c, p1, p2])
       [:union, p1, p2] -> [:union, simplify(p1), simplify(p2)]
 
       [:star, p] -> [:star, simplify(p)]
@@ -114,7 +114,6 @@ defmodule MicroDataCore.Core do
 
     res = case policy do
       0 -> 0
-      # E(1) = E(0*) = 1, unlike D(1,C) = 0
       1 -> 1
       [:concat, p1, p2] -> e_step(p1) * e_step(p2)
       [:intersect, p1, p2] -> e_step(p1) * e_step(p2)
