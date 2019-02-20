@@ -22,3 +22,7 @@ erl_crash.dump
 # Ignore package tarball (built via "mix hex.build").
 core-*.tar
 
+.idea/
+*.iml
+# ignore generated parsers
+*.erl
