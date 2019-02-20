@@ -36,9 +36,9 @@ defmodule MicroDataCore.Core do
   def d_step(policy, command) do
     Logger.debug("D step on (policy, command): #{inspect({policy, command})}")
     res = case policy do
-      # because D(1,C) = D(0*,C) = D(0, C).0* = 0.0* = 0. Sorry :)
-      1 -> 0
+      1 -> 1
       0 -> 0
+
       [:exec, :anyf] -> 1
       [:exec, c] when command == c -> 1
       [:exec, c] when command != c -> 0
