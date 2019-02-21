@@ -1,4 +1,4 @@
-get_data
-transform_data
-filter_data
-return_data
+get_data;
+transform_data;
+filter_data;
+return_data;

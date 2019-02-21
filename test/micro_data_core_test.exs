@@ -32,7 +32,7 @@ defmodule MicroDataCoreTest do
 
   test "force_filter_simple" do
     policy_text = "get_data.(filter_data+remove_data)*.return_data"
-    program_text = "get_data\nfilter_data\nremove_data\nreturn_data"
+    program_text = "get_data; filter_data; remove_data; return_data;"
     {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
     assert result == :ok
   end
@@ -47,35 +47,35 @@ defmodule MicroDataCoreTest do
 
   test "ok_neg" do
     policy_text = "a.b.!(a).c"
-    program_text = "a\nb\nd\nc"
+    program_text = "a; b; d; c;"
     {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
     assert result == :ok
   end
 
   test "err_neg" do
     policy_text = "a.b.!(a).c"
-    program_text = "a\nb\na\nc"
+    program_text = "a; b; a; c;"
     {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
     assert result == :error
   end
 
   test "ok_intersect" do
     policy_text = "(a&ANYF)"
-    program_text = "a"
+    program_text = "a;"
     {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
     assert result == :ok
   end
 
   test "ok_intersect_union" do
     policy_text = "(a&(b+a)).d"
-    program_text = "a\nd"
+    program_text = "a; d;"
     {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
     assert result == :ok
   end
 
   test "err_intersect" do
     policy_text = "(a&b)"
-    program_text = "a"
+    program_text = "a;"
     {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
     assert result == :error
   end
@@ -88,35 +88,35 @@ defmodule MicroDataCoreTest do
 
   test "ok_neg_concat" do
     policy_text = "k.!((g.f)).k"
-    program_text = "k\nf\ng\nk"
+    program_text = "k; f; g; k;"
     {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
     assert result == :ok
   end
 
   test "err_neg_concat" do
     policy_text = "!(g.f)"
-    program_text = "g\nf"
+    program_text = "g; f;"
     {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
     assert result == :error
   end
 
   test "ok_neg_concat_first_match" do
     policy_text = "!((g.f))"
-    program_text = "g\nq"
+    program_text = "g; q;"
     {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
     assert result == :ok
   end
   #
   test "ok_neg_union" do
     policy_text = "!((g+f)).m"
-    program_text = "d\nm"
+    program_text = "d; m;"
     {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
     assert result == :ok
   end
 
   test "err_neg_union" do
     policy_text = "!((g+f)).m.k"
-    program_text = "f\nm\nk"
+    program_text = "f; m; k;"
     {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
     assert result == :error
   end
@@ -124,42 +124,42 @@ defmodule MicroDataCoreTest do
 
   test "ok_neg_star_inside" do
     policy_text = "!(a*)"
-    program_text = "b\nb\nb"
+    program_text = "b; b; b;"
     {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
     assert result == :ok
   end
 
   test "err_neg_star_inside" do
     policy_text = "!(a*)"
-    program_text = "a\na\na"
+    program_text = "a; a; a;"
     {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
     assert result == :error
   end
 
   test "ok_neg_star_outside" do
     policy_text = "(!(a))*.m"
-    program_text = "d\nm"
+    program_text = "d; m;"
     {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
     assert result == :ok
   end
 
   test "err_neg_outside" do
     policy_text = "(!(a))*.m"
-    program_text = "a\na\nm"
+    program_text = "a; a; m;"
     {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
     assert result == :error
   end
 
   test "big_case" do
     policy_text = "(((((a.a.m)* + (a.m)*)) * + (((a.m*)* + (a.a.b.m)*)) *))*"
-    program_text = "a\na\nm\na\na\nm\na\na\nm\na\na\nm\na\na\nm\na\na\nm"
+    program_text = "a; a; m; a; a; m; a; a; m; a; a; m; a; a; m; a; a; m;"
     {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
     assert result == :ok
   end
 
   test "big_case_2" do
     policy_text = "((((((a.a.m)* + (a.m)*)) * + (((a.m*)* + (a.a.b.m)*)) *))* + (((((a.b.m)* + (a.c)*)) * + (((k.m*)* + (k.a.b.j)*)) *))*)"
-    program_text = "a\na\nm\na\na\nm\na\na\nm\na\na\nm\na\na\nm\na\na\nm"
+    program_text = "a; a; m; a; a; m; a; a; m; a; a; m; a; a; m; a; a; m;"
     {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
     assert result == :ok
   end

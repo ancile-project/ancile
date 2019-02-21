@@ -1,19 +1,29 @@
 Definitions.
 
 INT        = [0-9]+
-ATOM       = [a-zA-Z_]+
-WHITESPACE = [\s\t\r]
+TEXT       = [a-zA-Z_]+
+WHITESPACE = [\s\r\t\n]
 C   = (<|<=|=|=>|>)
 
 
 
 Rules.
-\n          : {token, {end_command,  TokenLine}}.
-{ATOM}      : {token, {atom, TokenLine, TokenChars}}.
+%\t          : {token, {tab,  TokenLine}}.
+;         : {token, {';',  TokenLine}}.
+:=        : {token, {':=',  TokenLine}}.
+if        : {token, {'if',  TokenLine}}.
+else        : {token, {'else',  TokenLine}}.
+do        : {token, {'do',  TokenLine}}.
+end        : {token, {'end',  TokenLine}}.
+while      : {token, {'while',  TokenLine}}.
+for      : {token, {'for',  TokenLine}}.
+to      : {token, {'to',  TokenLine}}.
+{TEXT}      : {token, {text, TokenLine, TokenChars}}.
 {WHITESPACE}+ : skip_token.
+{C}         : {token, {comparison, TokenLine, TokenChars}}.
+{INT}         : {token, {int,  TokenLine, list_to_integer(TokenChars)}}.
 
 % will need later for params
-%{INT}         : {token, {int,  TokenLine, list_to_integer(TokenChars)}}.
 %\(            : {token, {'(',  TokenLine}}.
 %\)            : {token, {')',  TokenLine}}.
 %,             : {token, {',',  TokenLine}}.
