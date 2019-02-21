@@ -26,15 +26,15 @@ defmodule MicroDataCore.Core do
 
   @doc """
   We use it to evaluate sub loops, like if/for/while and preserve state of
-  variables.
+  variables. As well, we want to execute program, but don't need to return data.
   """
   def program_step(policy, [], data, var_scope) do
     {policy, [], data, var_scope}
   end
 
   @doc """
-  Final step of the evaluation. If the policy passes E step
-  MicroDataCore.Core.e_step/1 then we return data otherwise, fail
+  Final step of the evaluation, requires `return`. If the policy passes E step
+  MicroDataCore.Core.e_step/1 then we return data otherwise, fail.
   """
   def program_step(policy, [[:exec, :return]], data, _var_scope) do
     Logger.info("-----------------------------")
@@ -47,8 +47,6 @@ defmodule MicroDataCore.Core do
       {:error, msg} -> {:error, msg}
       _ -> {:error, "Couldn't advance policy."}
     end
-
-
   end
 
   @doc """
@@ -71,7 +69,8 @@ defmodule MicroDataCore.Core do
   end
 
   @doc """
-  Uses x:= command to update variable scope.
+  Uses x:= number to update variable scope.
+  @TODO support float/string, etc.
   """
   def program_step(policy, [[:assign, var, value] | program], data, var_scope) when is_number(value) == true do
     Logger.info("-----------------------------")
@@ -101,7 +100,10 @@ defmodule MicroDataCore.Core do
 
 
   @doc """
-  Uses if a do c to update variable scope.
+  Implements `if clause do commands end` to update variable scope.
+  After clause passes we evaluate `commands` in a new scope, after
+  commands executed we evaluate the remaining program in the old scope.
+  @TODO add else clause
   """
   def program_step(policy, [[:if, clause, commands] | program], data, var_scope) do
     Logger.info("-----------------------------")
@@ -117,14 +119,15 @@ defmodule MicroDataCore.Core do
           {:error, msg} -> {:error, msg}
           {policy, [], data, _} -> program_step(policy, program, data, var_scope)
         end
-
     end
-
   end
 
-
+  @doc """
+  We run the command that returns {ok, value, data}. We then
+  assign value to variable `var` and put them into `var_scope`.
+  """
   def assign_eval_result(var, command, data, var_scope) do
-
+    Logger.debug("Assign value to `#{inspect(var)}` be running: `#{inspect(command)}`")
     case execute_command(command, data) do
       {:error, msg} -> {:error, msg}
       {:ok, value, data} ->
@@ -134,7 +137,10 @@ defmodule MicroDataCore.Core do
     end
   end
 
-
+  @doc """
+  Compute parameter fetch from variable scope and call comparator.
+  @TODO: add int/float/string as left or right params
+  """
   def eval_clause(_policy, [:comp, compare_symbol, var1, var2], _data, var_scope) do
     with {:ok, left_val} <- get_value_from_var(var1, var_scope),
          {:ok, right_val} <- get_value_from_var(var2, var_scope)
@@ -145,7 +151,9 @@ defmodule MicroDataCore.Core do
     end
   end
 
-
+  @doc """
+  Compares two values.
+  """
   def comparison(operation, val1, val2) do
     Logger.debug("Evaluation comparison #{inspect(val1)} #{inspect(operation)} #{inspect(val2)}")
     case operation do
@@ -154,10 +162,14 @@ defmodule MicroDataCore.Core do
       '<' -> val1 < val2
       '>=' -> val1 >= val2
       '<=' -> val1 <= val2
+      '!=' -> val1 != val2
       _ -> {:error, "Wrong comparison parameter: #{inspect(operation)}"}
     end
   end
 
+  @doc """
+  Fetches value from var scope. Returns error if no value found.
+  """
   def get_value_from_var(var, var_scope) do
     case Map.get(var_scope, var) do
       nil -> {:error, "No variable with name #{inspect(var)} in scope #{inspect(var_scope)}"}
@@ -168,6 +180,17 @@ defmodule MicroDataCore.Core do
 
   @doc """
   Perform policy advancement step to decide if we can evaluate the program.
+    D(0,_) = 0
+    D(C, C') = if C != C' then 0 else 1
+    D(P1 . P2, C) = D(P1,C) . P2 + E(P1) . D(P2, C)
+    D(P1 + P2, C) = D(P1, C) + D(P2, C)
+    D(P*, C) = D(P,C) . P*
+    D(P1 & P2, C) = D(P1, C) & D(P2, C)
+    D(!P, C) = !D(P,C)
+
+    @TODO: I had to use elem(d_step(), 1) to drop :ok from the response, will need
+    to fix it later. However, always returning, either {:ok, result} or
+    {:error, msg} is really convenient.
   """
   defmemo d_step(policy, command) do
     Logger.debug("D step on (policy, command): #{inspect({policy, command})}")
@@ -185,16 +208,11 @@ defmodule MicroDataCore.Core do
             simplify([:concat, e_step(p1), elem(d_step(p2, command), 1)])
           ]
         )
-      [:union, p1, p2] ->
-        simplify([:union, elem(d_step(p1, command), 1), elem(d_step(p2, command), 1)])
-      [:star, p] ->
-        simplify([:concat, elem(d_step(p, command), 1), [:star, p]])
-      [:intersect, p1, p2] ->
-        [:intersect, elem(d_step(p1, command), 1), elem(d_step(p2, command), 1)]
-      [:neg, p] ->
-        [:neg, elem(d_step(p, command), 1)]
-      _ ->
-        {:error, "Error parsing following policy: #{inspect(policy)}"}
+      [:union, p1, p2] -> simplify([:union, elem(d_step(p1, command), 1), elem(d_step(p2, command), 1)])
+      [:star, p] -> simplify([:concat, elem(d_step(p, command), 1), [:star, p]])
+      [:intersect, p1, p2] -> [:intersect, elem(d_step(p1, command), 1), elem(d_step(p2, command), 1)]
+      [:neg, p] -> [:neg, elem(d_step(p, command), 1)]
+      _ -> {:error, "Error parsing following policy: #{inspect(policy)}"}
     end
     Logger.debug("Output D step (REVERSE ORDER): #{inspect({policy, command, res})}")
     case res do
@@ -248,11 +266,12 @@ defmodule MicroDataCore.Core do
   Rules to allow data release:
     E(0) = E(C) = 0
     E(1) = 1
-    E(P1 . P2) = E(P1) . E(P2)
-    E(P1 + P2) = E(P1) + E(P2)
+    E(P1 . P2) = E(P1) /\ E(P2)
+    E(P1 & P2) = E(P1) /\ E(P2)
+    E(P1 + P2) = E(P1) \/ E(P2)
     E(P*) = 1
+    E(!P) = !P
   """
-
   defmemo e_step(policy) do
 
     res = case policy do
@@ -306,7 +325,6 @@ defmodule MicroDataCore.Core do
                        {:error, %{}}
       _ -> Logger.error("Error")
            {:error, %{}}
-
     end
   end
 

@@ -192,4 +192,18 @@ defmodule MicroDataCoreTest do
     assert result == :error
   end
 
+  test "ok_nested_if_assignment" do
+    policy_text = "a.b.return"
+    program_text = "z := 4; j := 4; if z=j do a; q:=4; if z=q do b; end end return;"
+    {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
+    assert result == :ok
+  end
+
+  test "ok_scoping_test_assignment" do
+    policy_text = "a.b.return"
+    program_text = "z := 4; j := 4; if z=j do a; q:=4; end if z=q do b; end return;"
+    {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
+    assert result == :error
+  end
+
 end

@@ -3,7 +3,7 @@ Definitions.
 INT        = [0-9]+
 TEXT       = [a-zA-Z_]+
 WHITESPACE = [\s\r\t\n]
-C          = (<|<=|=|=>|>)
+C          = (<|<=|=|!=|=>|>)
 
 
 
