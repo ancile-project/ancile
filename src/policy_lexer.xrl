@@ -8,7 +8,8 @@ WHITESPACE = [\s\t\n\r]
 Rules.
 
 0             : {token, {0,  TokenLine}}.
-ANYF          : {token, {anyf,  TokenLine}}.
+ANYF          : {token, {'anyf',  TokenLine}}.
+return        : {token, {'return', TokenLine}}.
 {ATOM}        : {token, {atom, TokenLine, TokenChars}}.
 \(            : {token, {'(',  TokenLine}}.
 \)            : {token, {')',  TokenLine}}.

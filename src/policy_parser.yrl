@@ -1,5 +1,5 @@
 Nonterminals clause func.
-Terminals '(' ')' atom anyf concat union intersect star neg 0.
+Terminals '(' ')' atom anyf concat union intersect star neg 0 return.
 Rootsymbol clause.
 
 clause -> neg clause : [neg, '$2'].
@@ -13,13 +13,12 @@ clause -> '(' clause union clause ')' : [union, '$2', '$4'].
 clause -> '(' clause intersect clause ')' : [intersect, '$2', '$4'].
 clause -> func : '$1'.
 
-
-func -> anyf : [exec, extract_token_name('$1')].
-func -> 0 : extract_token_name('$1').
+func -> return: [exec, return].
+func -> anyf : [exec, anyf].
+func -> 0 : 0.
 func -> atom : [exec, extract_token('$1')].
 
 
 Erlang code.
 
 extract_token({_Token, _Line, Value}) -> Value.
-extract_token_name({Token, _Line}) -> Token.

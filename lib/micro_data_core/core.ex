@@ -4,6 +4,7 @@ defmodule MicroDataCore.Core do
   @moduledoc false
 
 
+
   @doc """
   Main input for our Core module. It takes (policy, program, data)
   and recursively evaluates it, until the program is empty.
@@ -14,6 +15,8 @@ defmodule MicroDataCore.Core do
     Logger.info("-----------------------------")
     var_scope = %{}
     case program_step(policy, program, data, var_scope) do
+      {_, [], _, _} -> Logger.info("No 'return' command specified in the end, returning nothing...")
+                       {:ok, []}
       {:error, msg} -> Logger.error("Error running program: #{inspect(msg)}")
                        {:error, msg}
       {:ok, data} -> Logger.info("Success. Received data: #{inspect(data)}")
@@ -21,14 +24,45 @@ defmodule MicroDataCore.Core do
     end
   end
 
+  @doc """
+  We use it to evaluate sub loops, like if/for/while and preserve state of
+  variables.
+  """
+  def program_step(policy, [], data, var_scope) do
+    {policy, [], data, var_scope}
+  end
+
+  @doc """
+  Final step of the evaluation. If the policy passes E step
+  MicroDataCore.Core.e_step/1 then we return data otherwise, fail
+  """
+  def program_step(policy, [[:exec, :return]], data, _var_scope) do
+    Logger.info("-----------------------------")
+    Logger.info("Performing last step on (policy, program): #{inspect({policy, :return})}")
+    Logger.info("-----------------------------")
+    with {:ok, policy} <- d_step(policy,  :return),
+         1 <- e_step(policy) do
+      {:ok, data}
+    else
+      {:error, msg} -> {:error, msg}
+      _ -> {:error, "Couldn't advance policy."}
+    end
+
+
+  end
+
+  @doc """
+  Basic step to execute a command from the program.
+  It doesn't use scope variables and just updates data.
+  """
   def program_step(policy, [[:exec, command] | program], data, var_scope) do
     Logger.info("-----------------------------")
     Logger.info("Performing step on (policy, program): #{inspect({policy, [command | program]})}")
     Logger.info("-----------------------------")
     case d_step(policy, command) do
       {:error, msg} -> {:error, msg}
-      0 -> {:error, "Early stop."}
-      policy ->
+      {:ok, 0} -> {:error, "Early stop."}
+      {:ok, policy} ->
         case execute_command(command, data) do
           {:error, msg} -> {:error, msg}
           {:ok, _, data} -> program_step(policy, program, data, var_scope)
@@ -36,34 +70,101 @@ defmodule MicroDataCore.Core do
     end
   end
 
+  @doc """
+  Uses x:= command to update variable scope.
+  """
+  def program_step(policy, [[:assign, var, value] | program], data, var_scope) when is_number(value) == true do
+    Logger.info("-----------------------------")
+    Logger.info("Assignment: #{inspect({policy, [:assign, var, value]})}")
+    Logger.info("-----------------------------")
+    var_scope = Map.put(var_scope, var, value)
+    Logger.error("Updated var_scope: #{inspect({var_scope, var, value})}")
+    program_step(policy, program, data, var_scope)
+  end
+
+
+  @doc """
+  Uses x:= command to update variable scope.
+  """
   def program_step(policy, [[:assign, var, command] | program], data, var_scope) do
     Logger.info("-----------------------------")
     Logger.info("Assignment: #{inspect({policy, [:assign, var, command]})}")
     Logger.info("-----------------------------")
-    case d_step(policy, command) do
+    with {:ok, policy} <- d_step(policy, command),
+         {:ok, data, var_scope} <- assign_eval_result(var, command, data, var_scope)
+      do
+      program_step(policy, program, data, var_scope)
+    else
       {:error, msg} -> {:error, msg}
-      0 -> {:error, "Early stop."}
-      policy ->
-        case execute_command(command, data) do
-          {:error, msg} -> {:error, msg}
-          {:ok, value, data} ->
-            var_scope = Map.put(var_scope, var, value)
-            Logger.error("var_scope: #{inspect({var_scope, var, value})}")
-            program_step(policy, program, data, var_scope)
-        end
     end
   end
 
+
   @doc """
-  Final step of the evaluation. If the policy passes E step
-  MicroDataCore.Core.e_step/1 then we return data otherwise, fail
+  Uses if a do c to update variable scope.
   """
-  def program_step(policy, [], data, _var_scope) do
-    case e_step(policy) do
-      1 -> {:ok, data}
-      0 -> {:error, "Couldn't advance policy."}
+  def program_step(policy, [[:if, clause, commands] | program], data, var_scope) do
+    Logger.info("-----------------------------")
+    Logger.info("If scope: #{inspect({policy, [:if, clause, commands]})}")
+    Logger.info("-----------------------------")
+
+    case eval_clause(policy, clause, data, var_scope) do
+      {:error, msg} -> {:error, msg}
+      false -> program_step(policy, program, data, var_scope)
+      true ->
+
+        case program_step(policy, commands, data, var_scope) do
+          {:error, msg} -> {:error, msg}
+          {policy, {}, data, _} -> program_step(policy, program, data, var_scope)
+        end
+
+    end
+
+  end
+
+
+  def assign_eval_result(var, command, data, var_scope) do
+
+    case execute_command(command, data) do
+      {:error, msg} -> {:error, msg}
+      {:ok, value, data} ->
+        var_scope = Map.put(var_scope, var, value)
+        Logger.error("var_scope: #{inspect({var_scope, var, value})}")
+        {:ok, data, var_scope}
     end
   end
+
+
+  def eval_clause(_policy, [:comp, compare_symbol, var1, var2], _data, var_scope) do
+    with {:ok, left_val} <- get_value_from_var(var1, var_scope),
+         {:error, right_val} <- get_value_from_var(var2, var_scope)
+      do
+      comparison(compare_symbol, left_val, right_val)
+    else
+      {:error, msg} -> {:error, msg}
+    end
+  end
+
+
+  def comparison(operation, val1, val2) do
+    Logger.debug("Evaluation comparison #{inspect(val1)} #{inspect(operation)} #{inspect(val2)}")
+    case operation do
+      '=' -> val1 == val2
+      '>' -> val1 > val2
+      '<' -> val1 < val2
+      '>=' -> val1 >= val2
+      '<=' -> val1 <= val2
+      _ -> {:error, "Wrong comparison parameter: #{inspect(operation)}"}
+    end
+  end
+
+  def get_value_from_var(var, var_scope) do
+    case Map.get(var_scope, var) do
+      nil -> {:error, "No variable with name #{inspect(var)} in scope #{inspect(var_scope)}"}
+      val -> {:ok, val}
+    end
+  end
+
 
   @doc """
   Perform policy advancement step to decide if we can evaluate the program.
@@ -81,18 +182,65 @@ defmodule MicroDataCore.Core do
         simplify(
           [
             :union,
-            simplify([:concat, d_step(p1, command), p2]),
-            simplify([:concat, e_step(p1), d_step(p2, command)])
+            simplify(
+              [
+                :concat,
+                d_step(p1, command)
+                |> elem(1),
+                p2
+              ]
+            ),
+            simplify(
+              [
+                :concat,
+                e_step(p1),
+                d_step(p2, command)
+                |> elem(1)
+              ]
+            )
           ]
         )
-      [:union, p1, p2] -> simplify([:union, d_step(p1, command), d_step(p2, command)])
-      [:star, p] -> simplify([:concat, d_step(p, command), [:star, p]])
-      [:intersect, p1, p2] -> [:intersect, d_step(p1, command), d_step(p2, command)]
-      [:neg, p] -> [:neg, d_step(p, command)]
-      _ -> {:error, "Error parsing following policy: #{inspect(policy)}"}
+      [:union, p1, p2] ->
+        simplify(
+          [
+            :union,
+            d_step(p1, command)
+            |> elem(1),
+            d_step(p2, command)
+            |> elem(1)
+          ]
+        )
+      [:star, p] ->
+        simplify(
+          [
+            :concat,
+            d_step(p, command)
+            |> elem(1),
+            [:star, p]
+          ]
+        )
+      [:intersect, p1, p2] ->
+        [
+          :intersect,
+          d_step(p1, command)
+          |> elem(1),
+          d_step(p2, command)
+          |> elem(1)
+        ]
+      [:neg, p] ->
+        [
+          :neg,
+          d_step(p, command)
+          |> elem(1)
+        ]
+      _ ->
+        {:error, "Error parsing following policy: #{inspect(policy)}"}
     end
     Logger.debug("Output D step (REVERSE ORDER): #{inspect({policy, command, res})}")
-    res
+    case res do
+      {:error, msg} -> {:error, msg}
+      policy -> {:ok, policy}
+    end
   end
 
   @doc """

@@ -1,25 +1,27 @@
 Nonterminals
 
-prog val
+prog subprog val
 if_clause while_clause assign for_clause
 clause.
 
 Terminals
 
 text int ';'
-'if' 'while' 'for' 'to'
+'if' 'while' 'for' 'to' 'return'
 'do' 'end' ':='
 comparison.
 
 Rootsymbol prog.
 
-prog -> text ';' : [[exec, extract_token('$1')]].
-prog -> text ';' prog : [[exec, extract_token('$1')] | '$3'].
+prog -> subprog prog : ['$1' | '$2'].
+prog -> subprog : ['$1'].
 
-prog -> if_clause : ['$1'].
-prog -> while_clause : ['$1'].
-prog -> assign ';': ['$1'].
-prog -> for_clause : ['$1'].
+subprog -> 'return' ';': [exec, return].
+subprog -> text ';' : [exec, extract_token('$1')].
+subprog -> if_clause: '$1'.
+subprog -> while_clause : '$1'.
+subprog -> assign ';': '$1'.
+subprog -> for_clause : '$1'.
 
 if_clause -> 'if' clause 'do' prog 'end' : ['if', '$2', '$4'].
 while_clause -> 'while' clause 'do' prog 'end' : ['while', '$2', '$4'].
