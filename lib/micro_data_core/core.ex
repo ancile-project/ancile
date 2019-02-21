@@ -8,15 +8,49 @@ defmodule MicroDataCore.Core do
   Main input for our Core module. It takes (policy, program, data)
   and recursively evaluates it, until the program is empty.
   """
-  def process_request(policy, [command | program], data) do
+  def process_request(policy, program, data) do
+    Logger.info("-----------------------------")
+    Logger.info("Starting running (policy, program): #{inspect({policy, program})}")
+    Logger.info("-----------------------------")
+    var_scope = %{}
+    case program_step(policy, program, data, var_scope) do
+      {:error, msg} -> Logger.error("Error running program: #{inspect(msg)}")
+                       {:error, msg}
+      {:ok, data} -> Logger.info("Success. Received data: #{inspect(data)}")
+                     {:ok, data}
+    end
+  end
+
+  def program_step(policy, [[:exec, command] | program], data, var_scope) do
     Logger.info("-----------------------------")
     Logger.info("Performing step on (policy, program): #{inspect({policy, [command | program]})}")
     Logger.info("-----------------------------")
     case d_step(policy, command) do
-      :error -> {:error}
-      0 -> Logger.info("Early stop. No need to proceed as policy doesn't match.")
-           {:error}
-      policy -> process_request(policy, program, execute_command(command, data))
+      {:error, msg} -> {:error, msg}
+      0 -> {:error, "Early stop."}
+      policy ->
+        case execute_command(command, data) do
+          {:error, msg} -> {:error, msg}
+          {:ok, _, data} -> program_step(policy, program, data, var_scope)
+        end
+    end
+  end
+
+  def program_step(policy, [[:assign, var, command] | program], data, var_scope) do
+    Logger.info("-----------------------------")
+    Logger.info("Assignment: #{inspect({policy, [:assign, var, command]})}")
+    Logger.info("-----------------------------")
+    case d_step(policy, command) do
+      {:error, msg} -> {:error, msg}
+      0 -> {:error, "Early stop."}
+      policy ->
+        case execute_command(command, data) do
+          {:error, msg} -> {:error, msg}
+          {:ok, value, data} ->
+            var_scope = Map.put(var_scope, var, value)
+            Logger.error("var_scope: #{inspect({var_scope, var, value})}")
+            program_step(policy, program, data, var_scope)
+        end
     end
   end
 
@@ -24,10 +58,10 @@ defmodule MicroDataCore.Core do
   Final step of the evaluation. If the policy passes E step
   MicroDataCore.Core.e_step/1 then we return data otherwise, fail
   """
-  def process_request(policy, [], data) do
+  def program_step(policy, [], data, _var_scope) do
     case e_step(policy) do
       1 -> {:ok, data}
-      0 -> {:error}
+      0 -> {:error, "Couldn't advance policy."}
     end
   end
 
@@ -55,7 +89,7 @@ defmodule MicroDataCore.Core do
       [:star, p] -> simplify([:concat, d_step(p, command), [:star, p]])
       [:intersect, p1, p2] -> [:intersect, d_step(p1, command), d_step(p2, command)]
       [:neg, p] -> [:neg, d_step(p, command)]
-      _ -> throw "Error parsing"
+      _ -> {:error, "Error parsing following policy: #{inspect(policy)}"}
     end
     Logger.debug("Output D step (REVERSE ORDER): #{inspect({policy, command, res})}")
     res
@@ -132,7 +166,10 @@ defmodule MicroDataCore.Core do
   """
   def execute_command(function, data) do
     Logger.debug("Function and data: #{inspect({function, data})}")
-    Map.put(data, Time.utc_now(), {function})
+    case function do
+      "error" -> {:error, "Error execution function :(."}
+      _ -> {:ok, 42, Map.put(data, Time.utc_now(), {function})}
+    end
   end
 
   @doc """
@@ -157,8 +194,8 @@ defmodule MicroDataCore.Core do
     case process_request(policy, program, %{:data => true}) do
       {:ok, data} -> Logger.info("Success. Received data: #{inspect(data)}")
                      {:ok, data}
-      {:error} -> Logger.error("Policy didn't match submitted program. ")
-                  {:error, %{}}
+      {:error, msg} -> Logger.error("Error evaluating program and policy. Message: #{inspect(msg)}")
+                       {:error, %{}}
       _ -> Logger.error("Error")
            {:error, %{}}
 

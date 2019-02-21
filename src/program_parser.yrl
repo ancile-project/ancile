@@ -13,12 +13,12 @@ comparison.
 
 Rootsymbol prog.
 
-prog -> text ';' : [extract_token('$1')].
-prog -> text ';' prog : [extract_token('$1') | '$3'].
+prog -> text ';' : [[exec, extract_token('$1')]].
+prog -> text ';' prog : [[exec, extract_token('$1')] | '$3'].
 
 prog -> if_clause : ['$1'].
 prog -> while_clause : ['$1'].
-prog -> assign : ['$1'].
+prog -> assign ';': ['$1'].
 prog -> for_clause : ['$1'].
 
 if_clause -> 'if' clause 'do' prog 'end' : ['if', '$2', '$4'].

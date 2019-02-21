@@ -18,6 +18,7 @@ end        : {token, {'end',  TokenLine}}.
 while      : {token, {'while',  TokenLine}}.
 for      : {token, {'for',  TokenLine}}.
 to      : {token, {'to',  TokenLine}}.
+print    : {token, {'print',  TokenLine}}.
 {TEXT}      : {token, {text, TokenLine, TokenChars}}.
 {WHITESPACE}+ : skip_token.
 {C}         : {token, {comparison, TokenLine, TokenChars}}.
