@@ -3,79 +3,79 @@ defmodule MicroDataCoreTest do
   #  doctest MicroDataCore
 
   test "exact_match" do
-    policy_text = "get_data.get_data.filter_data.remove_data.get_data.return_data"
+    policy_text = "get_data.get_data.filter_data.remove_data.get_data.return"
     {:ok, program_text} = File.read("test/programs/complex.txt")
     {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
     assert result == :ok
   end
 
   test "anyf*_in_the_middle" do
-    policy_text = "get_data.get_data.filter_data.ANYF*.return_data"
+    policy_text = "get_data.get_data.filter_data.ANYF*.return"
     {:ok, program_text} = File.read("test/programs/complex.txt")
     {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
     assert result == :ok
   end
 
   test "single_anyf*" do
-    policy_text = "ANYF*"
+    policy_text = "ANYF*.return"
     {:ok, program_text} = File.read("test/programs/complex.txt")
     {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
     assert result == :ok
   end
 
   test "reduce_repeated_func_with_*" do
-    policy_text = "get_data*.filter_data.remove_data.get_data.return_data"
+    policy_text = "get_data*.filter_data.remove_data.get_data.return"
     {:ok, program_text} = File.read("test/programs/complex.txt")
     {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
     assert result == :ok
   end
 
   test "force_filter_simple" do
-    policy_text = "get_data.(filter_data+remove_data)*.return_data"
-    program_text = "get_data; filter_data; remove_data; return_data;"
+    policy_text = "get_data.(filter_data+remove_data)*.return"
+    program_text = "get_data; filter_data; remove_data; return;"
     {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
     assert result == :ok
   end
 
   #unsuccessful tests
   test "err_wrong_func" do
-    policy_text = "get_data.get_data.WRONG.remove_data.get_data.return_data"
+    policy_text = "get_data.get_data.WRONG.remove_data.get_data.return"
     {:ok, program_text} = File.read("test/programs/complex.txt")
     {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
     assert result == :error
   end
 
   test "ok_neg" do
-    policy_text = "a.b.!(a).c"
-    program_text = "a; b; d; c;"
+    policy_text = "a.b.!(a).c.return"
+    program_text = "a; b; d; c;return;"
     {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
     assert result == :ok
   end
 
   test "err_neg" do
-    policy_text = "a.b.!(a).c"
-    program_text = "a; b; a; c;"
+    policy_text = "a.b.!(a).c.return"
+    program_text = "a; b; a; c;return;"
     {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
     assert result == :error
   end
 
   test "ok_intersect" do
-    policy_text = "(a&ANYF)"
-    program_text = "a;"
+    policy_text = "(a&ANYF).return"
+    program_text = "a;return;"
     {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
     assert result == :ok
   end
 
   test "ok_intersect_union" do
-    policy_text = "(a&(b+a)).d"
-    program_text = "a; d;"
+    policy_text = "(a&(b+a)).d.return"
+    program_text = "a; d; return;"
     {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
     assert result == :ok
   end
 
   test "err_intersect" do
-    policy_text = "(a&b)"
-    program_text = "a;"
+    policy_text = "(a&b).return"
+    program_text = "a; return;"
     {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
     assert result == :error
   end
@@ -87,80 +87,109 @@ defmodule MicroDataCoreTest do
   ##############################
 
   test "ok_neg_concat" do
-    policy_text = "k.!((g.f)).k"
-    program_text = "k; f; g; k;"
+    policy_text = "k.!((g.f)).k.return"
+    program_text = "k; f; g; k; return;"
     {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
     assert result == :ok
   end
 
   test "err_neg_concat" do
-    policy_text = "!(g.f)"
-    program_text = "g; f;"
+    policy_text = "!(g.f).return"
+    program_text = "g; f; return;"
     {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
     assert result == :error
   end
 
   test "ok_neg_concat_first_match" do
-    policy_text = "!((g.f))"
-    program_text = "g; q;"
+    policy_text = "!((g.f)).return"
+    program_text = "g; q; return;"
     {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
     assert result == :ok
   end
   #
   test "ok_neg_union" do
-    policy_text = "!((g+f)).m"
-    program_text = "d; m;"
+    policy_text = "!((g+f)).m.return"
+    program_text = "d; m; return;"
     {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
     assert result == :ok
   end
 
   test "err_neg_union" do
-    policy_text = "!((g+f)).m.k"
-    program_text = "f; m; k;"
+    policy_text = "!((g+f)).m.k.return"
+    program_text = "f; m; k; return;"
     {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
     assert result == :error
   end
 
 
   test "ok_neg_star_inside" do
-    policy_text = "!(a*)"
-    program_text = "b; b; b;"
+    policy_text = "!(a*).return"
+    program_text = "b; b; b; return;"
     {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
     assert result == :ok
   end
 
   test "err_neg_star_inside" do
-    policy_text = "!(a*)"
-    program_text = "a; a; a;"
+    policy_text = "!(a*).return"
+    program_text = "a; a; a; return;"
     {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
     assert result == :error
   end
 
   test "ok_neg_star_outside" do
-    policy_text = "(!(a))*.m"
-    program_text = "d; m;"
+    policy_text = "(!(a))*.m.return"
+    program_text = "d; m; return;"
     {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
     assert result == :ok
   end
 
   test "err_neg_outside" do
-    policy_text = "(!(a))*.m"
-    program_text = "a; a; m;"
+    policy_text = "(!(a))*.m.return"
+    program_text = "a; a; m; return;"
     {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
     assert result == :error
   end
 
   test "big_case" do
-    policy_text = "(((((a.a.m)* + (a.m)*)) * + (((a.m*)* + (a.a.b.m)*)) *))*"
-    program_text = "a; a; m; a; a; m; a; a; m; a; a; m; a; a; m; a; a; m;"
+    policy_text = "(((((a.a.m)*.return + (a.m)*)) * + (((a.m*)* + (a.a.b.m)*)) *))*.return"
+    program_text = "a; a; m; a; a; m; a; a; m; a; a; m; a; a; m; a; a; m; return;"
     {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
     assert result == :ok
   end
 
   test "big_case_2" do
-    policy_text = "((((((a.a.m)* + (a.m)*)) * + (((a.m*)* + (a.a.b.m)*)) *))* + (((((a.b.m)* + (a.c)*)) * + (((k.m*)* + (k.a.b.j)*)) *))*)"
-    program_text = "a; a; m; a; a; m; a; a; m; a; a; m; a; a; m; a; a; m;"
+    policy_text = "((((((a.a.m)*.return + (a.m)*)) * + (((a.m*)* + (a.a.b.m)*)) *))* + (((((a.b.m)* + (a.c)*)) * + (((k.m*)* + (k.a.b.j)*)) *))*)"
+    program_text = "a; a; m; a; a; m; a; a; m; a; a; m; a; a; m; a; a; m; return;"
     {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
     assert result == :ok
   end
+
+  test "ok_assignment" do
+    policy_text = "return"
+    program_text = "z := 4; return;"
+    {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
+    assert result == :ok
+  end
+
+  test "ok_two_assignment" do
+    policy_text = "return"
+    program_text = "z := 4; j := 5; return;"
+    {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
+    assert result == :ok
+  end
+
+  test "ok_if_assignment" do
+    policy_text = "a.return"
+    program_text = "z := 5; j := 5; if z=j do a; end return;"
+    {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
+    assert result == :ok
+  end
+
+  test "err_if_assignment" do
+    policy_text = "a.return"
+    program_text = "z := 4; j := 5; if z=j do a; end return;"
+    {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
+    assert result == :error
+  end
+
 end

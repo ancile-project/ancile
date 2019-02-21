@@ -16,7 +16,7 @@ defmodule MicroDataCore.Core do
     var_scope = %{}
     case program_step(policy, program, data, var_scope) do
       {_, [], _, _} -> Logger.info("No 'return' command specified in the end, returning nothing...")
-                       {:ok, []}
+                       {:error, []}
       {:error, msg} -> Logger.error("Error running program: #{inspect(msg)}")
                        {:error, msg}
       {:ok, data} -> Logger.info("Success. Received data: #{inspect(data)}")
@@ -40,7 +40,7 @@ defmodule MicroDataCore.Core do
     Logger.info("-----------------------------")
     Logger.info("Performing last step on (policy, program): #{inspect({policy, :return})}")
     Logger.info("-----------------------------")
-    with {:ok, policy} <- d_step(policy,  :return),
+    with {:ok, policy} <- d_step(policy, :return),
          1 <- e_step(policy) do
       {:ok, data}
     else
@@ -115,7 +115,7 @@ defmodule MicroDataCore.Core do
 
         case program_step(policy, commands, data, var_scope) do
           {:error, msg} -> {:error, msg}
-          {policy, {}, data, _} -> program_step(policy, program, data, var_scope)
+          {policy, [], data, _} -> program_step(policy, program, data, var_scope)
         end
 
     end
@@ -137,7 +137,7 @@ defmodule MicroDataCore.Core do
 
   def eval_clause(_policy, [:comp, compare_symbol, var1, var2], _data, var_scope) do
     with {:ok, left_val} <- get_value_from_var(var1, var_scope),
-         {:error, right_val} <- get_value_from_var(var2, var_scope)
+         {:ok, right_val} <- get_value_from_var(var2, var_scope)
       do
       comparison(compare_symbol, left_val, right_val)
     else
@@ -174,7 +174,6 @@ defmodule MicroDataCore.Core do
     res = case policy do
       1 -> 1
       0 -> 0
-
       [:exec, :anyf] -> 1
       [:exec, c] when command == c -> 1
       [:exec, c] when command != c -> 0
@@ -182,57 +181,18 @@ defmodule MicroDataCore.Core do
         simplify(
           [
             :union,
-            simplify(
-              [
-                :concat,
-                d_step(p1, command)
-                |> elem(1),
-                p2
-              ]
-            ),
-            simplify(
-              [
-                :concat,
-                e_step(p1),
-                d_step(p2, command)
-                |> elem(1)
-              ]
-            )
+            simplify([:concat, elem(d_step(p1, command), 1), p2]),
+            simplify([:concat, e_step(p1), elem(d_step(p2, command), 1)])
           ]
         )
       [:union, p1, p2] ->
-        simplify(
-          [
-            :union,
-            d_step(p1, command)
-            |> elem(1),
-            d_step(p2, command)
-            |> elem(1)
-          ]
-        )
+        simplify([:union, elem(d_step(p1, command), 1), elem(d_step(p2, command), 1)])
       [:star, p] ->
-        simplify(
-          [
-            :concat,
-            d_step(p, command)
-            |> elem(1),
-            [:star, p]
-          ]
-        )
+        simplify([:concat, elem(d_step(p, command), 1), [:star, p]])
       [:intersect, p1, p2] ->
-        [
-          :intersect,
-          d_step(p1, command)
-          |> elem(1),
-          d_step(p2, command)
-          |> elem(1)
-        ]
+        [:intersect, elem(d_step(p1, command), 1), elem(d_step(p2, command), 1)]
       [:neg, p] ->
-        [
-          :neg,
-          d_step(p, command)
-          |> elem(1)
-        ]
+        [:neg, elem(d_step(p, command), 1)]
       _ ->
         {:error, "Error parsing following policy: #{inspect(policy)}"}
     end
