@@ -61,7 +61,7 @@ defmodule MicroDataCore.Core do
       {:error, msg} -> {:error, msg}
       {:ok, 0} -> {:error, "Early stop."}
       {:ok, policy} ->
-        case execute_command(command, data) do
+        case MicroDataCore.FunctionRunner.execute_command(command, data) do
           {:error, msg} -> {:error, msg}
           {:ok, _, data} -> program_step(policy, program, data, var_scope)
         end
@@ -128,7 +128,7 @@ defmodule MicroDataCore.Core do
   """
   def assign_eval_result(var, command, data, var_scope) do
     Logger.debug("Assign value to `#{inspect(var)}` be running: `#{inspect(command)}`")
-    case execute_command(command, data) do
+    case MicroDataCore.FunctionRunner.execute_command(command, data) do
       {:error, msg} -> {:error, msg}
       {:ok, value, data} ->
         var_scope = Map.put(var_scope, var, value)
@@ -287,17 +287,7 @@ defmodule MicroDataCore.Core do
     Logger.debug("E Step received [policy, res] (REVERSE ORDER!): #{inspect({policy, res})}")
     res
   end
-
-  @doc """
-  We just mock the actual function execution. TBD
-  """
-  def execute_command(function, data) do
-    Logger.debug("Function and data: #{inspect({function, data})}")
-    case function do
-      "error" -> {:error, "Error execution function :(."}
-      _ -> {:ok, 42, Map.put(data, Time.utc_now(), {function})}
-    end
-  end
+  
 
   @doc """
   Used to execute cli commands. For debugging

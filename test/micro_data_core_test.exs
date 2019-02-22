@@ -219,5 +219,9 @@ defmodule MicroDataCoreTest do
     assert result == :ok
   end
 
+  test "ok_test_small" do
+    {result, _} = MicroDataCore.Core.entry_point(["a.b.return", "a; b; return;"])
+    assert result == :ok
+  end
 
 end
