@@ -1,6 +1,15 @@
-get_data;
-get_data;
-filter_data;
-remove_data;
-get_data;
+a := 5;
+b := 7;
+if a=b do
+    wrong;
+
+end
+c := 7;
+if c=b do
+    get_data();
+    get_data();
+    filter_data(limit: 40);
+end
+remove_data();
+get_data();
 return;

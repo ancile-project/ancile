@@ -3,14 +3,14 @@ defmodule MicroDataCoreTest do
   #  doctest MicroDataCore
 
   test "exact_match" do
-    policy_text = "get_data.get_data.filter_data.remove_data.get_data.return"
+    policy_text = "get_data.get_data.filter_data(limit: 40).remove_data.get_data.return"
     {:ok, program_text} = File.read("test/programs/complex.txt")
     {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
     assert result == :ok
   end
 
   test "anyf*_in_the_middle" do
-    policy_text = "get_data.get_data.filter_data.ANYF*.return"
+    policy_text = "get_data.get_data.filter_data(limit: 40).ANYF*.return"
     {:ok, program_text} = File.read("test/programs/complex.txt")
     {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
     assert result == :ok
@@ -24,7 +24,7 @@ defmodule MicroDataCoreTest do
   end
 
   test "reduce_repeated_func_with_*" do
-    policy_text = "get_data*.filter_data.remove_data.get_data.return"
+    policy_text = "get_data*.filter_data(limit: 40).remove_data.get_data.return"
     {:ok, program_text} = File.read("test/programs/complex.txt")
     {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
     assert result == :ok
