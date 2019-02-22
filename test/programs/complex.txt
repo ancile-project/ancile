@@ -1,15 +1,24 @@
 a := 5;
-b := 7;
+b := 42;
+
 if a=b do
     wrong;
-
 end
-c := 7;
+
+c := get_data();
+
 if c=b do
-    get_data();
-    get_data();
+    c := 5;
+    if c = a do
+        get_data();
+    end
     filter_data(limit: 40);
 end
+
+if c = a do
+    wrong;
+end
+
 remove_data();
 get_data();
 return;

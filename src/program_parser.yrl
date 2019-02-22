@@ -33,6 +33,7 @@ for_clause ->
 clause -> text comparison val : [comp, extract_token('$2'), extract_token('$1'), '$3'].
 
 assign -> text ':=' val : [assign, extract_token('$1'), '$3'].
+assign -> text ':=' method : [assign, extract_token('$1'), '$3'].
 
 method -> text '(' ')' : {extract_token('$1'),  {params, []}}.
 method -> text '(' params ')' : {extract_token('$1'), {params, '$3'}}.
