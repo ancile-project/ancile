@@ -9,6 +9,7 @@ defmodule MicroDataCore.Parser do
     {:ok, tokens, _} = text
                        |> to_charlist()
                        |> :program_lexer.string()
+    Logger.debug("input program text, tokens, and parsed program: #{inspect({text, tokens})}")
     {:ok, list} = :program_parser.parse(tokens)
     Logger.debug("input program text, tokens, and parsed program: #{inspect({text, tokens, list})}")
     list

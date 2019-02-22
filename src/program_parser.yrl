@@ -1,12 +1,12 @@
 Nonterminals
 
-prog subprog val
+prog subprog val method params param
 if_clause while_clause assign for_clause
 clause.
 
 Terminals
 
-text int ';'
+text int ';' ',' ':' '(' ')'
 'if' 'while' 'for' 'to' 'return'
 'do' 'end' ':='
 comparison.
@@ -17,7 +17,8 @@ prog -> subprog prog : ['$1' | '$2'].
 prog -> subprog : ['$1'].
 
 subprog -> 'return' ';': [exec, return].
-subprog -> text ';' : [exec, extract_token('$1')].
+subprog -> text ';' : [exec, {extract_token('$1'),  {params, []} }].
+subprog -> method ';' : [exec, '$1'].
 subprog -> if_clause: '$1'.
 subprog -> while_clause : '$1'.
 subprog -> assign ';': '$1'.
@@ -32,6 +33,12 @@ for_clause ->
 clause -> text comparison val : [comp, extract_token('$2'), extract_token('$1'), '$3'].
 
 assign -> text ':=' val : [assign, extract_token('$1'), '$3'].
+
+method -> text '(' ')' : {extract_token('$1'),  {params, []}}.
+method -> text '(' params ')' : {extract_token('$1'), {params, '$3'}}.
+params -> param ',' params : ['$1' | '$3'].
+params -> param : ['$1'].
+param -> text ':' int: [extract_token('$1'), extract_token('$3')].
 
 val -> text : extract_token('$1').
 val -> int : extract_token('$1').
