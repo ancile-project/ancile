@@ -24,7 +24,9 @@ defmodule MicroDataCore.MixProject do
     [
       {:gen_stage, "~> 0.14.1"},
       {:memoize, "~> 1.3"},
-      {:benchfella, "~> 0.3.0"}
+      {:benchfella, "~> 0.3.0"},
+      {:decorator, "~> 1.2"},
+    {:dialyxir, "~> 1.0.0-rc.4", only: [:dev], runtime: false}
       # {:dep_from_hexpm, "~> 0.3.0"},
       # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}
     ]
