@@ -122,11 +122,21 @@ defmodule MicroDataCore.Core do
     end
   end
 
+  @doc """
+  Implements `if clause do commands else else_commands end` to update variable scope.
+  After clause passes we evaluate `commands` in a new scope, after
+  commands executed we evaluate the remaining program in the old scope.
+  
+  If clause fails, we evaluate `else-commands` in a new scope and return to the 
+  old scope after execution finishes.
+  """
   def program_step(policy, [[:if, clause, commands, else_commands] | program], data, var_scope) do
     Logger.info("-----------------------------")
     Logger.info("If scope: #{inspect({policy, [:if, clause, commands, else_commands]})}")
     Logger.info("-----------------------------")
 
+    # NOTE: this feels a bit messy. We should probably see if there
+    #  is a cleaner way to do this.
     case eval_clause(policy, clause, data, var_scope) do
       {:error, msg} -> {:error, msg}
       false -> 
@@ -177,6 +187,11 @@ defmodule MicroDataCore.Core do
   """
   def comparison(operation, val1, val2) do
     Logger.debug("Evaluation comparison #{inspect(val1)} #{inspect(operation)} #{inspect(val2)}")
+    # NOTE: We should think about whether we want strict comparisons 
+    #  or guards since types can determine an ordering amongst unlike 
+    #  things like an int and a string.
+    #    This will, however, judge equivalent floats and ints to be 
+    #  the same, which is probably good.
     case operation do
       '=' -> val1 == val2
       '>' -> val1 > val2
