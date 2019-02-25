@@ -224,4 +224,44 @@ defmodule MicroDataCoreTest do
     assert result == :ok
   end
 
+  test "string_args" do
+    {result, _} = MicroDataCore.Core.entry_point(["a.b(a:\"5\").return", "a;b(a:\"5\"); return;"])
+    assert result == :ok
+  end
+
+  test "float args" do
+    policy_text = "a(x:5.0, y:-9.7).return"
+    program_text = "a(x:5.0, y:-9.7); return;"
+    {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
+    assert result == :ok
+  end
+
+  test "float args2" do
+    policy_text = "a(x:+2.8121321, y:0.7).return"
+    program_text = "a(x:2.8121321, y:0.7); return;"
+    {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
+    assert result == :ok
+  end
+
+  test "string args2" do
+    policy_text = "a(x:\" 2552 \", y:\"?????\").return"
+    program_text = "a(x:\" 2552 \", y:\"?????\"); return;"
+    {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
+    assert result == :ok
+  end
+
+  test "string args3" do
+    policy_text = "a(x:\" abcdefghijklmnopqrstuv #()()() \", y:\"][][][][][][][][][}{}{}{}{}{}{}{}{\").return"
+    program_text = "a(x:\" abcdefghijklmnopqrstuv #()()() \", y:\"][][][][][][][][][}{}{}{}{}{}{}{}{\"); return;"
+    {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
+    assert result == :ok
+  end
+
+  test "else test" do
+    policy_text = "nothing.yet_further_nothing.return"
+    {:ok, program_text} = File.read("test/programs/else.txt")
+    {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
+    assert result == :ok
+  end
+  
 end

@@ -122,6 +122,27 @@ defmodule MicroDataCore.Core do
     end
   end
 
+  def program_step(policy, [[:if, clause, commands, else_commands] | program], data, var_scope) do
+    Logger.info("-----------------------------")
+    Logger.info("If scope: #{inspect({policy, [:if, clause, commands, else_commands]})}")
+    Logger.info("-----------------------------")
+
+    case eval_clause(policy, clause, data, var_scope) do
+      {:error, msg} -> {:error, msg}
+      false -> 
+        case program_step(policy, else_commands, data, var_scope) do
+          {:error, msg} -> {:error, msg}
+          {policy, [], data, _} -> program_step(policy, program, data, var_scope)
+        end
+ 
+      true ->
+        case program_step(policy, commands, data, var_scope) do
+          {:error, msg} -> {:error, msg}
+          {policy, [], data, _} -> program_step(policy, program, data, var_scope)
+        end
+    end
+  end
+
   @doc """
   We run the command that returns {ok, value, data}. We then
   assign value to variable `var` and put them into `var_scope`.

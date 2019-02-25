@@ -8,7 +8,7 @@ Terminals
 
 text int ';' ',' ':' '(' ')'
 'if' 'while' 'for' 'to' 'return'
-'do' 'end' ':='
+'do' 'end' ':=' string float 'else'
 comparison.
 
 Rootsymbol prog.
@@ -25,6 +25,7 @@ subprog -> assign ';': '$1'.
 subprog -> for_clause : '$1'.
 
 if_clause -> 'if' clause 'do' prog 'end' : ['if', '$2', '$4'].
+if_clause -> 'if' clause 'do' prog 'else' prog 'end' : ['if', '$2', '$4', '$6'].
 while_clause -> 'while' clause 'do' prog 'end' : ['while', '$2', '$4'].
 for_clause ->
         'for' text ':=' int 'to' int 'do' prog 'end' :
@@ -40,9 +41,13 @@ method -> text '(' params ')' : {extract_token('$1'), {params, '$3'}}.
 params -> param ',' params : ['$1' | '$3'].
 params -> param : ['$1'].
 param -> text ':' int: [extract_token('$1'), extract_token('$3')].
+param -> text ':' string: [extract_token('$1'), extract_token('$3')].
+param -> text ':' float: [extract_token('$1'), extract_token('$3')].
 
 val -> text : extract_token('$1').
 val -> int : extract_token('$1').
+val -> string : extract_token('$1').
+val -> float : extract_token('$1').
 
 Erlang code.
 

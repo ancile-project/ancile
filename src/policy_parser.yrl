@@ -4,7 +4,7 @@ clause func.
 
 Terminals
 '[' ']' '(' ')' ':' ','
-atom int anyf
+text int anyf float string
 concat union intersect star neg 0 return.
 
 Rootsymbol clause.
@@ -25,13 +25,15 @@ func -> return: [exec, return].
 func -> anyf : [exec, anyf].
 func -> 0 : 0.
 func -> method : [exec, '$1'].
-func -> atom : [exec, {extract_token('$1'),  {params, []} }].
+func -> text : [exec, {extract_token('$1'),  {params, []} }].
 
-method -> atom '(' ')' : {extract_token('$1'),  {params, []}}.
-method -> atom '(' params ')' : {extract_token('$1'), {params, '$3'}}.
+method -> text '(' ')' : {extract_token('$1'),  {params, []}}.
+method -> text '(' params ')' : {extract_token('$1'), {params, '$3'}}.
 params -> param ',' params : ['$1' | '$3'].
 params -> param : ['$1'].
-param -> atom ':' int: [extract_token('$1'), extract_token('$3')].
+param -> text ':' int: [extract_token('$1'), extract_token('$3')].
+param -> text ':' string: [extract_token('$1'), extract_token('$3')].
+param -> text ':' float: [extract_token('$1'), extract_token('$3')].
 
 
 Erlang code.
