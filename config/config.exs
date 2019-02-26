@@ -1,35 +1,34 @@
 # This file is responsible for configuring your application
 # and its dependencies with the aid of the Mix.Config module.
+#
+# This configuration file is loaded before any dependency and
+# is restricted to this project.
+
+# General application configuration
 use Mix.Config
+
+config :ancile,
+  ecto_repos: [Ancile.Repo]
+
+# Configures the endpoint
+config :ancile, AncileWeb.Endpoint,
+  url: [host: "localhost"],
+  secret_key_base: "Q/cCb7tnQcvkQVhszsvXXXPd+PFBRfIRSX1MLskZ7Y4PKgN07HMjKX5gw1QfAKmr",
+  render_errors: [view: AncileWeb.ErrorView, accepts: ~w(html json)],
+  pubsub: [name: Ancile.PubSub, adapter: Phoenix.PubSub.PG2]
+
+# Configures Elixir's Logger
+config :logger, :console,
+  format: "$time $metadata[$level] $message\n",
+  metadata: [:request_id]
+
+# Use Jason for JSON parsing in Phoenix
+config :phoenix, :json_library, Jason
+
+# Import environment specific config. This must remain at the bottom
+# of this file so it overrides the configuration defined above.
+import_config "#{Mix.env()}.exs"
 
 #config :logger,
 #    backends: [:console],
 #    compile_time_purge_level: :error
-
-
-# This configuration is loaded before any dependency and is restricted
-# to this project. If another project depends on this project, this
-# file won't be loaded nor affect the parent project. For this reason,
-# if you want to provide default values for your application for
-# third-party users, it should be done in your "mix.exs" file.
-
-# You can configure your application as:
-#
-#     config :core, key: :value
-#
-# and access this configuration in your application as:
-#
-#     Application.get_env(:core, :key)
-#
-# You can also configure a third-party app:
-#
-#     config :logger, level: :info
-#
-
-# It is also possible to import configuration files, relative to this
-# directory. For example, you can emulate configuration per environment
-# by uncommenting the line below and defining dev.exs, test.exs and such.
-# Configuration from the imported file will override the ones defined
-# here (which is why it is important to import them last).
-#
-#     import_config "#{Mix.env()}.exs"

@@ -1,0 +1,24 @@
+<section class="phx-hero">
+  <h1><%= gettext "Welcome to %{name}!", name: "Ancile" %></h1>
+  <p>A novel policy framework<br/>does not compromise speed and privacy.</p>
+</section>
+
+<section class="row">
+  <article class="column">
+    <h2>Resources</h2>
+    <ul>
+      <li>
+        <a href="/register">Register</a>
+      </li>
+
+    </ul>
+  </article>
+  <article class="column">
+    <h2>Help</h2>
+    <ul>
+      <li>
+        <a href="/docs">Docs</a>
+      </li>
+    </ul>
+  </article>
+</section>
