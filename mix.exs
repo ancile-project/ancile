@@ -39,6 +39,7 @@ defmodule Ancile.MixProject do
       {:decorator, "~> 1.2"},
       {:dialyxir, "~> 1.0.0-rc.4", only: [:dev], runtime: false},
 
+      {:pow, "~> 1.0.1"},
       {:phoenix, "~> 1.4.1"},
       {:phoenix_pubsub, "~> 1.1"},
       {:phoenix_ecto, "~> 4.0"},
