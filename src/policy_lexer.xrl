@@ -1,8 +1,11 @@
 Definitions.
 
-INT        = [0-9]+
-ATOM       = [a-zA-Z_]+
+NUM        = [-+]?[0-9]+
+TEXT       = [a-zA-Z_]+
+PUNCTS     = [.]
 WHITESPACE = [\s\t\n\r]
+FLOAT      = {NUM}.{NUM}
+STRING     = "[0-9a-zA-Z!#%&'()*+,-./:;<=>?[\]^_{|}~\s\t]*"
 
 
 Rules.
@@ -10,7 +13,7 @@ Rules.
 0             : {token, {0,  TokenLine}}.
 ANYF          : {token, {'anyf',  TokenLine}}.
 return        : {token, {'return', TokenLine}}.
-{ATOM}        : {token, {atom, TokenLine, TokenChars}}.
+{TEXT}        : {token, {text, TokenLine, TokenChars}}.
 \(            : {token, {'(',  TokenLine}}.
 \)            : {token, {')',  TokenLine}}.
 \[            : {token, {'[',  TokenLine}}.
@@ -23,7 +26,9 @@ return        : {token, {'return', TokenLine}}.
 \!            : {token, {neg,  TokenLine}}.
 \&            : {token, {intersect,  TokenLine}}.
 {WHITESPACE}+ : skip_token.
-{INT}         : {token, {int,  TokenLine, list_to_integer(TokenChars)}}.
+{NUM}         : {token, {int,  TokenLine, list_to_integer(TokenChars)}}.
+{FLOAT}       : {token, {float, TokenLine, list_to_float(TokenChars)}}.
+{STRING}      : {token, {string, TokenLine, string:strip(TokenChars, both, $")}}.
 
 % we will need them for parameters:
 %,             : {token, {',',  TokenLine}}.

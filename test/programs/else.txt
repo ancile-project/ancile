@@ -1,0 +1,19 @@
+a := 5;
+b := 5.0;
+
+if a=b do
+    nothing;
+else
+    more_nothing;
+end
+
+c := 4.0;
+d := 5.1;
+
+if c=d do
+    extra_nothing;
+else
+    yet_further_nothing;
+end
+
+return;
