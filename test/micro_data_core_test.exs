@@ -243,6 +243,12 @@ defmodule MicroDataCoreTest do
     assert result == :ok
   end
 
+  test "float args error" do
+    policy_text = "a(x:0.8121.321, y:0.7).return"
+    program_text = "a(x:0.8121.321, y:0.7); return;"
+    catch_error(MicroDataCore.Core.entry_point([policy_text, program_text]))
+  end
+
   test "string args2" do
     policy_text = "a(x:\" 2552 \", y:\"?????\").return"
     program_text = "a(x:\" 2552 \", y:\"?????\"); return;"

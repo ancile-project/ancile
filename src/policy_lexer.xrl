@@ -2,10 +2,9 @@ Definitions.
 
 NUM        = [-+]?[0-9]+
 TEXT       = [a-zA-Z_]+
-PUNCTS     = [.]
 WHITESPACE = [\s\t\n\r]
-FLOAT      = {NUM}.{NUM}
-STRING     = "[0-9a-zA-Z!#%&'()*+,-./:;<=>?[\]^_{|}~\s\t]*"
+FLOAT      = [-+]?[0-9]+\.[0-9]+
+STRING     = "[0-9a-zA-Z!#%&'()\*+,-\./:;<=>?[\]^_{|}~\s\t]*"
 
 
 Rules.

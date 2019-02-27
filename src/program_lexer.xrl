@@ -4,7 +4,7 @@ NUM        = [+-]?[0-9]+
 TEXT       = [a-zA-Z_]+
 WHITESPACE = [\s\r\t\n]
 C          = (<|<=|=|!=|=>|>)
-FLOAT      = {NUM}.{NUM}
+FLOAT      = [-+]?[0-9]+\.[0-9]+
 STRING     = "[0-9a-zA-Z!#%&'()*+,-./:;<=>?[\]^_{|}~\s\t]*"
 
 
