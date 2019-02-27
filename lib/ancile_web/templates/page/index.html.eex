@@ -1,6 +1,6 @@
 <section class="phx-hero">
   <h1><%= gettext "Welcome to %{name}!", name: "Ancile" %></h1>
-  <p>A novel policy framework<br/>does not compromise speed and privacy.</p>
+  <p>A novel policy framework<br/>that does not compromise speed and privacy.</p>
 </section>
 
 <section class="row">
@@ -14,14 +14,9 @@
         <a href="/session/new">Login</a>
       </li>
 
-      </li>
-            <li>
-        <a href="/registration/edit">Change password</a>
-      </li>
       <li>
-      <%= link "Sign out", to: Routes.pow_session_path(@conn, :delete), method: :delete %>
-    </li>
-
+        <a href="/dashboard">Dashboard</a>
+      </li>
     </ul>
   </article>
   <article class="column">

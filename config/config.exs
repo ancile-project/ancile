@@ -29,7 +29,8 @@ config :phoenix, :json_library, Jason
 config :ancile, :pow,
   user: Ancile.Users.User,
   repo: Ancile.Repo,
-  web_module: AncileWeb
+  web_module: AncileWeb,
+  routes_backend: AncileWeb.Pow.Routes
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

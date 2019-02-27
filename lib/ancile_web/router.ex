@@ -15,6 +15,12 @@ defmodule AncileWeb.Router do
     plug :accepts, ["json"]
   end
 
+  pipeline :protected do
+    plug Pow.Plug.RequireAuthenticated,
+      error_handler: Pow.Phoenix.PlugErrorHandler
+  end
+
+
   scope "/" do
     pipe_through :browser
 
@@ -25,6 +31,12 @@ defmodule AncileWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :index
+  end
+
+  scope "/dashboard", AncileWeb do
+    pipe_through [:browser, :protected]
+
+    get "/", PageController, :dashboard
   end
 
   # Other scopes may use custom stacks.

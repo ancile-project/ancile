@@ -45,11 +45,5 @@ defmodule AncileWeb.Endpoint do
 
   plug Pow.Plug.Session, otp_app: :ancile
 
-  plug Pow.Plug.Session,
-       repo: Ancile.Repo,
-       user: Ancile.Users.User,
-       web_module: AncileWeb
-
-
   plug AncileWeb.Router
 end
