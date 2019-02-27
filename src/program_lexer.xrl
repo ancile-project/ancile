@@ -5,7 +5,7 @@ TEXT       = [a-zA-Z_]+
 WHITESPACE = [\s\r\t\n]
 C          = (<|<=|=|!=|=>|>)
 FLOAT      = [-+]?[0-9]+\.[0-9]+
-STRING     = "[0-9a-zA-Z!#%&'()*+,-./:;<=>?[\]^_{|}~\s\t]*"
+STRING     = "[0-9a-zA-Z!#%&'()*+,-\./:;<=>?[\]^_{|}~\s\t]*"
 
 
 Rules.
@@ -30,7 +30,7 @@ return        : {token, {'return', TokenLine}}.
 {C}           : {token, {comparison, TokenLine, TokenChars}}.
 {NUM}         : {token, {int,  TokenLine, list_to_integer(TokenChars)}}.
 {FLOAT}       : {token, {float, TokenLine, list_to_float(TokenChars)}}.
-{STRING}      : {token, {string, TokenLine, string:strip(TokenChars, both, $")}}.
+{STRING}      : {token, {string, TokenLine, list_to_binary(string:strip(TokenChars, both, $"))}}.
 
 % will need later for params
 %\(            : {token, {'(',  TokenLine}}.
