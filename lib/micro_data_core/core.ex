@@ -1,6 +1,10 @@
 defmodule MicroDataCore.Core do
   use Memoize
   require Logger
+
+  alias MicroDataCore.Utilities.TypeTools
+  require TypeTools
+  
   @moduledoc false
 
 
@@ -69,10 +73,10 @@ defmodule MicroDataCore.Core do
   end
 
   @doc """
-  Uses x:= number to update variable scope.
-  @TODO support float/string, etc.
+  Uses x:= number/float to update variable scope.
   """
-  def program_step(policy, [[:assign, var, value] | program], data, var_scope) when is_number(value) == true do
+  def program_step(policy, [[:assign, var, value] | program], data, var_scope) 
+    when is_number(value) or is_binary(value) do
     Logger.info("-----------------------------")
     Logger.info("Assignment: #{inspect({policy, [:assign, var, value]})}")
     Logger.info("-----------------------------")
@@ -185,7 +189,9 @@ defmodule MicroDataCore.Core do
   @doc """
   Compares two values.
   """
-  def comparison(operation, val1, val2) do
+  def comparison(operation, val1, val2) when 
+    TypeTools.comparable(val1, val2) and 
+    TypeTools.valid_comparison_operator(operation) do
     Logger.debug("Evaluation comparison #{inspect(val1)} #{inspect(operation)} #{inspect(val2)}")
     # NOTE: We should think about whether we want strict comparisons 
     #  or guards since types can determine an ordering amongst unlike 
@@ -199,8 +205,20 @@ defmodule MicroDataCore.Core do
       '>=' -> val1 >= val2
       '<=' -> val1 <= val2
       '!=' -> val1 != val2
-      _ -> {:error, "Wrong comparison parameter: #{inspect(operation)}"}
     end
+  end
+
+  def comparison(operation, _val1, _val2) when 
+      not TypeTools.valid_comparison_operator(operation) do
+    # This catches invalid comparison parameter and errors on them
+    # first
+      {:error, "Wrong comparison parameter: #{inspect(operation)}"} 
+  end
+
+  def comparison(operation, val1, val2) do
+    # If the operator is correct then this means the given
+    # operands were incompatible
+    {:error, "Incompatible operands #{val1} #{inspect(operation)} #{val2}"}
   end
 
   @doc """

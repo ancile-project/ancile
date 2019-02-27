@@ -243,6 +243,12 @@ defmodule MicroDataCoreTest do
     assert result == :ok
   end
 
+  test "float args error" do
+    policy_text = "a(x:0.8121.321, y:0.7).return"
+    program_text = "a(x:0.8121.321, y:0.7); return;"
+    catch_error(MicroDataCore.Core.entry_point([policy_text, program_text]))
+  end
+
   test "string args2" do
     policy_text = "a(x:\" 2552 \", y:\"?????\").return"
     program_text = "a(x:\" 2552 \", y:\"?????\"); return;"
@@ -263,5 +269,103 @@ defmodule MicroDataCoreTest do
     {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
     assert result == :ok
   end
-  
+
+  test "float assignment" do
+    policy_text = "a.return"
+    program_text = "y := 4.5; x := 5.5; a(); return;"
+    {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
+    assert result == :ok
+  end
+
+  test "float compare" do
+    policy_text = "a.return"
+    program_text = "y := 4.5; x := 5.5; if y < x do a(); end return;"
+    {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
+    assert result == :ok
+  end
+
+  test "float compare 2 (error)" do
+    policy_text = "a.return"
+    program_text = "y := 4.5; x := 5.5; if y > x do a(); end return;"
+    {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
+    assert result == :error
+  end
+
+  test "float int compare" do
+    policy_text = "a.return"
+    program_text = "y := 4; x := 5.5; if y < x do a(); end return;"
+    {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
+    assert result == :ok
+  end
+
+  test "float int compare 2 (error)" do
+    policy_text = "a.return"
+    program_text = "y := 4; x := 5.5; if y > x do a(); end return;"
+    {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
+    assert result == :error
+  end
+
+  test "float int equality" do
+    policy_text = "a.return"
+    program_text = "y := 4; x := 4.0; if y = x do a(); end return;"
+    {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
+    assert result == :ok
+  end
+
+  test "float int equality 2" do
+    policy_text = "a.return"
+    program_text = "y := 4; x := 4.0; if y != x do a(); end return;"
+    {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
+    assert result == :error
+  end
+
+  test "string assignment" do
+    policy_text = "a.return"
+    program_text = "y := \"4\"; a(); return;"
+    {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
+    assert result == :ok
+  end
+
+  test "string comparison" do
+    policy_text = "a.return"
+    program_text = "x := \"21\"; y := \"22\"; if x < y do a(); end return;"
+    {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
+    assert result == :ok
+  end
+
+  test "string comparison 2" do
+    policy_text = "a.return"
+    program_text = "x := \"21\"; y := \"22\"; if x > y do a(); end return;"
+    {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
+    assert result == :error
+  end
+
+  test "string comparison 3" do
+    policy_text = "a.return"
+    program_text = "x := \"abc\"; y := \"abc\"; if x = y do a(); end return;"
+    {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
+    assert result == :ok
+  end
+
+  test "string comparison 4" do
+    policy_text = "a.return"
+    program_text = "x := \"abc\"; y := \"abc\"; if x != y do a(); end return;"
+    {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
+    assert result == :error
+  end
+
+  test "mixed type comparison error" do
+    policy_text = "a.return"
+    program_text = "x := \"abc\"; y := 4; if x < y do a(); end return;"
+    {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
+    assert result == :error
+  end
+
+  test "mixed type comparison error 2" do
+    policy_text = "a.return"
+    program_text = "x := \"abc\"; y := 4; if x = y do a(); end return;"
+    {result, _} = MicroDataCore.Core.entry_point([policy_text, program_text])
+    assert result == :error
+  end
+
 end
