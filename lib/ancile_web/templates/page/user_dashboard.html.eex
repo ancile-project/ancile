@@ -1,5 +1,5 @@
 <section class="phx-hero">
-  <h1><%= gettext "Here is your dashboard!" %></h1>
+  <h1><%= gettext "Here is your User dashboard!" %></h1>
 </section>
 
 <section class="row">

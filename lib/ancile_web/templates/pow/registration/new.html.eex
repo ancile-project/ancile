@@ -19,6 +19,10 @@
   <%= password_input f, :confirm_password %>
   <%= error_tag f, :confirm_password %>
 
+  <%= label f, :role %>
+  <%= text_input f, :role %>
+  <%= error_tag f, :role %>
+
   <div>
     <%= submit "Register" %>
   </div>
