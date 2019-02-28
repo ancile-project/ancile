@@ -44,26 +44,26 @@ defmodule AncileWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :index
-    get "dashboard", PageController, :redirect_dashboard
+    get "/dashboard", PageController, :redirect_dashboard
   end
 
 
   scope "/admin", AncileWeb do
     pipe_through [:browser, :admin_protected]
 
-    get "dashboard", PageController, :admin_dashboard
+    get "/dashboard", PageController, :admin_dashboard
   end
 
   scope "/app", AncileWeb do
     pipe_through [:browser, :app_protected]
 
-    get "dashboard", PageController, :app_dashboard
+    get "/dashboard", PageController, :app_dashboard
   end
 
     scope "/user", AncileWeb do
     pipe_through [:browser, :user_protected]
 
-    get "dashboard", PageController, :user_dashboard
+    get "/dashboard", PageController, :user_dashboard
   end
 
   # Other scopes may use custom stacks.
