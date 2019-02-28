@@ -1,4 +1,4 @@
-defmodule Ancile.Users.User do
+defmodule Ancile.Models.User do
   use Ecto.Schema
   use Pow.Ecto.Schema
   import Ecto.Changeset
