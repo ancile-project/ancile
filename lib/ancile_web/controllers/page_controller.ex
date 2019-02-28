@@ -14,16 +14,4 @@ defmodule AncileWeb.PageController do
 
   end
 
-  def admin_dashboard(conn, _params) do
-    render(conn, "admin_dashboard.html")
-  end
-
-  def app_dashboard(conn, _params) do
-    render(conn, "app_dashboard.html")
-  end
-
-  def user_dashboard(conn, _params) do
-    render(conn, "user_dashboard.html")
-  end
-
 end
