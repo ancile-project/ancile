@@ -20,7 +20,7 @@
   <%= error_tag f, :confirm_password %>
 
   <%= label f, :role %>
-  <%= text_input f, :role %>
+  <%= select f, :role, ["admin","app", "user"] %>
   <%= error_tag f, :role %>
 
   <div>
