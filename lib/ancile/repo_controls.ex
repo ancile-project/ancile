@@ -1,4 +1,4 @@
-defmodule Ancile.Core do
+defmodule Ancile.RepoControls do
   @moduledoc """
   The Core context.
   """
@@ -6,8 +6,8 @@ defmodule Ancile.Core do
   import Ecto.Query, warn: false
   alias Ancile.Repo
 
-  alias Ancile.Core.Policy
-  alias Ancile.Users.User
+  alias Ancile.Models.Policy
+  alias Ancile.Models.User
 
   @doc """
   Returns the list of policies.
@@ -20,9 +20,17 @@ defmodule Ancile.Core do
   """
   def list_policies do
     policies = Repo.all(Policy)
-    Enum.map(policies, fn x -> %{x |  policy: :erlang.binary_to_term(x.policy),
-              user_id: get_email_by_id(x.user_id),
-              app_id: get_email_by_id(x.app_id)} end)
+    Enum.map(
+      policies,
+      fn x ->
+        %{
+          x |
+          policy: :erlang.binary_to_term(x.policy),
+          user_id: get_email_by_id(x.user_id),
+          app_id: get_email_by_id(x.app_id)
+        }
+      end
+    )
   end
 
   @doc """
@@ -119,5 +127,20 @@ defmodule Ancile.Core do
   def get_email_by_id(iid) do
     query = from u in User, where: u.id == ^iid, select: u.email
     Repo.one(query)
+  end
+
+  def get_token(%User{} = app) do
+    query = from u in User, where: u.id == ^app.id
+    app = Repo.one(query)
+
+    case app.token do
+      nil ->
+        token = Phoenix.Token.sign(AncileWeb.Endpoint, "user salt", app.id)
+        User.token_changeset(app, %{"token" => token})
+        |> Repo.update()
+        token
+      token -> token
+
+    end
   end
 end

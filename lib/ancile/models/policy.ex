@@ -1,14 +1,14 @@
-defmodule Ancile.Core.Policy do
+defmodule Ancile.Models.Policy do
   use Ecto.Schema
   import Ecto.Changeset
 
 
   schema "policies" do
     field :active, :boolean, default: false
-    field :policy, :binary
-    field :purpose, :string
-    field :app_id, :id
-    field :user_id, :id
+    field :policy, :binary, default: nil
+    field :purpose, :string, default: nil
+    field :app_id, :id, default: nil
+    field :user_id, :id, default: nil
 
     timestamps()
   end

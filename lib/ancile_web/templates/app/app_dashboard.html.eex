@@ -6,13 +6,18 @@
     <article class="column">
         <h2>Resources</h2>
         <ul>
-            <li>
-                <a href="/app/program_add">Add new program</a>
-            </li>
+            <!--<li>-->
+                <!--<a href="/app/programs">Programs</a>-->
+            <!--</li>-->
 
             <li>
                 <a href="/app/policies">Policies</a>
             </li>
+
+            <li>
+                <a href="/app/token">Get app token</a>
+            </li>
+
             <li>
                 <a href="/registration/edit">Change password</a>
             </li>

@@ -59,6 +59,7 @@ defmodule AncileWeb.Router do
 
     get "/dashboard", AppController, :app_dashboard
     get "/program_add", AppController, :serve_add_page
+    get "/token", AppController, :get_token
     resources "/policies", PolicyController
   end
 

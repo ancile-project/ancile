@@ -1,17 +1,17 @@
 defmodule AncileWeb.PolicyController do
   use AncileWeb, :controller
 
-  alias Ancile.Core
-  alias Ancile.Core.Policy
+  alias Ancile.RepoControls
+  alias Ancile.Models.Policy
 
   def index(conn, _params) do
-    policies = Core.list_policies()
+    policies = RepoControls.list_policies()
     render(conn, "index.html", policies: policies)
   end
 
   def new(conn, _params) do
-    changeset = Core.change_policy(%Policy{})
-    users = Core.get_by_role("user")
+    changeset = RepoControls.change_policy(%Policy{})
+    users = RepoControls.get_by_role("user")
     app = conn.assigns.current_user.email
     render(conn, "new.html", changeset: changeset, users: users, app: app)
   end
@@ -31,13 +31,13 @@ defmodule AncileWeb.PolicyController do
       ) do
 
     app_id = conn.assigns.current_user.id
-    user_id = Core.get_user_by_email(user_email)
+    user_id = RepoControls.get_user_by_email(user_email)
     policy_binary = :erlang.term_to_binary(policy)
     object = %{app_id: app_id,
       user_id: user_id,
       policy: policy_binary, purpose: purpose, active: active
             }
-    case Core.create_policy(object) do
+    case RepoControls.create_policy(object) do
       {:ok, policy} ->
         conn
         |> put_flash(:info, "Policy created successfully.")
@@ -49,25 +49,25 @@ defmodule AncileWeb.PolicyController do
   end
 
   def show(conn, %{"id" => id}) do
-    policy = Core.get_policy!(id)
+    policy = RepoControls.get_policy!(id)
     policy = %{policy | policy: :erlang.binary_to_term(policy.policy),
-              user_id: Core.get_email_by_id(policy.user_id),
-              app_id: Core.get_email_by_id(policy.app_id)}
+              user_id: RepoControls.get_email_by_id(policy.user_id),
+              app_id: RepoControls.get_email_by_id(policy.app_id)}
     IO.inspect(policy)
 
     render(conn, "show.html", policy: policy)
   end
 
   def edit(conn, %{"id" => id}) do
-    policy = Core.get_policy!(id)
-    changeset = Core.change_policy(policy)
+    policy = RepoControls.get_policy!(id)
+    changeset = RepoControls.change_policy(policy)
     render(conn, "edit.html", policy: policy, changeset: changeset)
   end
 
   def update(conn, %{"id" => id, "policy" => policy_params}) do
-    policy = Core.get_policy!(id)
+    policy = RepoControls.get_policy!(id)
 
-    case Core.update_policy(policy, policy_params) do
+    case RepoControls.update_policy(policy, policy_params) do
       {:ok, policy} ->
         conn
         |> put_flash(:info, "Policy updated successfully.")
@@ -79,8 +79,8 @@ defmodule AncileWeb.PolicyController do
   end
 
   def delete(conn, %{"id" => id}) do
-    policy = Core.get_policy!(id)
-    {:ok, _policy} = Core.delete_policy(policy)
+    policy = RepoControls.get_policy!(id)
+    {:ok, _policy} = RepoControls.delete_policy(policy)
 
     conn
     |> put_flash(:info, "Policy deleted successfully.")
