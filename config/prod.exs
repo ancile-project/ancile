@@ -10,8 +10,16 @@ use Mix.Config
 # which you should run after static files are built and
 # before starting your production server.
 config :ancile, AncileWeb.Endpoint,
+  https: [
+   port: 4001,
+   cipher_suite: :strong,
+   keyfile: "/home/ubuntu/certs/privkey.pem",
+  cacertfile: "/home/ubuntu/certs/chain.pem",
+   certfile: "/home/ubuntu/certs/cert.pem"
+  ],
+
   http: [:inet6, port: System.get_env("PORT") || 4000],
-  url: [host: "example.com", port: 80],
+  url: [host: "dev.ancile.smalldata.io"],
   cache_static_manifest: "priv/static/cache_manifest.json"
 
 # Do not print debug messages in production

@@ -1,6 +1,8 @@
 defmodule AncileWeb.Router do
   use AncileWeb, :router
   use Pow.Phoenix.Router
+  use PowAssent.Phoenix.Router
+
 
 
   pipeline :browser do
@@ -54,6 +56,13 @@ defmodule AncileWeb.Router do
     get "/dashboard", AdminController, :admin_dashboard
   end
 
+  scope "/user" do
+    pipe_through [:browser, :user_protected]
+
+    pow_assent_routes()
+
+    end
+
   scope "/app", AncileWeb do
     pipe_through [:browser, :app_protected]
 
@@ -63,7 +72,7 @@ defmodule AncileWeb.Router do
     resources "/policies", PolicyController
   end
 
-    scope "/user", AncileWeb do
+  scope "/user", AncileWeb do
     pipe_through [:browser, :user_protected]
 
     get "/dashboard", UserController, :user_dashboard

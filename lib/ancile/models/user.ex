@@ -4,6 +4,11 @@ defmodule Ancile.Models.User do
   import Ecto.Changeset
 
   schema "users" do
+
+    has_many :user_identities,
+             Ancile.Models.UserIdentity,
+             on_delete: :delete_all
+
     field :role, :string, default: "user"
     field :token, :string, default: nil
 
