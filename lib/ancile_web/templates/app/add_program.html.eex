@@ -1,0 +1,39 @@
+<h1><%= gettext "Add you program: " %></h1>
+
+<section class="container">
+<form>
+  <fieldset>
+    <label for="nameField">Program Text</label>
+    <textarea type="text" placeholder="Program1" id="nameField"></textarea>
+    <label for="users">Select Users</label>
+    <select id="ageRangeField">
+      <option value="0-13">0-13</option>
+      <option value="14-17">14-17</option>
+      <option value="18-23">18-23</option>
+      <option value="24+">24+</option>
+    </select>
+    <input class="button-primary" type="submit" value="Send">
+  </fieldset>
+</form>
+</section>
+
+<section class="row">
+  <article class="column">
+    <h2>Resources</h2>
+    <ul>
+    <li>
+        <a href="/app/dashboard/">Dashboard</a>
+    </li>
+
+
+    </ul>
+  </article>
+  <article class="column">
+    <h2>Help</h2>
+    <ul>
+      <li>
+        <a href="/">Main</a>
+      </li>
+    </ul>
+  </article>
+</section>

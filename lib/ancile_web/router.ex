@@ -51,19 +51,22 @@ defmodule AncileWeb.Router do
   scope "/admin", AncileWeb do
     pipe_through [:browser, :admin_protected]
 
-    get "/dashboard", PageController, :admin_dashboard
+    get "/dashboard", AdminController, :admin_dashboard
   end
 
   scope "/app", AncileWeb do
     pipe_through [:browser, :app_protected]
 
-    get "/dashboard", PageController, :app_dashboard
+    get "/dashboard", AppController, :app_dashboard
+    get "/program_add", AppController, :serve_add_page
+    get "/token", AppController, :get_token
+    resources "/policies", PolicyController
   end
 
     scope "/user", AncileWeb do
     pipe_through [:browser, :user_protected]
 
-    get "/dashboard", PageController, :user_dashboard
+    get "/dashboard", UserController, :user_dashboard
   end
 
   # Other scopes may use custom stacks.
