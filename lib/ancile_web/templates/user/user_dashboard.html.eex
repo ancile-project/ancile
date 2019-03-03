@@ -20,11 +20,9 @@
         </ul>
     </article>
     <article class="column">
-        <h2>Help</h2>
-        <ul>
-            <li>
-                <a href="/docs">Docs</a>
-            </li>
-        </ul>
+            <h2>Registration</h2>
+
+<%= for link <- PowAssent.Phoenix.ViewHelpers.provider_links(@conn),
+  do: content_tag(:span, link) %>
     </article>
 </section>
