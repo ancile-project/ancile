@@ -23,6 +23,6 @@
             <h2>Registration</h2>
 
 <%= for link <- PowAssent.Phoenix.ViewHelpers.provider_links(@conn),
-  do: content_tag(:span, link) %>
+  do: content_tag(:br, link) %>
     </article>
 </section>

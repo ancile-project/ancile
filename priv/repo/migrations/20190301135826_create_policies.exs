@@ -3,11 +3,12 @@ defmodule Ancile.Repo.Migrations.CreatePolicies do
 
   def change do
     create table(:policies) do
-      add :purpose, :string
-      add :policy, :binary
+      add :purpose, :string, null: true, default: nil
+      add :policy, :binary, null: true, default: nil
       add :active, :boolean, default: false, null: false
-      add :app_id, references(:users, on_delete: :nothing)
-      add :user_id, references(:users, on_delete: :nothing)
+      add :app_id, references(:users, on_delete: :nothing), null: true, default: nil
+      add :user_id, references(:users, on_delete: :nothing), null: true, default: nil
+      add :creator_id, references(:users, on_delete: :nothing), null: true, default: nil
 
       timestamps()
     end

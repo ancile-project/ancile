@@ -133,13 +133,13 @@ defmodule Ancile.RepoControls do
     query = from u in User, where: u.id == ^app.id
     app = Repo.one(query)
 
-    case app.token do
+    case app.api_token do
       nil ->
-        token = Phoenix.Token.sign(AncileWeb.Endpoint, "user salt", app.id)
-        User.token_changeset(app, %{"token" => token})
+        api_token = Phoenix.Token.sign(AncileWeb.Endpoint, "user salt", app.id)
+        User.token_changeset(app, %{"api_token" => api_token})
         |> Repo.update()
-        token
-      token -> token
+        api_token
+      api_token -> api_token
 
     end
   end
