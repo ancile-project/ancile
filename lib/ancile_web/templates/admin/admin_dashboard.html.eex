@@ -1,28 +1,29 @@
 <section class="phx-hero">
-  <h1><%= gettext "Here is your Admin dashboard!" %></h1>
+    <h1><%= gettext "Here is your Admin dashboard!" %></h1>
 </section>
 
 <section class="row">
-  <article class="column">
-    <h2>Resources</h2>
-    <ul>
-
-      </li>
+    <article class="column">
+        <h2>Resources</h2>
+        <ul>
             <li>
-        <a href="/registration/edit">Change password</a>
-      </li>
-      <li>
-      <%= link "Sign out", to: Routes.pow_session_path(@conn, :delete), method: :delete %>
-    </li>
+                <a href="/admin/policies">Policies</a>
+            </li>
+            <li>
+                <a href="/registration/edit">Change password</a>
+            </li>
+            <li>
+                <%= link "Sign out", to: Routes.pow_session_path(@conn, :delete), method: :delete %>
+            </li>
 
-    </ul>
-  </article>
-  <article class="column">
-    <h2>Help</h2>
-    <ul>
-      <li>
-        <a href="/docs">Docs</a>
-      </li>
-    </ul>
-  </article>
+        </ul>
+    </article>
+    <article class="column">
+        <h2>Help</h2>
+        <ul>
+            <li>
+                <a href="/docs">Docs</a>
+            </li>
+        </ul>
+    </article>
 </section>

@@ -12,8 +12,8 @@ defmodule AncileWeb.PolicyController do
   def new(conn, _params) do
     changeset = RepoControls.change_policy(%Policy{})
     users = RepoControls.get_by_role("user")
-    app = conn.assigns.current_user.email
-    render(conn, "new.html", changeset: changeset, users: users, app: app)
+    apps = RepoControls.get_by_role("app")
+    render(conn, "new.html", changeset: changeset, users: users, apps: apps)
   end
 
   def create(
@@ -21,16 +21,15 @@ defmodule AncileWeb.PolicyController do
         %{
           "policy" => %{
             "active" => active,
-            "policy" =>
-
-              policy,
+            "policy" => policy,
             "purpose" => purpose,
-            "user_id" => user_email
+            "user_id" => user_email,
+            "app_id" => app_email
           }
         }
       ) do
 
-    app_id = conn.assigns.current_user.id
+    app_id = RepoControls.get_user_by_email(app_email)
     user_id = RepoControls.get_user_by_email(user_email)
     object = %{
       app_id: app_id,
@@ -66,20 +65,45 @@ defmodule AncileWeb.PolicyController do
   def edit(conn, %{"id" => id}) do
     policy = RepoControls.get_policy!(id)
     changeset = RepoControls.change_policy(policy)
-    render(conn, "edit.html", policy: policy, changeset: changeset)
+    users = RepoControls.get_by_role("user")
+    apps = RepoControls.get_by_role("app")
+    render(conn, "edit.html", policy: policy, changeset: changeset, users: users, apps: apps)
   end
 
-  def update(conn, %{"id" => id, "policy" => policy_params}) do
+  def update(
+        conn,
+        %{
+          "id" => id,
+          "policy" => %{
+            "active" => active,
+            "policy" => policy_text,
+            "purpose" => purpose,
+            "user_id" => user_email,
+            "app_id" => app_email
+          }
+        }
+      ) do
     policy = RepoControls.get_policy!(id)
+    app_id = RepoControls.get_user_by_email(app_email)
+    user_id = RepoControls.get_user_by_email(user_email)
+    object = %{
+      app_id: app_id,
+      user_id: user_id,
+      policy: policy_text,
+      purpose: purpose,
+      active: active
+    }
 
-    case RepoControls.update_policy(policy, policy_params) do
+    case RepoControls.update_policy(policy, object) do
       {:ok, policy} ->
         conn
         |> put_flash(:info, "Policy updated successfully.")
         |> redirect(to: Routes.policy_path(conn, :show, policy))
 
       {:error, %Ecto.Changeset{} = changeset} ->
-        render(conn, "edit.html", policy: policy, changeset: changeset)
+        users = RepoControls.get_by_role("user")
+        apps = RepoControls.get_by_role("app")
+        render(conn, "edit.html", policy: policy, changeset: changeset, users: users, apps: apps)
     end
   end
 

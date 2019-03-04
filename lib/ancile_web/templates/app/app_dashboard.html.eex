@@ -11,10 +11,6 @@
             <!--</li>-->
 
             <li>
-                <a href="/app/policies">Policies</a>
-            </li>
-
-            <li>
                 <a href="/app/token">Get app token</a>
             </li>
 

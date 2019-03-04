@@ -54,6 +54,7 @@ defmodule AncileWeb.Router do
     pipe_through [:browser, :admin_protected]
 
     get "/dashboard", AdminController, :admin_dashboard
+    resources "/policies", PolicyController
   end
 
   scope "/user" do
@@ -69,7 +70,7 @@ defmodule AncileWeb.Router do
     get "/dashboard", AppController, :app_dashboard
     get "/program_add", AppController, :serve_add_page
     get "/token", AppController, :get_token
-    resources "/policies", PolicyController
+
   end
 
   scope "/user", AncileWeb do

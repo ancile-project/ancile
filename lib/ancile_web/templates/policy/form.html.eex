@@ -5,7 +5,8 @@
     </div>
   <% end %>
 
-<h2>Create policy for app:  <%= @app %></h2>
+  <%= label f, :app_id %>
+  <%= select f, :app_id, @apps %>
 
   <%= label f, :user_id %>
   <%= select f, :user_id, @users %>
