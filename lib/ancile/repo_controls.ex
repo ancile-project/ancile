@@ -149,7 +149,6 @@ defmodule Ancile.RepoControls do
                  where: p.user_id == ^user_id and p.app_id == ^app_id and p.purpose == ^purpose,
                  select: p.policy
     policies = Repo.all(query)
-    IO.inspect(policies, label: "policies: ")
     policies
   end
 
