@@ -21,13 +21,13 @@ defmodule MicroDataCore.FunctionRunner do
   @doc """
   We just mock the actual function execution. TBD
   """
-  def execute_command(function, data) do
+  def execute_command({function, params}, data) do
 
 
     Logger.debug("Function and data: #{inspect({function, data})}")
     case function do
       "error" -> {:error, "Error execution function :(."}
-      _ -> {:ok, 42, Map.put(data, Time.utc_now(), {function})}
+      _ -> {:ok, 42, Map.put(data, Time.utc_now(), to_string(function))}
     end
   end
 

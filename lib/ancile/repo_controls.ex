@@ -25,7 +25,7 @@ defmodule Ancile.RepoControls do
       fn x ->
         %{
           x |
-          policy: :erlang.binary_to_term(x.policy),
+          policy: x.policy,
           user_id: get_email_by_id(x.user_id),
           app_id: get_email_by_id(x.app_id)
         }
@@ -143,4 +143,16 @@ defmodule Ancile.RepoControls do
 
     end
   end
+
+  def get_policies(app_id, user_id, purpose) do
+    query = from p in Policy,
+                 where: p.user_id == ^user_id and p.app_id == ^app_id and p.purpose == ^purpose,
+                 select: p.policy
+    policies = Repo.all(query)
+    IO.inspect(policies, label: "policies: ")
+    policies
+  end
+
+
+
 end

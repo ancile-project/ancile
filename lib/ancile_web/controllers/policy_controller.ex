@@ -32,11 +32,13 @@ defmodule AncileWeb.PolicyController do
 
     app_id = conn.assigns.current_user.id
     user_id = RepoControls.get_user_by_email(user_email)
-    policy_binary = :erlang.term_to_binary(policy)
-    object = %{app_id: app_id,
+    object = %{
+      app_id: app_id,
       user_id: user_id,
-      policy: policy_binary, purpose: purpose, active: active
-            }
+      policy: policy,
+      purpose: purpose,
+      active: active
+    }
     case RepoControls.create_policy(object) do
       {:ok, policy} ->
         conn
@@ -50,9 +52,12 @@ defmodule AncileWeb.PolicyController do
 
   def show(conn, %{"id" => id}) do
     policy = RepoControls.get_policy!(id)
-    policy = %{policy | policy: :erlang.binary_to_term(policy.policy),
-              user_id: RepoControls.get_email_by_id(policy.user_id),
-              app_id: RepoControls.get_email_by_id(policy.app_id)}
+    policy = %{
+      policy |
+      policy: policy.policy,
+      user_id: RepoControls.get_email_by_id(policy.user_id),
+      app_id: RepoControls.get_email_by_id(policy.app_id)
+    }
     IO.inspect(policy)
 
     render(conn, "show.html", policy: policy)
