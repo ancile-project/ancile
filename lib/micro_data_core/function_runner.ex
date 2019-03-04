@@ -21,20 +21,27 @@ defmodule MicroDataCore.FunctionRunner do
   @doc """
   We just mock the actual function execution. TBD
   """
-  def execute_command({function, params}, data) do
+#  def execute_command({function, params}, data, _sensitive_data) do
+#
+#
+#    Logger.debug("Function and data: #{inspect({function, data})}")
+#    case function do
+#      "error" -> {:error, "Error execution function :(."}
+#      _ -> {:ok, 42, Map.put(data, Time.utc_now(), to_string(function))}
+#    end
+#  end
 
+   def execute_command({function_name, params}, data, sensitive_data) do
+    IO.inspect(function_name)
+    function_atom = String.to_atom(to_string(function_name))
+    {new_data, new_scope} = apply(MicroDataCore.FunctionRegistry.General.Transform ,  function_atom, [params, data, sensitive_data, %{}])
+    {:ok, 42, new_data}
+     end
 
-    Logger.debug("Function and data: #{inspect({function, data})}")
-    case function do
-      "error" -> {:error, "Error execution function :(."}
-      _ -> {:ok, 42, Map.put(data, Time.utc_now(), to_string(function))}
-    end
-  end
-
-  def execute_command_new() do
+  def execute_command_new({function_name, params}, data) do
     # dumb params
-    function_name = :test
-    function_scope_value = %{:user_scope => %{:c => 5}, :combined_scope => %{:d => 5}}
+
+    function_state= %{}
     data = %{:location=> %{:a => 5}, :general => %{:b => 9}}
     oauth_scopes = %{:location_token => %{:a => 5}, :email_token => %{:b => 9}}
 
@@ -44,7 +51,7 @@ defmodule MicroDataCore.FunctionRunner do
         :ets.new(function_name, [:set, :protected, :named_table])
       _ -> true
     end
-    :ets.insert_new(function_name, {:function_scope, function_scope_value})
+#    :ets.insert_new(function_name, {:function_scope, function_scope_value})
 
 
     ### Actual logic

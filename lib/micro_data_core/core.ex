@@ -4,7 +4,7 @@ defmodule MicroDataCore.Core do
 
   alias MicroDataCore.Utilities.TypeTools
   require TypeTools
-  
+
   @moduledoc false
 
 
@@ -13,12 +13,12 @@ defmodule MicroDataCore.Core do
   Main input for our Core module. It takes (policy, program, data)
   and recursively evaluates it, until the program is empty.
   """
-  def process_request(policy, program, data) do
+  def process_request(policy, program, data, sensitive_data) do
     Logger.info("-----------------------------")
     Logger.info("Starting running (policy, program): #{inspect({policy, program})}")
     Logger.info("-----------------------------")
     var_scope = %{}
-    case program_step(policy, program, data, var_scope) do
+    case program_step(policy, program, data, var_scope, sensitive_data) do
       {_, [], _, _} -> Logger.info("No 'return' command specified in the end, returning nothing...")
                        {:error, []}
       {:error, msg} -> Logger.error("Error running program: #{inspect(msg)}")
@@ -32,7 +32,7 @@ defmodule MicroDataCore.Core do
   We use it to evaluate sub loops, like if/for/while and preserve state of
   variables. As well, we want to execute program, but don't need to return data.
   """
-  def program_step(policy, [], data, var_scope) do
+  def program_step(policy, [], data, var_scope, _sensitive_data) do
     {policy, [], data, var_scope}
   end
 
@@ -40,7 +40,7 @@ defmodule MicroDataCore.Core do
   Final step of the evaluation, requires `return`. If the policy passes E step
   MicroDataCore.Core.e_step/1 then we return data otherwise, fail.
   """
-  def program_step(policy, [[:exec, :return]], data, _var_scope) do
+  def program_step(policy, [[:exec, :return]], data, _var_scope, _sensitive_data) do
     Logger.info("-----------------------------")
     Logger.info("Performing last step on (policy, program): #{inspect({policy, :return})}")
     Logger.info("-----------------------------")
@@ -57,7 +57,7 @@ defmodule MicroDataCore.Core do
   Basic step to execute a command from the program.
   It doesn't use scope variables and just updates data.
   """
-  def program_step(policy, [[:exec, command] | program], data, var_scope) do
+  def program_step(policy, [[:exec, command] | program], data, var_scope, sensitive_data) do
     Logger.info("-----------------------------")
     Logger.info("Performing step on (policy, program): #{inspect({policy, [command | program]})}")
     Logger.info("-----------------------------")
@@ -65,9 +65,9 @@ defmodule MicroDataCore.Core do
       {:error, msg} -> {:error, msg}
       {:ok, 0} -> {:error, "Early stop."}
       {:ok, policy} ->
-        case MicroDataCore.FunctionRunner.execute_command(command, data) do
+        case MicroDataCore.FunctionRunner.execute_command(command, data, sensitive_data) do
           {:error, msg} -> {:error, msg}
-          {:ok, _, data} -> program_step(policy, program, data, var_scope)
+          {:ok, _, data} -> program_step(policy, program, data, var_scope, sensitive_data)
         end
     end
   end
@@ -75,28 +75,28 @@ defmodule MicroDataCore.Core do
   @doc """
   Uses x:= number/float to update variable scope.
   """
-  def program_step(policy, [[:assign, var, value] | program], data, var_scope) 
-    when is_number(value) or is_binary(value) do
+  def program_step(policy, [[:assign, var, value] | program], data, var_scope, sensitive_data)
+      when is_number(value) or is_binary(value) do
     Logger.info("-----------------------------")
     Logger.info("Assignment: #{inspect({policy, [:assign, var, value]})}")
     Logger.info("-----------------------------")
     var_scope = Map.put(var_scope, var, value)
     Logger.error("Updated var_scope: #{inspect({var_scope, var, value})}")
-    program_step(policy, program, data, var_scope)
+    program_step(policy, program, data, var_scope, sensitive_data)
   end
 
 
   @doc """
   Uses x:= command to update variable scope.
   """
-  def program_step(policy, [[:assign, var, command] | program], data, var_scope) do
+  def program_step(policy, [[:assign, var, command] | program], data, var_scope, sensitive_data) do
     Logger.info("-----------------------------")
     Logger.info("Assignment: #{inspect({policy, [:assign, var, command]})}")
     Logger.info("-----------------------------")
     with {:ok, policy} <- d_step(policy, command),
-         {:ok, data, var_scope} <- assign_eval_result(var, command, data, var_scope)
+         {:ok, data, var_scope} <- assign_eval_result(var, command, data, var_scope, sensitive_data)
       do
-      program_step(policy, program, data, var_scope)
+      program_step(policy, program, data, var_scope, sensitive_data)
     else
       {:error, msg} -> {:error, msg}
     end
@@ -109,19 +109,19 @@ defmodule MicroDataCore.Core do
   commands executed we evaluate the remaining program in the old scope.
   @TODO add else clause
   """
-  def program_step(policy, [[:if, clause, commands] | program], data, var_scope) do
+  def program_step(policy, [[:if, clause, commands] | program], data, var_scope, sensitive_data) do
     Logger.info("-----------------------------")
     Logger.info("If scope: #{inspect({policy, [:if, clause, commands]})}")
     Logger.info("-----------------------------")
 
     case eval_clause(policy, clause, data, var_scope) do
       {:error, msg} -> {:error, msg}
-      false -> program_step(policy, program, data, var_scope)
+      false -> program_step(policy, program, data, var_scope, sensitive_data)
       true ->
 
-        case program_step(policy, commands, data, var_scope) do
+        case program_step(policy, commands, data, var_scope, sensitive_data) do
           {:error, msg} -> {:error, msg}
-          {policy, [], data, _} -> program_step(policy, program, data, var_scope)
+          {policy, [], data, _} -> program_step(policy, program, data, var_scope, sensitive_data)
         end
     end
   end
@@ -134,7 +134,7 @@ defmodule MicroDataCore.Core do
   If clause fails, we evaluate `else-commands` in a new scope and return to the 
   old scope after execution finishes.
   """
-  def program_step(policy, [[:if, clause, commands, else_commands] | program], data, var_scope) do
+  def program_step(policy, [[:if, clause, commands, else_commands] | program], data, var_scope, sensitive_data) do
     Logger.info("-----------------------------")
     Logger.info("If scope: #{inspect({policy, [:if, clause, commands, else_commands]})}")
     Logger.info("-----------------------------")
@@ -143,16 +143,16 @@ defmodule MicroDataCore.Core do
     #  is a cleaner way to do this.
     case eval_clause(policy, clause, data, var_scope) do
       {:error, msg} -> {:error, msg}
-      false -> 
-        case program_step(policy, else_commands, data, var_scope) do
+      false ->
+        case program_step(policy, else_commands, data, var_scope, sensitive_data) do
           {:error, msg} -> {:error, msg}
-          {policy, [], data, _} -> program_step(policy, program, data, var_scope)
+          {policy, [], data, _} -> program_step(policy, program, data, var_scope, sensitive_data)
         end
- 
+
       true ->
-        case program_step(policy, commands, data, var_scope) do
+        case program_step(policy, commands, data, var_scope, sensitive_data) do
           {:error, msg} -> {:error, msg}
-          {policy, [], data, _} -> program_step(policy, program, data, var_scope)
+          {policy, [], data, _} -> program_step(policy, program, data, var_scope, sensitive_data)
         end
     end
   end
@@ -161,9 +161,9 @@ defmodule MicroDataCore.Core do
   We run the command that returns {ok, value, data}. We then
   assign value to variable `var` and put them into `var_scope`.
   """
-  def assign_eval_result(var, command, data, var_scope) do
+  def assign_eval_result(var, command, data, var_scope, sensitive_data) do
     Logger.debug("Assign value to `#{inspect(var)}` be running: `#{inspect(command)}`")
-    case MicroDataCore.FunctionRunner.execute_command(command, data) do
+    case MicroDataCore.FunctionRunner.execute_command(command, data, sensitive_data) do
       {:error, msg} -> {:error, msg}
       {:ok, value, data} ->
         var_scope = Map.put(var_scope, var, value)
@@ -189,9 +189,9 @@ defmodule MicroDataCore.Core do
   @doc """
   Compares two values.
   """
-  def comparison(operation, val1, val2) when 
-    TypeTools.comparable(val1, val2) and 
-    TypeTools.valid_comparison_operator(operation) do
+  def comparison(operation, val1, val2) when
+        TypeTools.comparable(val1, val2) and
+        TypeTools.valid_comparison_operator(operation) do
     Logger.debug("Evaluation comparison #{inspect(val1)} #{inspect(operation)} #{inspect(val2)}")
     # NOTE: We should think about whether we want strict comparisons 
     #  or guards since types can determine an ordering amongst unlike 
@@ -208,11 +208,11 @@ defmodule MicroDataCore.Core do
     end
   end
 
-  def comparison(operation, _val1, _val2) when 
-      not TypeTools.valid_comparison_operator(operation) do
+  def comparison(operation, _val1, _val2) when
+        not TypeTools.valid_comparison_operator(operation) do
     # This catches invalid comparison parameter and errors on them
     # first
-      {:error, "Wrong comparison parameter: #{inspect(operation)}"} 
+    {:error, "Wrong comparison parameter: #{inspect(operation)}"}
   end
 
   def comparison(operation, val1, val2) do
@@ -341,7 +341,7 @@ defmodule MicroDataCore.Core do
     Logger.debug("E Step received [policy, res] (REVERSE ORDER!): #{inspect({policy, res})}")
     res
   end
-  
+
 
   @doc """
   Used to execute cli commands. For debugging
@@ -362,7 +362,22 @@ defmodule MicroDataCore.Core do
     program = MicroDataCore.Parser.parse_program(program_string)
     Logger.info("policy: #{inspect(policy)}")
     Logger.info("program: #{inspect(program)}")
-    case process_request(policy, program, %{:data => true}) do
+    case process_request(policy, program, %{:data => true}, %{}) do
+      {:ok, data} -> Logger.info("Success. Received data: #{inspect(data)}")
+                     {:ok, data}
+      {:error, msg} -> Logger.error("Error evaluating program and policy. Message: #{inspect(msg)}")
+                       {:error, %{}}
+      _ -> Logger.error("Error")
+           {:error, %{}}
+    end
+  end
+
+  def phoenix_entry(policy_string, program_string, sensitive_data) do
+    policy = MicroDataCore.Parser.parse_policy(policy_string)
+    program = MicroDataCore.Parser.parse_program(program_string)
+    Logger.info("policy: #{inspect(policy)}")
+    Logger.info("program: #{inspect(program)}")
+    case process_request(policy, program, %{}, sensitive_data) do
       {:ok, data} -> Logger.info("Success. Received data: #{inspect(data)}")
                      {:ok, data}
       {:error, msg} -> Logger.error("Error evaluating program and policy. Message: #{inspect(msg)}")

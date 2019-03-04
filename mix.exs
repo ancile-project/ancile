@@ -53,10 +53,15 @@ defmodule Ancile.MixProject do
 
 #      {:pow_assent, "~> 0.1"},
 
-    {:pow_assent, path: "/Users/ebagdasaryan/Documents/development/ancile/pow_assent/"},
+    {:pow_assent, git: "https://github.com/ebagdasa/pow_assent.git"},
       # Optional, but recommended for SSL validation with :httpc adapter
       {:certifi, "~> 2.4"},
       {:ssl_verify_fun, "~> 1.1"},
+    {:mint, "~> 0.1.0"},
+    {:oauth2, "~> 0.9"},
+
+    # delete:
+    {:poison, "~> 3.1"}
     ]
   end
 

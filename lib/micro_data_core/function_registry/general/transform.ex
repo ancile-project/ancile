@@ -59,13 +59,48 @@ defmodule MicroDataCore.FunctionRegistry.General.Transform do
   @doc """
   This function is doing nothing but takes `location` and `general` fields
   """
-  def test(%{:location => location, :general => general}, %{:location_token => location_token}, %{:user_scope => user_scope}) do
-    IO.inspect(%{:location => location, :general => general})
-    IO.inspect(location_token)
-    IO.inspect(user_scope)
-
-    {42, %{:location => location, :general => general}, %{:user_scope => user_scope}}
+  def test(data, sensitive_data, _function_state) do
+    IO.inspect(data)
+    IO.inspect(sensitive_data)
+    res = Enum.find(sensitive_data, fn x -> x.provider == "campus_data_service"  end)
+    IO.inspect(res)
+    {42, %{}}
   end
+
+
+  def get_location_data(params, data, sensitive_data, _function_state) do
+    IO.inspect(data)
+#    IO.inspect(sensitive_data)
+    res = Enum.find(sensitive_data, fn x -> x.provider == "campus_data_service"  end)
+    {:ok, access_token} = IO.inspect(Map.fetch(res.tokens, "access_token"))
+
+
+    client = OAuth2.Client.new(token: access_token)
+    start = System.monotonic_time(:millisecond)
+    {:ok, result} = OAuth2.Client.get(client, "https://campus.cornelltech.io/api/location/mostrecent/")
+    IO.inspect(result.body)
+    duration = System.monotonic_time(:millisecond) - start
+
+
+    {%{"res" => result.body}, %{}}
+  end
+
+
+  def filter_floor({:params, params}, %{"res" => location}, sensitive_data, _function_state) do
+    IO.inspect(location, label: "A@!!@H#@K!#H!@#H!@#!@J#H!@H#J@H#HJ!@#!J#H!@K#")
+    IO.inspect(params)
+    [[_, floor]] = params
+
+    location = case Map.get(location, "floor_name") do
+      ^floor -> Map.drop(location, ["sta_location_x", "sta_location_y"])
+      _ -> location
+
+
+    end
+
+    {%{"res" => location}, %{}}
+  end
+
 
 
 

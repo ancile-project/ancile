@@ -8,6 +8,7 @@ defmodule Ancile.RepoControls do
 
   alias Ancile.Models.Policy
   alias Ancile.Models.User
+  alias Ancile.Models.UserIdentity
 
   @doc """
   Returns the list of policies.
@@ -152,6 +153,13 @@ defmodule Ancile.RepoControls do
     policies
   end
 
+  def get_providers(user_id) do
+    query = from ui in UserIdentity,
+                 where: ui.user_id == ^user_id,
+                 select: [:provider, :tokens]
+    providers = Repo.all(query)
+    providers
+  end
 
 
 end

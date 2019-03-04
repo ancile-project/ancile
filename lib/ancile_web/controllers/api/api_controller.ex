@@ -3,6 +3,7 @@ defmodule AncileWeb.API.RunController do
   alias Ancile.RepoControls
   alias MicroDataCore.Core
 
+
   def api_test(conn, _params) do
 
     json(conn, %{id: 123})
@@ -26,7 +27,18 @@ defmodule AncileWeb.API.RunController do
     # join policies together:
     joined_policy = intersect_policies(policies)
     IO.inspect(joined_policy, label: "joined_policy: ")
-    {res, output} = Core.entry_point([joined_policy, program])
+
+#    #
+#    case :ets.whereis(:user_data) do
+#      :undefined ->
+#        :ets.new(:user_data, [:set, :protected, :named_table])
+#      _ -> true
+#    end
+    sensitive_data = RepoControls.get_providers(user_id)
+#    IO.inspect(providers, label: "providers: ")
+#    :ets.insert_new(:user_data, {user_id, providers})
+
+    {res, output} = Core.phoenix_entry(joined_policy, program, sensitive_data)
     json(
       conn,
       %{
