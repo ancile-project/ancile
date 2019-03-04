@@ -41,6 +41,8 @@ npm-debug.log
 # variables.
 /config/*.secret.exs
 
+# storage for certificates
+/priv/cert/
 
 .idea/
 *.iml
