@@ -12,7 +12,6 @@ config :ancile,
 
 # Configures the endpoint
 config :ancile, AncileWeb.Endpoint,
-  url: [host: "localhost"],
   secret_key_base: "Q/cCb7tnQcvkQVhszsvXXXPd+PFBRfIRSX1MLskZ7Y4PKgN07HMjKX5gw1QfAKmr",
   render_errors: [view: AncileWeb.ErrorView, accepts: ~w(html json)],
   pubsub: [name: Ancile.PubSub, adapter: Phoenix.PubSub.PG2]

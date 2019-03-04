@@ -11,12 +11,10 @@ config :ancile, AncileWeb.Endpoint,
    https: [
       port: 4001,
       cipher_suite: :strong,
-      keyfile: "/home/ubuntu/certs/privkey.pem",
-      cacertfile: "/home/ubuntu/certs/chain.pem",
-      certfile: "/home/ubuntu/certs/cert.pem"
+      certfile: "priv/cert/selfsigned.pem",
+      keyfile: "priv/cert/selfsigned_key.pem"
        ],
-   url: [
-     host: "dev.ancile.smalldata.io"],
+   url: [host: "localhost"],
   debug_errors: true,
   code_reloader: true,
   check_origin: false,
