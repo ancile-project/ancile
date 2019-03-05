@@ -141,7 +141,7 @@ defmodule Ancile.RepoControls do
     query = from u in User, where: u.email == ^email, select: u.id
     res = Repo.one(query)
     case res do
-      nil -> {:error, "No email: #{inspect(email)}"}
+      nil -> {:error, "No user registered with this email: #{inspect(email)}"}
       user -> {:ok, user}
     end
   end
@@ -172,7 +172,7 @@ defmodule Ancile.RepoControls do
                  select: p.policy
 
     case Repo.all(query) do
-      [] -> {:error, "No policy for user: #{inspect(user_id)}, app: #{inspect(app_id)}, purpose: #{inspect(purpose)}"}
+      [] -> {:error, "No policy for user: #{inspect(get_email_by_id(user_id))}, app: #{inspect(get_email_by_id(app_id))}, purpose: #{inspect(purpose)}. You can create allow all policy: `ANYF*`"}
       policies -> {:ok, policies}
     end
   end
@@ -182,7 +182,7 @@ defmodule Ancile.RepoControls do
                  where: ui.user_id == ^user_id,
                  select: [:provider, :tokens]
     case Repo.all(query) do
-      [] -> {:error, "No data providers connected for user: #{inspect(user_id)}. Go to your dashboard and connect them there."}
+      [] -> {:error, "No data providers connected for user: #{inspect(get_email_by_id(user_id))}. Go to your dashboard and connect them there."}
       providers -> {:ok, providers}
     end
   end
