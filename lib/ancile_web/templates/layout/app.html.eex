@@ -20,7 +20,7 @@
             <li><a href="/docs">Get Started</a></li>
           </ul>
         </nav>
-        <a href="http://localhost:4000/" class="phx-logo">
+        <a href="/" class="phx-logo">
           <img src="<%= Routes.static_path(@conn, "/images/Combined-Shadow.svg") %>" alt="Phoenix Framework Logo"/>
         </a>
       </section>

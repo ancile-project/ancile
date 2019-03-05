@@ -8,6 +8,13 @@ use Mix.Config
 # with webpack to recompile .js and .css sources.
 config :ancile, AncileWeb.Endpoint,
   http: [port: 4000],
+   https: [
+      port: 4001,
+      cipher_suite: :strong,
+      certfile: "priv/cert/selfsigned.pem",
+      keyfile: "priv/cert/selfsigned_key.pem"
+       ],
+   url: [host: "localhost"],
   debug_errors: true,
   code_reloader: true,
   check_origin: false,
@@ -73,3 +80,6 @@ config :ancile, Ancile.Repo,
   database: "ancile_dev_db",
   hostname: "localhost",
   pool_size: 10
+
+import_config "dev.secret.exs"
+

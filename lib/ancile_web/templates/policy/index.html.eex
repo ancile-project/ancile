@@ -32,3 +32,5 @@
 </table>
 
 <span><%= link "New Policy", to: Routes.policy_path(@conn, :new) %></span>
+<br>
+<span><a href="/dashboard">Dashboard</a></span>

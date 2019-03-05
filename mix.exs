@@ -49,7 +49,19 @@ defmodule Ancile.MixProject do
       {:phoenix_live_reload, "~> 1.2", only: :dev},
       {:gettext, "~> 0.11"},
       {:jason, "~> 1.0"},
-      {:plug_cowboy, "~> 2.0"}
+      {:plug_cowboy, "~> 2.0"},
+
+#      {:pow_assent, "~> 0.1"},
+
+    {:pow_assent, git: "https://github.com/ebagdasa/pow_assent.git"},
+      # Optional, but recommended for SSL validation with :httpc adapter
+      {:certifi, "~> 2.4"},
+      {:ssl_verify_fun, "~> 1.1"},
+    {:mint, "~> 0.1.0"},
+    {:oauth2, "~> 0.9"},
+
+    # delete:
+    {:poison, "~> 3.1"}
     ]
   end
 

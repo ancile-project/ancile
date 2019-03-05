@@ -4,8 +4,13 @@ defmodule Ancile.Models.User do
   import Ecto.Changeset
 
   schema "users" do
+
+    has_many :user_identities,
+             Ancile.Models.UserIdentity,
+             on_delete: :delete_all
+
     field :role, :string, default: "user"
-    field :token, :string, default: nil
+    field :api_token, :string, default: nil
 
     pow_user_fields()
 
@@ -20,7 +25,7 @@ defmodule Ancile.Models.User do
 
   def token_changeset(user_or_changeset, attrs) do
     user_or_changeset
-    |> cast(attrs, [:token])
+    |> cast(attrs, [:api_token])
   end
 
   def changeset(user_or_changeset, attrs) do

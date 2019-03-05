@@ -3,7 +3,7 @@ defmodule Ancile.Repo.Migrations.UpdataUsers do
 
   def change do
     alter table(:users) do
-      add :token, :string, null: true
+      add :api_token, :string, null: true
 
     end
 

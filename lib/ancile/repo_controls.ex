@@ -8,6 +8,7 @@ defmodule Ancile.RepoControls do
 
   alias Ancile.Models.Policy
   alias Ancile.Models.User
+  alias Ancile.Models.UserIdentity
 
   @doc """
   Returns the list of policies.
@@ -25,7 +26,7 @@ defmodule Ancile.RepoControls do
       fn x ->
         %{
           x |
-          policy: :erlang.binary_to_term(x.policy),
+          policy: x.policy,
           user_id: get_email_by_id(x.user_id),
           app_id: get_email_by_id(x.app_id)
         }
@@ -133,14 +134,32 @@ defmodule Ancile.RepoControls do
     query = from u in User, where: u.id == ^app.id
     app = Repo.one(query)
 
-    case app.token do
+    case app.api_token do
       nil ->
-        token = Phoenix.Token.sign(AncileWeb.Endpoint, "user salt", app.id)
-        User.token_changeset(app, %{"token" => token})
+        api_token = Phoenix.Token.sign(AncileWeb.Endpoint, "user salt", app.id)
+        User.token_changeset(app, %{"api_token" => api_token})
         |> Repo.update()
-        token
-      token -> token
+        api_token
+      api_token -> api_token
 
     end
   end
+
+  def get_policies(app_id, user_id, purpose) do
+    query = from p in Policy,
+                 where: p.user_id == ^user_id and p.app_id == ^app_id and p.purpose == ^purpose,
+                 select: p.policy
+    policies = Repo.all(query)
+    policies
+  end
+
+  def get_providers(user_id) do
+    query = from ui in UserIdentity,
+                 where: ui.user_id == ^user_id,
+                 select: [:provider, :tokens]
+    providers = Repo.all(query)
+    providers
+  end
+
+
 end
