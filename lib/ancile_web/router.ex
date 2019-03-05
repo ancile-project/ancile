@@ -57,7 +57,7 @@ defmodule AncileWeb.Router do
     resources "/policies", PolicyController
   end
 
-  scope "/user" do
+  scope "/account" do
     pipe_through [:browser, :user_protected]
 
     pow_assent_routes()
@@ -77,6 +77,7 @@ defmodule AncileWeb.Router do
     pipe_through [:browser, :user_protected]
 
     get "/dashboard", UserController, :user_dashboard
+    resources "/policies", User.PolicyController, as: :user_policy
   end
 
 #   Other scopes may use custom stacks.

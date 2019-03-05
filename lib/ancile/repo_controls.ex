@@ -115,6 +115,23 @@ defmodule Ancile.RepoControls do
     Policy.changeset(policy, %{})
   end
 
+
+  def list_policies(user_id) do
+    query = from p in Policy, where: p.user_id == ^user_id
+    policies = Repo.all(query)
+    Enum.map(
+      policies,
+      fn x ->
+        %{
+          x |
+          policy: x.policy,
+          user_id: get_email_by_id(x.user_id),
+          app_id: get_email_by_id(x.app_id)
+        }
+      end
+    )
+  end
+
   def get_by_role(role) do
     query = from u in User, where: u.role == ^role, select: u.email
     Repo.all(query)
