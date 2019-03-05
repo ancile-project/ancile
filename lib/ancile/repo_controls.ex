@@ -122,7 +122,11 @@ defmodule Ancile.RepoControls do
 
   def get_user_by_email(email) do
     query = from u in User, where: u.email == ^email, select: u.id
-    Repo.one(query)
+    res = Repo.one(query)
+    case res do
+      nil -> {:error, "No email: #{inspect(email)}"}
+      user -> {:ok, user}
+    end
   end
 
   def get_email_by_id(iid) do
@@ -149,16 +153,21 @@ defmodule Ancile.RepoControls do
     query = from p in Policy,
                  where: p.user_id == ^user_id and p.app_id == ^app_id and p.purpose == ^purpose,
                  select: p.policy
-    policies = Repo.all(query)
-    policies
+
+    case Repo.all(query) do
+      [] -> {:error, "No policy for user: #{inspect(user_id)}, app: #{inspect(app_id)}, purpose: #{inspect(purpose)}"}
+      policies -> {:ok, policies}
+    end
   end
 
   def get_providers(user_id) do
     query = from ui in UserIdentity,
                  where: ui.user_id == ^user_id,
                  select: [:provider, :tokens]
-    providers = Repo.all(query)
-    providers
+    case Repo.all(query) do
+      [] -> {:error, "No data providers connected for user: #{inspect(user_id)}. Go to your dashboard and connect them there."}
+      providers -> {:ok, providers}
+    end
   end
 
 
