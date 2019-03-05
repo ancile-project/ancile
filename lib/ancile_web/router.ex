@@ -57,7 +57,7 @@ defmodule AncileWeb.Router do
     resources "/policies", PolicyController
   end
 
-  scope "/account" do
+  scope "/user" do
     pipe_through [:browser, :user_protected]
 
     pow_assent_routes()

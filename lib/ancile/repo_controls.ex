@@ -172,7 +172,7 @@ defmodule Ancile.RepoControls do
                  select: p.policy
 
     case Repo.all(query) do
-      [] -> {:error, "No policy for user: #{inspect(get_email_by_id(user_id))}, app: #{inspect(get_email_by_id(app_id))}, purpose: #{inspect(purpose)}. You can create allow all policy: `ANYF*`"}
+      [] -> {:error, :no_policy_found}
       policies -> {:ok, policies}
     end
   end

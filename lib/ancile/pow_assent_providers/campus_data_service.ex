@@ -20,7 +20,7 @@ defmodule Ancile.PowAssentProviders.CampusDataService do
     IO.inspect(config, label: "get_user config: ")
     IO.inspect(token, label: "get_user token: ")
     user = %{
-      "uid"        => "NO UID",
+      "uid"        =>  token["refresh_token"], # this is stupid but CDS doesn't return user id
       "name" => "CDS, No data available. TODO: change it."}
 
       {:ok, user}
