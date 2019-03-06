@@ -11,7 +11,7 @@ and then move to the server version. Steps are similar
 except you need to obtain certificates differently. 
 
 1. Setup [Docker](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-18-04)
- and [Elixir](https://elixir-lang.org/install.html)
+ and [Elixir](https://elixir-lang.org/install.html) and [Node.JS](https://nodejs.org/en/download/package-manager/).
 1. Fetch dependencies: `mix deps.get` and build the project: `mix`.
 1. Get SSL certificates (run `mix phx.gen.cert` locally and use LetsEncrypt remotely)
    1. For the local deployment just check SSL location in `dev.exs`
@@ -59,6 +59,7 @@ except you need to obtain certificates differently.
         ```
 1. Configure PostgresSQL docker: `sh utils/postgres/create_docker_db.sh` 
 1. Add new tables to your database: `mix ecto.migrate`
+1. Install Node.js dependencies: `cd assets && npm install`. Don't forget to go back: `cd ..`.
 1. Start the server: `mix phx.server`
 
 
