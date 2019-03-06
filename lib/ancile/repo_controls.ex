@@ -11,7 +11,7 @@ defmodule Ancile.RepoControls do
   alias Ancile.Repo
 
   alias Ancile.Models.Policy
-  alias Ancile.Models.User
+  alias Ancile.Models.Account
   alias Ancile.Models.UserIdentity
 
   @doc """
@@ -137,12 +137,12 @@ defmodule Ancile.RepoControls do
   end
 
   def get_by_role(role) do
-    query = from u in User, where: u.role == ^role, select: u.email
+    query = from u in Account, where: u.role == ^role, select: u.email
     Repo.all(query)
   end
 
   def get_user_by_email(email) do
-    query = from u in User, where: u.email == ^email, select: u.id
+    query = from u in Account, where: u.email == ^email, select: u.id
     res = Repo.one(query)
     case res do
       nil -> {:error, "No user registered with this email: #{inspect(email)}"}
@@ -151,18 +151,18 @@ defmodule Ancile.RepoControls do
   end
 
   def get_email_by_id(iid) do
-    query = from u in User, where: u.id == ^iid, select: u.email
+    query = from u in Account, where: u.id == ^iid, select: u.email
     Repo.one(query)
   end
 
-  def get_token(%User{} = app) do
-    query = from u in User, where: u.id == ^app.id
+  def get_token(%Account{} = app) do
+    query = from u in Account, where: u.id == ^app.id
     app = Repo.one(query)
 
     case app.api_token do
       nil ->
         api_token = Phoenix.Token.sign(AncileWeb.Endpoint, "user salt", app.id)
-        User.token_changeset(app, %{"api_token" => api_token})
+        Account.token_changeset(app, %{"api_token" => api_token})
         |> Repo.update()
         api_token
       api_token -> api_token

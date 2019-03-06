@@ -1,6 +1,6 @@
 defmodule Ancile.Models.UserIdentity do
   use Ecto.Schema
-  use PowAssent.Ecto.UserIdentities.Schema, user: Ancile.Models.User
+  use PowAssent.Ecto.UserIdentities.Schema, user: Ancile.Models.Account
 
   schema "user_identities" do
 

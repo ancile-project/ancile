@@ -8,7 +8,7 @@ defmodule Ancile.Repo.Migrations.CreateUserIdentities do
       add :tokens, :map, null: true, default: nil
       add :data, :map, null: true, default: nil
 
-      add :user_id, references("users"), on_delete: :nothing
+      add :user_id, references("accounts"), on_delete: :nothing
 
       timestamps()
     end

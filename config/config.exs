@@ -26,7 +26,7 @@ config :phoenix, :json_library, Jason
 
 
 config :ancile, :pow,
-  user: Ancile.Models.User,
+  user: Ancile.Models.Account,
   repo: Ancile.Repo,
   web_module: AncileWeb,
   routes_backend: AncileWeb.Pow.Routes
