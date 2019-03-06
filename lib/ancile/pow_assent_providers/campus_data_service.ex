@@ -1,4 +1,8 @@
 defmodule Ancile.PowAssentProviders.CampusDataService do
+  @moduledoc """
+  Check Pow Assent library to see how it works.
+
+  """
   use PowAssent.Strategy.OAuth2.Base
 
   def default_config(_config) do
@@ -6,7 +10,6 @@ defmodule Ancile.PowAssentProviders.CampusDataService do
       site: "https://campus.cornelltech.io",
       authorize_url: "https://campus.cornelltech.io/o/authorize/",
       token_url: "https://campus.cornelltech.io/o/token/",
-#      user_url: "/user",
       authorization_paramks: [scope: "read"]
     ]
   end

@@ -1,6 +1,10 @@
 defmodule Ancile.RepoControls do
   @moduledoc """
-  The Core context.
+  This is a set of useful functions that
+  deal with database. Probably good to split it
+  in a more structural way.
+
+  @TODO: unify db calls to return {:ok, res} and {:error, res}
   """
 
   import Ecto.Query, warn: false

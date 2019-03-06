@@ -1,5 +1,12 @@
 defmodule AncileWeb.User.PolicyController do
+  @moduledoc """
+  Same thing as in AncileWeb.PolicyController, except
+  I don't pass a user name anywhere and extract it
+  through conn.assigns.current_user.id.
+  """
+
   use AncileWeb, :controller
+
 
   alias Ancile.RepoControls
   alias Ancile.Models.Policy
@@ -98,7 +105,13 @@ defmodule AncileWeb.User.PolicyController do
 
       {:error, %Ecto.Changeset{} = changeset} ->
         apps = RepoControls.get_by_role("app")
-        render(conn, "edit.html", policy: policy, changeset: changeset, apps: apps)
+        render(
+          conn,
+          "edit.html",
+          policy: policy,
+          changeset: changeset,
+          apps: apps
+        )
     end
   end
 

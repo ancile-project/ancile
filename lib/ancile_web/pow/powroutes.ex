@@ -1,4 +1,8 @@
 defmodule AncileWeb.Pow.Routes do
+  @moduledoc """
+  We need to modify behavior for our use cases.
+  """
+
   use Pow.Phoenix.Routes
   alias AncileWeb.Router.Helpers, as: Routes
 

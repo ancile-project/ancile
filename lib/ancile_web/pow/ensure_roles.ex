@@ -1,5 +1,7 @@
 defmodule AncileWeb.EnsureRolePlug do
   @moduledoc """
+  Copied from Pow Library:
+
   This plug ensures that a user has a particular role.
 
   ## Example

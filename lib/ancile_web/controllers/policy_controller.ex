@@ -1,4 +1,9 @@
 defmodule AncileWeb.PolicyController do
+  @moduledoc """
+  Controls policy modification (e.g. CRUD) for front end.
+  Nothing interesting, mostly generated code.
+  """
+
   use AncileWeb, :controller
 
   alias Ancile.RepoControls
