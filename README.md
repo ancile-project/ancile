@@ -15,7 +15,7 @@ except you need to obtain certificates differently.
 1. Fetch dependencies: `mix deps.get` and build the project: `mix`.
 1. Get SSL certificates (run `mix phx.gen.cert` locally and use LetsEncrypt remotely)
    1. For the local deployment just check SSL location in `dev.exs`
-   1. For remote deployment create `dev.secret.exs` and put the new config: 
+   1. Create empty `dev.secret.exs`. For remote deployment put the following config: 
    
         ```elixir
         config :ancile, AncileWeb.Endpoint,

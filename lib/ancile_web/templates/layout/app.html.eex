@@ -17,7 +17,7 @@
       <section class="container">
         <nav role="navigation">
           <ul>
-            <li><a href="/docs">Get Started</a></li>
+            <li><a href="/">Home</a></li>
           </ul>
         </nav>
         <a href="/" class="phx-logo">
