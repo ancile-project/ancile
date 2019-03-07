@@ -1,4 +1,8 @@
 defmodule AncileWeb.Endpoint do
+  @moduledoc """
+  -- never touched it:
+  """
+
   use Phoenix.Endpoint, otp_app: :ancile
 
   socket "/socket",

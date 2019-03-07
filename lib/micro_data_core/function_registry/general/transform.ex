@@ -36,11 +36,12 @@ defmodule MicroDataCore.FunctionRegistry.General.Transform do
 
 
     client = OAuth2.Client.new(token: access_token)
-    {:ok, result} = OAuth2.Client.get(client, "https://campus.cornelltech.io/api/location/mostrecent/")
 
-    Logger.info("result: #{inspect(result.body)}")
+    case OAuth2.Client.get(client, "https://campus.cornelltech.io/api/location/mostrecent/") do
+      {:ok, result} -> {%{"res" => result.body}, %{}}
+      {:error, %OAuth2.Error{reason: :timeout}}  -> {%{"res" => "timeout"}, %{}}
+    end
 
-    {%{"res" => result.body}, %{}}
   end
 
 

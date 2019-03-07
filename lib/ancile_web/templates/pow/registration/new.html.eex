@@ -11,7 +11,7 @@
   <%= text_input f, @changeset.data.__struct__.pow_user_id_field() %>
   <%= error_tag f, @changeset.data.__struct__.pow_user_id_field() %>
 
-  <%= label f, :password %>
+  <%= label f, "Password (10 characters minimum)" %>
   <%= password_input f, :password %>
   <%= error_tag f, :password %>
 

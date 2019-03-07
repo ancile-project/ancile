@@ -1,4 +1,8 @@
 defmodule Ancile.PowAssentProviders.CampusDataService do
+  @moduledoc """
+  Check Pow Assent library to see how it works.
+
+  """
   use PowAssent.Strategy.OAuth2.Base
 
   def default_config(_config) do
@@ -6,7 +10,6 @@ defmodule Ancile.PowAssentProviders.CampusDataService do
       site: "https://campus.cornelltech.io",
       authorize_url: "https://campus.cornelltech.io/o/authorize/",
       token_url: "https://campus.cornelltech.io/o/token/",
-#      user_url: "/user",
       authorization_paramks: [scope: "read"]
     ]
   end
@@ -20,7 +23,7 @@ defmodule Ancile.PowAssentProviders.CampusDataService do
     IO.inspect(config, label: "get_user config: ")
     IO.inspect(token, label: "get_user token: ")
     user = %{
-      "uid"        => "NO UID",
+      "uid"        =>  token["refresh_token"], # this is stupid but CDS doesn't return user id
       "name" => "CDS, No data available. TODO: change it."}
 
       {:ok, user}

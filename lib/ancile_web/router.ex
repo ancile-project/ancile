@@ -1,4 +1,9 @@
 defmodule AncileWeb.Router do
+  @moduledoc """
+  Our routing file that controls access and resources.
+  Each of the roles (Admin, User, App) will get separate dashboards.
+  """
+
   use AncileWeb, :router
   use Pow.Phoenix.Router
   use PowAssent.Phoenix.Router
@@ -13,6 +18,9 @@ defmodule AncileWeb.Router do
     plug :put_secure_browser_headers
   end
 
+  @doc """
+  We should make it lightweight, so our API requests get processed faster.
+  """
   pipeline :api do
     plug :accepts, ["json"]
   end
@@ -61,14 +69,12 @@ defmodule AncileWeb.Router do
     pipe_through [:browser, :user_protected]
 
     pow_assent_routes()
-
-    end
+  end
 
   scope "/app", AncileWeb do
     pipe_through [:browser, :app_protected]
 
     get "/dashboard", AppController, :app_dashboard
-    get "/program_add", AppController, :serve_add_page
     get "/token", AppController, :get_token
 
   end
@@ -77,13 +83,16 @@ defmodule AncileWeb.Router do
     pipe_through [:browser, :user_protected]
 
     get "/dashboard", UserController, :user_dashboard
+    resources "/policies", User.PolicyController, as: :user_policy
   end
 
-#   Other scopes may use custom stacks.
-   scope "/api", AncileWeb.API do
-     pipe_through :api
+  @doc """
+  API endpoint to process data.
+  """
+  scope "/api", AncileWeb.API do
+    pipe_through :api
 
-     get "/", RunController, :api_test
-     post "/run", RunController, :run_program
-   end
+    get "/", RunController, :api_test
+    post "/run", RunController, :run_program
+  end
 end

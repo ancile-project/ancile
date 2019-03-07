@@ -1,13 +1,14 @@
-defmodule Ancile.Models.User do
+defmodule Ancile.Models.Account do
   use Ecto.Schema
   use Pow.Ecto.Schema
   import Ecto.Changeset
 
-  schema "users" do
+  schema "accounts" do
 
     has_many :user_identities,
              Ancile.Models.UserIdentity,
-             on_delete: :delete_all
+             on_delete: :delete_all,
+             foreign_key: :user_id
 
     field :role, :string, default: "user"
     field :api_token, :string, default: nil
