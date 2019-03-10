@@ -47,7 +47,7 @@ defmodule MicroDataCore.FunctionRegistry.General.Transform do
   def get_location_data_vassar(params, data, sensitive_data, _function_state) do
     Logger.info("data: #{inspect(data)}")
     Logger.info("params: #{inspect(params)}")
-    res = Enum.find(sensitive_data, fn x -> x.provider == "campus_data_service"  end)
+    res = Enum.find(sensitive_data, fn x -> x.provider == "vassar_campus_data_service"  end)
     {:ok, access_token} = IO.inspect(Map.fetch(res.tokens, "access_token"))
 
 
