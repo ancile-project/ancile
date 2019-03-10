@@ -44,6 +44,22 @@ defmodule MicroDataCore.FunctionRegistry.General.Transform do
 
   end
 
+  def get_location_data_vassar(params, data, sensitive_data, _function_state) do
+    Logger.info("data: #{inspect(data)}")
+    Logger.info("params: #{inspect(params)}")
+    res = Enum.find(sensitive_data, fn x -> x.provider == "campus_data_service"  end)
+    {:ok, access_token} = IO.inspect(Map.fetch(res.tokens, "access_token"))
+
+
+    client = OAuth2.Client.new(token: access_token)
+
+    case OAuth2.Client.get(client, "https://campusdataservices.cs.vassar.edu/api/last_known") do
+      {:ok, result} -> {%{"res" => result.body}, %{}}
+      {:error, %OAuth2.Error{reason: :timeout}}  -> {%{"res" => "timeout"}, %{}}
+    end
+
+  end
+
 
   def filter_floor({:params, params}, %{"res" => location}, _sensitive_data, _function_state) do
     Logger.info("location: #{inspect(location)}")
