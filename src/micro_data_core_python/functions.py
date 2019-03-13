@@ -14,3 +14,15 @@ def qwer():
 @PolicyProcessor.decorator
 def zxcv():
     print('FUNC: zxcv')
+
+
+@PolicyProcessor.decorator
+def get_location():
+    print("FUNC: get_location")
+    return True
+
+
+@PolicyProcessor.decorator
+def filter_floor(floor):
+    print("FUNC: filter_floor" + str(floor))
+    return True

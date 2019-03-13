@@ -4,7 +4,8 @@ from src.micro_data_core_python.functions import *
 
 
 
-def execute(program, policy, sensitive_data=None):
+
+def execute(policy, program, sensitive_data=None):
 
     parsed_policy = PolicyParser.parse_it(policy.decode('ascii'))
     decorator.PolicyProcessor.current_policy = parsed_policy
@@ -15,14 +16,15 @@ def execute(program, policy, sensitive_data=None):
     try:
         exec(program)
     except ValueError:
+        print('Policy did not pass.')
         return False
     return data
 
 
 if __name__ == '__main__':
 
-    res = execute(b'data.append(5)\nasdf()\nqwer()', b'asdf.qwer', None)
+    res = execute(b'asdf.qwer', b'data.append(5)\nasdf()\nqwer()', None)
     print(f'POLICY EVALUATED TO {res}\n')
-    res = execute(b'data.append(5)\nqwer()\nqwer()', b'qwer.asdf', None)
+    res = execute(b'qwer.asdf', b'data.append(5)\nqwer()\nqwer()', None)
     print(f'POLICY EVALUATED TO {res}')
 

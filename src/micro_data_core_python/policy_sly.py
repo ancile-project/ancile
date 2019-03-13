@@ -1,7 +1,7 @@
 from sly import Lexer, Parser
 
 class PolicyLexer(Lexer):
-    tokens = { TEXT, NUMBER, UNION, CONCAT, INTERSECT,  NEG, STAR }
+    tokens = { TEXT, NUMBER, UNION, CONCAT, INTERSECT,  NEG, STAR, ANYF }
     ignore = ' \s\t\n\r'
 
     # Tokens
@@ -12,6 +12,7 @@ class PolicyLexer(Lexer):
     UNION = r'\+'
     CONCAT = r'\.'
     INTERSECT = r'\&'
+    ANYF = 'ANYF'
     # LPAREN = r'\('
     # RPAREN = r'\)'
     # LBRACKET = r'\['
@@ -50,6 +51,10 @@ class PolicyParser(Parser):
     @_('TEXT')
     def clause(self, p):
         return ['exec', p.TEXT]
+
+    @_('ANYF')
+    def clause(self, p):
+        return ['exec', "ANYF"]
 
     @_('clause CONCAT clause')
     def clause(self, p):

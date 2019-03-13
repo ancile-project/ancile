@@ -4,6 +4,10 @@ class PolicyProcessor:
     @classmethod
     def decorator(cls, f):
         def wrapper(*args, **kwargs):
+            print('args')
+            print(args)
+            print('kwargs')
+            print(kwargs)
             print(f'DECORATOR. Executing command: {f.__name__} over policy: {cls.current_policy}')
             cls.current_policy = d_step(cls.current_policy, f.__name__)
             print(f'D step output: {cls.current_policy}')
@@ -22,6 +26,8 @@ def d_step(policy, command):
     operator = policy[0]
     if operator == 'exec':
         if policy[1] == command:
+            return 1
+        elif policy[1] == 'ANYF':
             return 1
         else:
             return 0
