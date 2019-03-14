@@ -5,6 +5,7 @@ defmodule AncileWeb.API.RunController do
   """
 
   use AncileWeb, :controller
+  use Export.Python
   alias Ancile.RepoControls
   alias MicroDataCore.Core
   alias AncileWeb.API.Helper
@@ -39,7 +40,7 @@ defmodule AncileWeb.API.RunController do
          {:ok, policies} <- Helper.get_joined_policy(app_id, user_id, purpose),
          joined_policies <- Helper.intersect_policies(policies),
          {:ok, sensitive_data} <- RepoControls.get_providers(user_id),
-         {:ok, res} <- Core.phoenix_entry(joined_policies, program, sensitive_data)
+         {:ok, res} <- run_python_core(joined_policies, program, nil)
       do
       Logger.debug("user_id: #{inspect(user_id)}")
       Logger.debug("app_id: #{inspect(app_id)}")
@@ -67,6 +68,19 @@ defmodule AncileWeb.API.RunController do
   def run_program(conn, params) do
     IO.inspect(params, label: "params: ")
     json(conn, %{error: "Send correct params"})
+  end
+
+  def run_python_core(policy, program, sensitive_data) do
+    {:ok, pid} = Python.start(python_path: Path.expand("src/micro_data_core_python"))
+    IO.inspect(pid, label: "PID: ")
+    module = "core"
+    method = "execute"
+    params = [policy, program, sensitive_data]
+    result = pid
+             |> Python.call(module, method, params)
+    IO.inspect(result)
+
+    {:ok, result}
   end
 
 
