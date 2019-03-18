@@ -48,3 +48,4 @@ npm-debug.log
 *.iml
 # ignore generated parsers
 *.erl
+__pycache__
