@@ -191,5 +191,22 @@ defmodule Ancile.RepoControls do
     end
   end
 
+  def extract_tokens(providers) do
+    providers 
+    |> Enum.map(fn record -> {provider_name_to_site(record.provider), record.tokens["access_token"]} end)
+  end
+
+  defp provider_name_to_site(provider_name) do
+    strategy = Application.get_env(:ancile, :pow_assent)
+    |> Keyword.fetch!(:providers)
+    # |> IO.inspect
+    |> Enum.find(fn {name, _vals} -> String.to_atom(provider_name) == name end)
+    |> elem(1)
+    |> Keyword.fetch!(:strategy)
+
+    strategy.default_config(nil)
+    |> Keyword.fetch!(:site)
+    # |> IO.inspect
+  end
 
 end

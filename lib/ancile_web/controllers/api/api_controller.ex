@@ -40,13 +40,14 @@ defmodule AncileWeb.API.RunController do
          {:ok, policies} <- Helper.get_joined_policy(app_id, user_id, purpose),
          joined_policies <- Helper.intersect_policies(policies),
          {:ok, sensitive_data} <- RepoControls.get_providers(user_id),
-         {:ok, res} <- run_python_core(joined_policies, program, nil)
+         {:ok, res} <- run_python_core(joined_policies, program, RepoControls.extract_tokens(sensitive_data))
       do
       Logger.debug("user_id: #{inspect(user_id)}")
       Logger.debug("app_id: #{inspect(app_id)}")
       Logger.debug("program: #{inspect(program)}")
       Logger.debug("policies: #{inspect(policies)}")
       Logger.debug("joined policy: #{inspect(policies)}")
+      Logger.debug("sensitive_data: #{inspect(sensitive_data |> RepoControls.extract_tokens)}")
       json(conn, %{policies: joined_policies, program: program, output: res})
 
     else
