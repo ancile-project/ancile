@@ -1,37 +1,51 @@
-from src.micro_data_core_python.policy_processor import PolicyProcessor
+from src.micro_data_core_python.user_specific import UserSpecific
 
 class AncileException(Exception):
     pass
 
 
-@PolicyProcessor.decorator
-def asdf():
-    print('FUNC: asdf')
-
-
-@PolicyProcessor.decorator
-def qwer():
-    print('FUNC: qwer')
-
-
-@PolicyProcessor.decorator
-def zxcv():
-    print('FUNC: zxcv')
-
-
-@PolicyProcessor.decorator
-def get_location():
-    print("FUNC: get_location")
+@UserSpecific.get_data_decorator
+def fetch_test_data(data=None, data_source="dataA", token=None):
+    print("FUNC: fetch_test_data")
+    data['fetch_test_data'] = True
     return True
 
 
-@PolicyProcessor.decorator
+@UserSpecific.return_data_decorator
+def return_data(data):
+    print(f'FUNC: return. data: {data}')
+
+    return data
+
+@UserSpecific.transform_decorator
+def asdf(data):
+    data['asdf'] = True
+    print('FUNC: asdf')
+    return True
+
+
+@UserSpecific.transform_decorator
+def qwer(data):
+    data['qwer'] = True
+    print('FUNC: qwer')
+    return True
+
+
+@UserSpecific.transform_decorator
+def zxcv(data):
+    data['qwer'] = True
+    print('FUNC: zxcv')
+    return True
+
+
+@UserSpecific.transform_decorator
 def filter_floor(floor):
     print("FUNC: filter_floor" + str(floor))
     return True
 
-@PolicyProcessor.decorator
-def get_data(target_url, sensitive_data):
+
+@UserSpecific.get_data_decorator
+def get_data(target_url, sensitive_data, data=None, data_source="dataA", token=None):
     import requests
     print("FUNC: GET_DATA")
     print("  target_url: " + target_url)
