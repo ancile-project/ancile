@@ -18,7 +18,8 @@ defmodule AncileWeb.PolicyController do
     changeset = RepoControls.change_policy(%Policy{})
     users = RepoControls.get_by_role("user")
     apps = RepoControls.get_by_role("app")
-    render(conn, "new.html", changeset: changeset, users: users, apps: apps)
+
+    render(conn, "new.html", changeset: changeset, users: users, apps: apps, providers: RepoControls.get_providers())
   end
 
   def create(
@@ -28,6 +29,7 @@ defmodule AncileWeb.PolicyController do
             "active" => active,
             "policy" => policy,
             "purpose" => purpose,
+            "provider" => provider,
             "user_id" => user_email,
             "app_id" => app_email
           }
@@ -40,6 +42,7 @@ defmodule AncileWeb.PolicyController do
       app_id: app_id,
       user_id: user_id,
       policy: policy,
+      provider: provider,
       purpose: purpose,
       active: active
     }
@@ -72,7 +75,7 @@ defmodule AncileWeb.PolicyController do
     changeset = RepoControls.change_policy(policy)
     users = RepoControls.get_by_role("user")
     apps = RepoControls.get_by_role("app")
-    render(conn, "edit.html", policy: policy, changeset: changeset, users: users, apps: apps)
+    render(conn, "edit.html", policy: policy, changeset: changeset, users: users, apps: apps, providers: RepoControls.get_providers())
   end
 
   def update(
@@ -83,6 +86,7 @@ defmodule AncileWeb.PolicyController do
             "active" => active,
             "policy" => policy_text,
             "purpose" => purpose,
+            "provider" => provider,
             "user_id" => user_email,
             "app_id" => app_email
           }
@@ -96,6 +100,7 @@ defmodule AncileWeb.PolicyController do
       user_id: user_id,
       policy: policy_text,
       purpose: purpose,
+      provider: provider,
       active: active
     }
 
@@ -108,7 +113,7 @@ defmodule AncileWeb.PolicyController do
       {:error, %Ecto.Changeset{} = changeset} ->
         users = RepoControls.get_by_role("user")
         apps = RepoControls.get_by_role("app")
-        render(conn, "edit.html", policy: policy, changeset: changeset, users: users, apps: apps)
+        render(conn, "edit.html", policy: policy, changeset: changeset, users: users, apps: apps, providers: RepoControls.get_providers())
     end
   end
 

@@ -7,6 +7,7 @@ defmodule Ancile.Models.Policy do
     field :active, :boolean, default: false
     field :policy, :binary, default: nil
     field :purpose, :string, default: nil
+    field :provider, :string, default: nil
     field :app_id, :id, default: nil
     field :user_id, :id, default: nil
 
@@ -16,7 +17,7 @@ defmodule Ancile.Models.Policy do
   @doc false
   def changeset(policy, attrs) do
     policy
-    |> cast(attrs, [:app_id, :user_id, :purpose, :policy, :active])
-    |> validate_required([:app_id, :user_id, :purpose, :policy, :active])
+    |> cast(attrs, [:app_id, :user_id, :purpose, :policy, :active, :provider])
+    |> validate_required([:app_id, :user_id, :purpose, :policy, :active, :provider])
   end
 end

@@ -209,4 +209,8 @@ defmodule Ancile.RepoControls do
     # |> IO.inspect
   end
 
+  def get_providers() do
+    ["vassar", "cds"]
+  end
+
 end

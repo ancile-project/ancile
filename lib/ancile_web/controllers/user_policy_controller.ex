@@ -20,7 +20,7 @@ defmodule AncileWeb.User.PolicyController do
     changeset = RepoControls.change_policy(%Policy{})
     apps = RepoControls.get_by_role("app")
 
-    render(conn, "new.html", changeset: changeset, apps: apps)
+    render(conn, "new.html", changeset: changeset, apps: apps, providers: RepoControls.get_providers())
   end
 
   def create(
@@ -71,7 +71,7 @@ defmodule AncileWeb.User.PolicyController do
     policy = RepoControls.get_policy!(id)
     changeset = RepoControls.change_policy(policy)
     apps = RepoControls.get_by_role("app")
-    render(conn, "edit.html", policy: policy, changeset: changeset, apps: apps)
+    render(conn, "edit.html", policy: policy, changeset: changeset, apps: apps, providers: RepoControls.get_providers())
   end
 
   def update(

@@ -13,14 +13,14 @@ def gen_valid_class_namespace():
 def execute(policies, program, sensitive_data=None):
     parsed_policies = dict()
     for provider, policy in policies.items():
-        parsed_policies[provider] = PolicyParser.parse_it(policy.decode('ascii'))
+        parsed_policies[provider] = PolicyParser.parse_it(policy)
 
     # THIS WILL GET CHANGED
     UserSpecific._user_policies = parsed_policies
     UserSpecific._user_tokens = sensitive_data
 
     print(f'\nparsed policies: {UserSpecific._user_policies}')
-    program = program.decode('ascii')
+    program = program
     print(f'submitted program:\n{program}\n')
     result = []
 
@@ -42,7 +42,7 @@ def execute(policies, program, sensitive_data=None):
 if __name__ == '__main__':
     policies = {'https://campusdataservices.cs.vassar.edu': b'get_data.asdf.qwer.keep_keys.return_data'}
     user_tokens = {'https://campusdataservices.cs.vassar.edu':'CiISkjBh2RIOj8ivQeoPQ4RPj1IrTJaTIvx2lKeJf8'}
-    program  = b'''
+    program  = '''
 
 def return_data(data=None):
     return data
