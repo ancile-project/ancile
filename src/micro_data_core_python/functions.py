@@ -1,64 +1,89 @@
 from src.micro_data_core_python.user_specific import UserSpecific
+from src.micro_data_core_python.datapolicypair import DataPolicyPair
 
 class AncileException(Exception):
     pass
 
+## ALLOWED is probably not needed
+class Allowed:
+    pass
 
-@UserSpecific.get_data_decorator
-def fetch_test_data(data=None, data_source="dataA", token=None):
-    print("FUNC: fetch_test_data")
-    data['fetch_test_data'] = True
-    return True
+class Transformation(Allowed):
+    @staticmethod
+    @UserSpecific.transform_decorator
+    def asdf(data):
+        data['asdf'] = True
+        print('FUNC: asdf')
+        return True
+
+    @staticmethod
+    @UserSpecific.transform_decorator
+    def qwer(data):
+        data['qwer'] = True
+        print('FUNC: qwer')
+        return True
+
+    @staticmethod
+    @UserSpecific.transform_decorator
+    def zxcv(data):
+        data['qwer'] = True
+        print('FUNC: zxcv')
+        return True
+
+    @staticmethod
+    @UserSpecific.transform_decorator
+    def filter_floor(floor):
+        print("FUNC: filter_floor" + str(floor))
+        return True
+
+    @staticmethod
+    @UserSpecific.transform_decorator
+    def keep_keys(data, keys = []):
+        dropped = set(data.keys()) - set(keys)
+        for key in dropped:
+            del data[key] 
+        return True
 
 
-@UserSpecific.return_data_decorator
-def return_data(data):
-    print(f'FUNC: return. data: {data}')
+    
+class DataIngress(Allowed):
 
-    return data
-
-@UserSpecific.transform_decorator
-def asdf(data):
-    data['asdf'] = True
-    print('FUNC: asdf')
-    return True
+    @staticmethod
+    def get_empty_data_pair(data_source=None):
+        ## PROBABLY NEED TO CHANGE TO TAKE A USER INFO ARGUMENT
+        return DataPolicyPair(UserSpecific._user_policies[data_source])
 
 
-@UserSpecific.transform_decorator
-def qwer(data):
-    data['qwer'] = True
-    print('FUNC: qwer')
-    return True
+    @staticmethod
+    @UserSpecific.get_data_decorator
+    def fetch_test_data(data=None, data_source="dataA", token=None):
+        print("FUNC: fetch_test_data")
+        data['fetch_test_data'] = True
+        return True
 
+    @staticmethod
+    @UserSpecific.get_data_decorator
+    def get_data(data, target_url=None, token=None, data_source=None):
+        import requests
+        print("FUNC: GET_DATA")
+        print("  target_url: " + target_url)
+        # _, access_token = _url_preprocessor(target_url, UserSpecific._user_tokens)
+        # access_token = str(access_token, 'utf8')
 
-@UserSpecific.transform_decorator
-def zxcv(data):
-    data['qwer'] = True
-    print('FUNC: zxcv')
-    return True
+        r = requests.get(target_url, headers={'Authorization': "Bearer " + token})
 
+        if r.status_code == 200:
+            data.update(r.json()) # Need to maintain given dict
+        else:
+            print(r.status_code)
+            raise AncileException("Request error")
 
-@UserSpecific.transform_decorator
-def filter_floor(floor):
-    print("FUNC: filter_floor" + str(floor))
-    return True
-
-
-@UserSpecific.get_data_decorator
-def get_data(target_url, sensitive_data, data=None, data_source="dataA", token=None):
-    import requests
-    print("FUNC: GET_DATA")
-    print("  target_url: " + target_url)
-    _, access_token = _url_preprocessor(target_url, sensitive_data)
-    access_token = str(access_token, 'utf8')
-
-    r = requests.get(target_url, headers={'Authorization': "Bearer " + access_token})
-#     print(r.status_code)
-    # print(r.json())
-    try:
-        return r.json()
-    except ValueError:
-        return r.text
+class DataEgress(Allowed):
+    @staticmethod
+    @UserSpecific.return_data_decorator
+    def return_data(data):
+        print(f'FUNC: return. data: {data}')
+        return data
 
 
 def _url_preprocessor(target_url, sensitive_data):

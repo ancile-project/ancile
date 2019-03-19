@@ -32,13 +32,15 @@ class UserSpecific:
                 # let's just ask to specify kwargs. Useful for policy creation.
                 raise ValueError("Please specify keyword arguments instead of positions.")
             ds = kwargs.get('data_source', False)
+            dp_pair = kwargs.get('data', False)
+
             if ds:
-                policy = cls._user_policies[ds]
-                dp_pair = DataPolicyPair(policy)
-                kwargs['data'] = dp_pair
-                kwargs['token'] = cls._user_tokens.get('token', None)
+                ## COMMENTED OUT FOR THE GEN EMPTY VERSION
+                # policy = cls._user_policies[ds]
+                # dp_pair = DataPolicyPair(policy)
+                # kwargs['data'] = dp_pair
+                kwargs['token'] = cls._user_tokens.get(ds, None)
                 dp_pair.call(f, *args, **kwargs)
-                return dp_pair
             else:
                 raise ValueError("Please specify parameter: data_source.")
 
