@@ -44,8 +44,6 @@ if __name__ == '__main__':
     user_tokens = {'https://campusdataservices.cs.vassar.edu':'CiISkjBh2RIOj8ivQeoPQ4RPj1IrTJaTIvx2lKeJf8'}
     program  = '''
 
-def return_data(data=None):
-    return data
 
 dp_1 = DataIngress.get_empty_data_pair('https://campusdataservices.cs.vassar.edu')
 DataIngress.get_data(data=dp_1, 
