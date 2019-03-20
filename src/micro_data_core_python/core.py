@@ -18,8 +18,8 @@ def gen_module_namespace():
     # This slightly gross comprehension creates a dictionary with the module name
     # and the imported module for all modules (NOT PACKAGES) in the given base package
     # excludes any module mentioned in the exclude list (see functions._config.py)
-    return { mod_name: importlib.import_module(prefix_name + mod_name) 
-        for _, mod_name, is_pac in pkgutil.iter_modules(path=base.__path__) 
+    return { mod_name: importlib.import_module(prefix_name + mod_name)
+        for _, mod_name, is_pac in pkgutil.iter_modules(path=base.__path__)
         if not is_pac and mod_name not in exclude}
 
 
