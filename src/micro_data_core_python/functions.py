@@ -1,5 +1,6 @@
 from src.micro_data_core_python.user_specific import UserSpecific
 from src.micro_data_core_python.datapolicypair import DataPolicyPair
+from src.micro_data_core_python.decorators import *
 
 class AncileException(Exception):
     pass
@@ -10,34 +11,34 @@ class Allowed:
 
 class Transformation(Allowed):
     @staticmethod
-    @UserSpecific.transform_decorator
+    @transform_decorator
     def asdf(data):
         data['asdf'] = True
         print('FUNC: asdf')
         return True
 
     @staticmethod
-    @UserSpecific.transform_decorator
+    @transform_decorator
     def qwer(data):
         data['qwer'] = True
         print('FUNC: qwer')
         return True
 
     @staticmethod
-    @UserSpecific.transform_decorator
+    @transform_decorator
     def zxcv(data):
         data['qwer'] = True
         print('FUNC: zxcv')
         return True
 
     @staticmethod
-    @UserSpecific.transform_decorator
+    @transform_decorator
     def filter_floor(floor):
         print("FUNC: filter_floor" + str(floor))
         return True
 
     @staticmethod
-    @UserSpecific.transform_decorator
+    @transform_decorator
     def keep_keys(data, keys = []):
         dropped = set(data.keys()) - set(keys)
         for key in dropped:
@@ -48,22 +49,17 @@ class Transformation(Allowed):
     
 class DataIngress(Allowed):
 
-    @staticmethod
-    def get_empty_data_pair(data_source=None):
-        ## PROBABLY NEED TO CHANGE TO TAKE A USER INFO ARGUMENT
-        return DataPolicyPair(UserSpecific._user_policies[data_source])
-
 
     @staticmethod
-    @UserSpecific.get_data_decorator
+    @get_data_decorator
     def fetch_test_data(data=None, data_source="dataA", token=None):
         print("FUNC: fetch_test_data")
         data['fetch_test_data'] = True
         return True
 
     @staticmethod
-    @UserSpecific.get_data_decorator
-    def get_data(data, target_url=None, token=None, data_source=None):
+    @get_data_decorator
+    def get_data(data, target_url=None, token=None, data_source=None, user_specific=None):
         import requests
         print("FUNC: GET_DATA")
         print("  target_url: " + target_url)
@@ -80,7 +76,7 @@ class DataIngress(Allowed):
 
 class DataEgress(Allowed):
     @staticmethod
-    @UserSpecific.return_data_decorator
+    @return_data_decorator
     def return_data(data):
         print(f'FUNC: return. data: {data}')
         return data

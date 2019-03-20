@@ -15,9 +15,8 @@ def execute(policies, program, sensitive_data=None):
     for provider, policy in policies.items():
         parsed_policies[provider] = PolicyParser.parse_it(policy)
 
-    # THIS WILL GET CHANGED
-    UserSpecific._user_policies = parsed_policies
-    UserSpecific._user_tokens = sensitive_data
+    # We need
+    user_specific = UserSpecific(parsed_policies, sensitive_data)
 
     print(f'\nparsed policies: {UserSpecific._user_policies}')
     program = program
@@ -30,7 +29,7 @@ def execute(policies, program, sensitive_data=None):
         raise AncileException(compile_results.errors)
     
     glbls = safe_globals.copy()
-    lcls = {'result':result} # Probably need a User info struct here
+    lcls = {'result':result, 'user_specific': user_specific} # Probably need a User info struct here
     lcls.update(gen_valid_class_namespace())
 
     exec(program, glbls, lcls)
@@ -40,15 +39,15 @@ def execute(policies, program, sensitive_data=None):
 
 
 if __name__ == '__main__':
-    policies = {'https://campusdataservices.cs.vassar.edu': b'get_data.asdf.qwer.keep_keys.return_data'}
+    policies = {'https://campusdataservices.cs.vassar.edu': 'get_data.asdf.qwer.keep_keys.return_data'}
     user_tokens = {'https://campusdataservices.cs.vassar.edu':'CiISkjBh2RIOj8ivQeoPQ4RPj1IrTJaTIvx2lKeJf8'}
     program  = '''
 
 
-dp_1 = DataIngress.get_empty_data_pair('https://campusdataservices.cs.vassar.edu')
+dp_1 = user_specific.get_empty_data_pair(data_source='https://campusdataservices.cs.vassar.edu')
 DataIngress.get_data(data=dp_1, 
     target_url='https://campusdataservices.cs.vassar.edu/api/last_known',
-    data_source='https://campusdataservices.cs.vassar.edu')
+    data_source='https://campusdataservices.cs.vassar.edu', user_specific=user_specific)
 
 
 
