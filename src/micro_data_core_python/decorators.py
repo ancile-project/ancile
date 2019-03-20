@@ -17,7 +17,7 @@ def transform_decorator(f):
     return wrapper
 
 
-def get_data_decorator(f):
+def external_request_decorator(f):
     def wrapper(*args, **kwargs):
         print(f'function: {f.__name__}. args: {args}, kwargs: {kwargs}')
         if args:

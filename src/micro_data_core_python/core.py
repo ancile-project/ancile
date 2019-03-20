@@ -1,14 +1,27 @@
 from src.micro_data_core_python.policy_sly import PolicyParser
-from src.micro_data_core_python.functions import AncileException
+from src.micro_data_core_python.errors import AncileException
 from src.micro_data_core_python.user_specific import UserSpecific
 from RestrictedPython import compile_restricted_exec, safe_globals
 import inspect
 
 
-def gen_valid_class_namespace():
-    import src.micro_data_core_python.functions 
-    return {m[0]: m[1] for m in inspect.getmembers(src.micro_data_core_python.functions, inspect.isclass) 
-                if m[1].__module__ == 'src.micro_data_core_python.functions'}
+def gen_module_namespace():
+    import pkgutil
+    import importlib
+    import src.micro_data_core_python.functions as base
+    from src.micro_data_core_python.functions._config import exclude
+
+    importlib.invalidate_caches()
+
+    prefix_name = base.__name__ + '.'
+
+    # This slightly gross comprehension creates a dictionary with the module name
+    # and the imported module for all modules (NOT PACKAGES) in the given base package
+    # excludes any module mentioned in the exclude list (see functions._config.py)
+    return { mod_name: importlib.import_module(prefix_name + mod_name) 
+        for _, mod_name, is_pac in pkgutil.iter_modules(path=base.__path__) 
+        if not is_pac and mod_name not in exclude}
+
 
 def execute(policies, program, sensitive_data=None):
     parsed_policies = dict()
@@ -30,7 +43,7 @@ def execute(policies, program, sensitive_data=None):
 
     glbls = safe_globals.copy()
     lcls = {'result':result, 'user_specific': user_specific} # Probably need a User info struct here
-    lcls.update(gen_valid_class_namespace())
+    lcls.update(gen_module_namespace())
 
     exec(program, glbls, lcls)
 
@@ -45,14 +58,14 @@ if __name__ == '__main__':
 
 
 dp_1 = user_specific.get_empty_data_pair(data_source='https://campusdataservices.cs.vassar.edu')
-DataIngress.get_data(data=dp_1, 
+provider_interaction.get_data(data=dp_1, 
     target_url='https://campusdataservices.cs.vassar.edu/api/last_known')
 
 
-Transformation.asdf(data=dp_1)
-Transformation.qwer(data=dp_1)
-Transformation.keep_keys(data=dp_1, keys=['latitude', 'longitude'])
-result.append(DataEgress.return_data(data=dp_1))
+general.asdf(data=dp_1)
+general.qwer(data=dp_1)
+general.keep_keys(data=dp_1, keys=['latitude', 'longitude'])
+result.append(use_type.return_data(data=dp_1))
 
 '''        
 
