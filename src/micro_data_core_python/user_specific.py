@@ -1,24 +1,35 @@
 from src.micro_data_core_python.datapolicypair import DataPolicyPair
-from src.micro_data_core_python.functions import use_type
+from src.micro_data_core_python.errors import AncileException
+
 
 class UserSpecific:
 
-    _user_policies = dict()
-    _user_tokens = dict()
-
-    def __init__(self, policies, tokens, result_field):
+    def __init__(self, policies, tokens):
         self._user_policies = policies
         self._user_tokens = tokens
-        self._result = result_field
-
+        self._active_dps = dict()
+        print(f'\nparsed policies: {self._user_policies}')
 
     def get_empty_data_pair(self, data_source):
+        if self._active_dps.get(data_source, False):
+            raise AncileException(f"There already exists a Data Policy pair"
+                                  f"for {data_source}. Either call "
+                                  f"retrieve_existing_dp_pair() or provide empty UUID")
         if self._user_policies.get(data_source, False):
             policy = self._user_policies[data_source]
             token = self._user_tokens[data_source]['access_token']
-            return DataPolicyPair(policy, token)
+            dp_pair = DataPolicyPair(policy, token)
+            self._active_dps[data_source] = dp_pair
+            return dp_pair
         else:
-            raise ValueError(f"No policies {data_source} for the user")
-    
-    def return_data(self, dp):
-        self._result = use_type.return_data(data=dp)
+            raise AncileException(f"No policies for provider {data_source}, for"
+                                  f" this user. Please ask the user to add the policy.")
+
+
+    def retrieve_existing_dp_pair(self, data_source):
+        if self._active_dps.get(data_source, False):
+            return self._active_dps[data_source]
+        else:
+            raise AncileException(f"The DP for {data_source} doesn't exist. "
+                                  "Create the new one, or provide the correct"
+                                  "UUID to retrieve saved state.")

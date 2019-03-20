@@ -1,6 +1,7 @@
-from src.micro_data_core_python.decorators import return_data_decorator
+from src.micro_data_core_python.decorators import use_type_decorator
 
-@return_data_decorator
-def return_data(data):
+
+@use_type_decorator
+def return_data_to_the_program(data):
     print(f'FUNC: return. data: {data}')
     return data
