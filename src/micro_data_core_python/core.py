@@ -27,7 +27,7 @@ def execute(policies, program, sensitive_data=None):
 
     if compile_results.errors:
         raise AncileException(compile_results.errors)
-    
+
     glbls = safe_globals.copy()
     lcls = {'result':result, 'user_specific': user_specific} # Probably need a User info struct here
     lcls.update(gen_valid_class_namespace())
@@ -46,9 +46,7 @@ if __name__ == '__main__':
 
 dp_1 = user_specific.get_empty_data_pair(data_source='https://campusdataservices.cs.vassar.edu')
 DataIngress.get_data(data=dp_1, 
-    target_url='https://campusdataservices.cs.vassar.edu/api/last_known',
-    data_source='https://campusdataservices.cs.vassar.edu', user_specific=user_specific)
-
+    target_url='https://campusdataservices.cs.vassar.edu/api/last_known')
 
 
 Transformation.asdf(data=dp_1)

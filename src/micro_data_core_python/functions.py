@@ -1,5 +1,3 @@
-from src.micro_data_core_python.user_specific import UserSpecific
-from src.micro_data_core_python.datapolicypair import DataPolicyPair
 from src.micro_data_core_python.decorators import *
 
 class AncileException(Exception):
@@ -45,7 +43,6 @@ class Transformation(Allowed):
             del data[key] 
         return True
 
-
     
 class DataIngress(Allowed):
 
@@ -59,7 +56,7 @@ class DataIngress(Allowed):
 
     @staticmethod
     @get_data_decorator
-    def get_data(data, target_url=None, token=None, data_source=None, user_specific=None):
+    def get_data(data, target_url=None, token=None):
         import requests
         print("FUNC: GET_DATA")
         print("  target_url: " + target_url)

@@ -1,28 +1,37 @@
-# from src.micro_data_core_python.functions import *
+
 
 class DataPolicyPair:
 
-    def __init__(self, policy):
+    def __init__(self, policy, token):
         self._data = {}
         self._policy = policy
+        self._token = token
 
-    def call(self, func, *args, **kwargs):
+    def call_transform(self, func, *args, **kwargs):
         if not callable(func):
             return NameError
         command = func.__name__
-        if func.__name__ == 'return_data':
-            DataPolicyPair.e_step(self._policy)
-            return self._data
+        self._policy = DataPolicyPair.d_step(self._policy, command)
+        print(f'new policy: {self._policy}, data: {self._data}')
+        if self._policy:
+            # replace in kwargs:
+            kwargs['data'] = self._data
+            return func(*args, **kwargs)
         else:
-            self._policy = DataPolicyPair.d_step(self._policy, command)
-            print(f'new policy: {self._policy}, data: {self._data}')
-            if self._policy:
-                # replace in kwargs:
-                kwargs['data'] = self._data
+            raise ValueError('Policy prevented from running')
 
-                return func(*args, **kwargs)
-            else:
-                raise ValueError('Policy prevented from running')
+    def call_fetch(self, func, *args, **kwargs):
+        if not callable(func):
+            return NameError
+        command = func.__name__
+        self._policy = DataPolicyPair.d_step(self._policy, command)
+        print(f'new policy: {self._policy}, data: {self._data}')
+        if self._policy:
+            kwargs['data'] = self._data
+            kwargs['token'] = self._token
+            return func(*args, **kwargs)
+        else:
+            raise ValueError('Policy prevented from running')
 
     def return_data(self, func, *args, **kwargs):
         print(f'return policy: {self._policy}, data: {self._data}')
