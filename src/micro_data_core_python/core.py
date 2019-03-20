@@ -31,7 +31,7 @@ def execute(policies, program, sensitive_data=None):
     # We need
     user_specific = UserSpecific(parsed_policies, sensitive_data)
 
-    print(f'\nparsed policies: {UserSpecific._user_policies}')
+    print(f'\nparsed policies: {user_specific._user_policies}')
     program = program
     print(f'submitted program:\n{program}\n')
     result = []
@@ -52,19 +52,23 @@ def execute(policies, program, sensitive_data=None):
 
 
 if __name__ == '__main__':
-    policies = {'https://campusdataservices.cs.vassar.edu': 'get_data.asdf.qwer.keep_keys.return_data'}
+    policies = {'https://campusdataservices.cs.vassar.edu': 'get_data.in_geofences.keep_keys.return_data'}
     user_tokens = {'https://campusdataservices.cs.vassar.edu':'CiISkjBh2RIOj8ivQeoPQ4RPj1IrTJaTIvx2lKeJf8'}
     program  = '''
 
-
+fences = [
+    {"label":"Library", "longitude": -73.8977594,
+      "latitude": 41.6872415, "radius": 100},
+    {"label":"Quad", "longitude": -73.8969219, 
+      "latitude": 41.6889501, "radius": 100},
+    {"label":"Main", "longitude": -73.8952052,
+      "latitude": 41.6868915, "radius": 100} ]
 dp_1 = user_specific.get_empty_data_pair(data_source='https://campusdataservices.cs.vassar.edu')
 provider_interaction.get_data(data=dp_1, 
     target_url='https://campusdataservices.cs.vassar.edu/api/last_known')
-
-
-general.asdf(data=dp_1)
-general.qwer(data=dp_1)
-general.keep_keys(data=dp_1, keys=['latitude', 'longitude'])
+# location.in_geofence(geofence=(41.6872415, -73.8977594), radius=100, data=dp_1)
+location.in_geofences(geofences=fences, data=dp_1)
+general.keep_keys(data=dp_1, keys=['in_geofences'])
 result.append(use_type.return_data(data=dp_1))
 
 '''        
