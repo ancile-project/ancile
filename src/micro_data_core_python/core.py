@@ -28,13 +28,14 @@ def execute(policies, program, sensitive_data=None):
     for provider, policy in policies.items():
         parsed_policies[provider] = PolicyParser.parse_it(policy)
 
+    result = []
     # We need
-    user_specific = UserSpecific(parsed_policies, sensitive_data)
+    user_specific = UserSpecific(parsed_policies, sensitive_data, result)
 
     print(f'\nparsed policies: {user_specific._user_policies}')
     program = program
     print(f'submitted program:\n{program}\n')
-    result = []
+    
 
     compile_results = compile_restricted_exec(program)
 
@@ -42,18 +43,18 @@ def execute(policies, program, sensitive_data=None):
         raise AncileException(compile_results.errors)
 
     glbls = safe_globals.copy()
-    lcls = {'result':result, 'user_specific': user_specific} # Probably need a User info struct here
+    lcls = {'user_specific': user_specific} # Probably need a User info struct here
     lcls.update(gen_module_namespace())
 
     exec(program, glbls, lcls)
 
     ## Probably want to do some error checking here
-    return result
+    return user_specific._result
 
 
 if __name__ == '__main__':
     policies = {'https://campusdataservices.cs.vassar.edu': 'get_data.in_geofences.keep_keys.return_data'}
-    user_tokens = {'https://campusdataservices.cs.vassar.edu':'CiISkjBh2RIOj8ivQeoPQ4RPj1IrTJaTIvx2lKeJf8'}
+    user_tokens = {'https://campusdataservices.cs.vassar.edu': {'access_token': 'CiISkjBh2RIOj8ivQeoPQ4RPj1IrTJaTIvx2lKeJf8'}}
     program  = '''
 
 fences = [
@@ -63,13 +64,17 @@ fences = [
       "latitude": 41.6889501, "radius": 100},
     {"label":"Main", "longitude": -73.8952052,
       "latitude": 41.6868915, "radius": 100} ]
+
 dp_1 = user_specific.get_empty_data_pair(data_source='https://campusdataservices.cs.vassar.edu')
+
 provider_interaction.get_data(data=dp_1, 
     target_url='https://campusdataservices.cs.vassar.edu/api/last_known')
-# location.in_geofence(geofence=(41.6872415, -73.8977594), radius=100, data=dp_1)
+
+# vassar_location.in_geofence(geofence=(41.6872415, -73.8977594), radius=100, data=dp_1)
+
 vassar_location.in_geofences(geofences=fences, data=dp_1)
 general.keep_keys(data=dp_1, keys=['in_geofences'])
-result.append(use_type.return_data(data=dp_1))
+user_specific.return_data(dp_1)
 
 '''        
 
