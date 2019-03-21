@@ -28,8 +28,7 @@ defmodule Ancile.PowAssentProviders.Google do  @moduledoc """
   def normalize(_config, user) do
     {:ok, %{
       "uid"        => user["id"],
-      "name"       => user["name"],
-      "email"      => verified_email(user)}}
+      "name"       => user["name"]}}
   end
 
   # def get_user(config, token) do
