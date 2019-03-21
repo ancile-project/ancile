@@ -88,6 +88,6 @@ class UserIdentity(Base):
         tokens = cls.query.filter_by(user_id=user)
         token_dict = dict()
         for token in tokens:
-            token_dict[token.provider] = token.data
+            token_dict[token.provider] = token.tokens
         return token_dict
 
