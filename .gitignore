@@ -49,3 +49,4 @@ npm-debug.log
 # ignore generated parsers
 *.erl
 __pycache__
+.env
