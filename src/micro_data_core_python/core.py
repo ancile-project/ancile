@@ -67,7 +67,7 @@ dp_1 = user_specific.get_empty_data_pair(data_source='https://campusdataservices
 provider_interaction.get_data(data=dp_1, 
     target_url='https://campusdataservices.cs.vassar.edu/api/last_known')
 # location.in_geofence(geofence=(41.6872415, -73.8977594), radius=100, data=dp_1)
-location.in_geofences(geofences=fences, data=dp_1)
+vassar_location.in_geofences(geofences=fences, data=dp_1)
 general.keep_keys(data=dp_1, keys=['in_geofences'])
 result.append(use_type.return_data(data=dp_1))
 
