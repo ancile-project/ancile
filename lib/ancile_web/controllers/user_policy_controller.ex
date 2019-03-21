@@ -30,6 +30,7 @@ defmodule AncileWeb.User.PolicyController do
             "active" => active,
             "policy" => policy,
             "purpose" => purpose,
+            "provider" => provider,
             "app_id" => app_email
           }
         }
@@ -40,6 +41,7 @@ defmodule AncileWeb.User.PolicyController do
       app_id: app_id,
       user_id: conn.assigns.current_user.id,
       policy: policy,
+      provider: provider,
       purpose: purpose,
       active: active
     }
@@ -82,6 +84,7 @@ defmodule AncileWeb.User.PolicyController do
             "active" => active,
             "policy" => policy_text,
             "purpose" => purpose,
+            "provider" => provider,
             "app_id" => app_email
           }
         }
@@ -94,6 +97,7 @@ defmodule AncileWeb.User.PolicyController do
       user_id: user_id,
       policy: policy_text,
       purpose: purpose,
+      provider: provider,
       active: active
     }
 
