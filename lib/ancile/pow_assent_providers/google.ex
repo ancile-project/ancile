@@ -14,7 +14,6 @@ defmodule Ancile.PowAssentProviders.Google do  @moduledoc """
   """
   use Ancile.PowAssentProviders.AncileOAuth2Base
 
-  @spec default_config(Keyword.t()) :: Keyword.t()
   def default_config(_config) do
     [
       site: "https://www.googleapis.com",
@@ -26,11 +25,9 @@ defmodule Ancile.PowAssentProviders.Google do  @moduledoc """
     ]
   end
 
-  @spec normalize(Keyword.t(), map()) :: {:ok, map()}
   def normalize(_config, user) do
-    {:ok, %{
-      "uid"        => user["id"],
-      "name"       => user["name"]}}
+    IO.inspect(user, label: "ASISIEOEE normalize: ")
+    {:ok, user}
   end
 
   def get_user(config, token) do
