@@ -26,8 +26,8 @@ def get_calendar_events_in_relative_window(data, token=None,
     from datetime import datetime, timedelta
     import requests
 
-    def format_time(time):
-        return datetime.strftime("%Y-%m-%dT%H:%M:%S")
+    def format_time(unformatted):
+        return unformatted.strftime("%Y-%m-%dT%H:%M:%S")
 
     now = datetime.now()
     lower = format_time(now - timedelta(minutes=min_time))
