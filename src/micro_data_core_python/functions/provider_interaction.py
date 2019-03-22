@@ -3,8 +3,8 @@ from src.micro_data_core_python.errors import AncileException
 
 
 @external_request_decorator
-def fetch_test_data(data=None, data_source="dataA", token=None):
-    print("FUNC: fetch_test_data")
+def fetch_test_data(data=None, target_url=None, token=None):
+    print(f"FUNC: fetch_test_data: {target_url}, {token}")
     data['fetch_test_data'] = True
     return True
 
