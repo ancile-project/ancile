@@ -23,13 +23,13 @@ def get_primary_calendar_metadata(data, token=None):
 @external_request_decorator
 def get_calendar_events_in_relative_window(data, token=None, 
                     min_time=0, max_time=1):
-    from datetime import datetime, timedelta
+    from datetime import datetime, timedelta, timezone
     import requests
 
     def format_time(unformatted):
-        return unformatted.strftime("%Y-%m-%dT%H:%M:%S")
+        return unformatted.strftime("%Y-%m-%dT%H:%M:%S%z")
 
-    now = datetime.now()
+    now = datetime.now(tz=timezone.utc)
     lower = format_time(now - timedelta(minutes=min_time))
     upper = format_time(now + timedelta(minutes=max_time))
 
