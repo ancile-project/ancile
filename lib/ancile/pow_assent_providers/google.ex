@@ -20,7 +20,8 @@ defmodule Ancile.PowAssentProviders.Google do  @moduledoc """
       site: "https://www.googleapis.com",
       authorize_url: "https://accounts.google.com/o/oauth2/v2/auth",
       token_url: "https://www.googleapis.com/oauth2/v4/token",
-      authorization_params: [scope: "https://www.googleapis.com/auth/calendar.readonly" ]
+      authorization_params: [scope: "https://www.googleapis.com/auth/calendar.readonly" ],
+      param_encoding: True
     ]
   end
 

@@ -74,6 +74,7 @@ defmodule Ancile.PowAssentProviders.AncileOAuth2 do
 
   defp get_access_token(:ok, %{"code" => code, "redirect_uri" => redirect_uri}, config) do
     client_secret = Keyword.get(config, :client_secret)
+    client_id     = Keyword.get(config, :client_id)
     params        = authorization_params(config, code: code, client_secret: client_secret, redirect_uri: redirect_uri, grant_type: "authorization_code")
     token_url     = Keyword.get(config, :token_url, "/oauth/token")
 
@@ -86,7 +87,7 @@ defmodule Ancile.PowAssentProviders.AncileOAuth2 do
        _ ->
          url = Helpers.to_url(config[:site], token_url, params)
          :post
-            |> Helpers.request(url, "", get_access_headers(config), config)
+            |> Helpers.request(url, param_encoding(config, code), get_access_headers(config), config)
     end
     response
     |> Helpers.decode_response(config)
@@ -165,10 +166,27 @@ defmodule Ancile.PowAssentProviders.AncileOAuth2 do
     client_secret = Keyword.get(config, :client_secret)
     client_id = Keyword.get(config, :client_id)
 
-    case Keyword.fetch(config, :use_basic) do
+     auth = case Keyword.fetch(config, :use_basic) do
       {:ok, True} -> [{"Authorization", 
       "Basic " <> Base.encode64(client_id <> ":" <> client_secret)}]
       _ -> []
+    end
+
+    form_encode = case Keyword.fetch(config, :param_encoding) do
+      {:ok, True} -> [{'content-type', 'application/x-www-form-urlencoded'}]
+      _ -> []
+    end
+    auth ++ form_encode
+  end
+
+  defp param_encoding(config, code) do
+    client_secret = Keyword.get(config, :client_secret)
+    client_id     = Keyword.get(config, :client_id)
+    redirect_uri  = Keyword.get(config, :redirect_uri)
+    case Keyword.fetch(config, :param_encoding) do
+      {:ok, True} -> authorization_params(config, code: code, client_secret: client_secret, client_id: client_id,
+                                        redirect_uri: redirect_uri, grant_type: "authorization_code") |> URI.encode_query
+        _ -> ""
     end
   end
 
