@@ -87,11 +87,14 @@ def execute(policies, program, sensitive_data=None, persisted_dp_uuid=None):
         if compile_results.errors:
             raise AncileException(compile_results.errors)
         exec(program, glbls, lcls)
+        json_output['persisted_dp_uuid'] = save_dps(user_specific)
     except:
         print(traceback.format_exc())
-        return {'result': 'error', 'traceback': traceback.format_exc()}
+        json_output = {'result': 'error', 'traceback': traceback.format_exc()}
+        if persisted_dp_uuid:
+            json_output[persisted_dp_uuid] = persisted_dp_uuid
+        return json_output
 
-    json_output['persisted_dp_uuid'] = save_dps(user_specific)
     json_output['data'] = result._dp_pair_data
     json_output['result'] = 'ok'
 
