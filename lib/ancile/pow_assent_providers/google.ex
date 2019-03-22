@@ -12,7 +12,7 @@ defmodule Ancile.PowAssentProviders.Google do  @moduledoc """
           ]
         ]
   """
-  use PowAssent.Strategy.OAuth2.Base
+  use Ancile.PowAssentProviders.AncileOAuth2Base
 
   @spec default_config(Keyword.t()) :: Keyword.t()
   def default_config(_config) do
