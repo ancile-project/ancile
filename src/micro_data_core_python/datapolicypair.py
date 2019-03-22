@@ -1,36 +1,44 @@
-from src.micro_data_core_python.functions import *
+from src.micro_data_core_python.errors import AncileException
 
 
 class DataPolicyPair:
 
-    def __init__(self, policy):
+    def __init__(self, policy, token):
         self._data = {}
         self._policy = policy
+        self._token = token
 
-    def call(self, func, *args, **kwargs):
-        if not callable(func):
-            return NameError
+    def _call_transform(self, func, *args, **kwargs):
+        check_is_func(func)
         command = func.__name__
-        if func.__name__ == 'return_data':
-            DataPolicyPair.e_step(self._policy)
-            return self._data
+        print(f'old policy: {self._policy}.')
+        self._policy = DataPolicyPair.d_step(self._policy, command)
+        print(f'new policy: {self._policy}, data: {self._data}')
+        if self._policy:
+            # replace in kwargs:
+            kwargs['data'] = self._data
+            return func(*args, **kwargs)
         else:
-            self._policy = DataPolicyPair.d_step(self._policy, command)
-            print(f'new policy: {self._policy}, data: {self._data}')
-            if self._policy:
-                # replace in kwargs:
-                kwargs['data'] = self._data
+            raise ValueError('Policy prevented from running')
 
-                return func(*args, **kwargs)
-            else:
-                raise ValueError('Policy prevented from running')
+    def _call_fetch(self, func, *args, **kwargs):
+        check_is_func(func)
+        command = func.__name__
+        print(f'old policy: {self._policy}.')
+        self._policy = DataPolicyPair.d_step(self._policy, command)
+        print(f'new policy: {self._policy}, data: {self._data}')
+        if self._policy:
+            kwargs['data'] = self._data
+            kwargs['token'] = self._token
+            return func(*args, **kwargs)
+        else:
+            raise ValueError('Policy prevented from running')
 
-    def return_data(self, func, *args, **kwargs):
+    def _use_method(self, func, *args, **kwargs):
         print(f'return policy: {self._policy}, data: {self._data}')
-        if not callable(func) or func.__name__ != 'return_data':
-            return NameError
-
-        if DataPolicyPair.e_step(self.d_step(self._policy, func.__name__)):
+        check_is_func(func)
+        step_result = DataPolicyPair.e_step(self.d_step(self._policy, func.__name__))
+        if step_result == 1:
             kwargs['data'] = self._data
             return func(*args, **kwargs)
         else:
@@ -135,3 +143,8 @@ class DataPolicyPair:
             return abs(DataPolicyPair.e_step(policy[1]) - 1)
         else:
             raise ValueError(f'Incorrect e_step, input: {policy}.')
+
+
+def check_is_func(func):
+    if not callable(func):
+        raise AncileException("You can't call operation on the DataPair object. Use only allowed functions.")

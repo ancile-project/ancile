@@ -82,6 +82,12 @@ class PolicyParser(Parser):
         parser = PolicyParser()
         return parser.parse(lexer.tokenize(text))
 
+    @staticmethod
+    def parse_policies(policies):
+        parsed_policies = dict()
+        for provider, policy in policies.items():
+            parsed_policies[provider] = PolicyParser.parse_it(policy)
+        return parsed_policies
 
 
 if __name__ == '__main__':

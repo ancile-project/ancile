@@ -20,7 +20,8 @@
   <%= text_input f, :policy %>
   <%= error_tag f, :policy %>
 
-
+  <%= label f, :provider %>
+  <%= select f, :provider, @providers %>
 
   <%= label f, :active %>
   <%= checkbox f, :active %>

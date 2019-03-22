@@ -209,4 +209,11 @@ defmodule Ancile.RepoControls do
     # |> IO.inspect
   end
 
+  def get_providers() do
+    Application.get_env(:ancile, :pow_assent)
+    |> Keyword.fetch!(:providers)
+    |> Enum.map(fn {name, _vals} -> name end)
+    # ["vassar", "cds"]
+  end
+
 end

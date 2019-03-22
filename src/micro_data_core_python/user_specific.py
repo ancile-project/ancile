@@ -1,62 +1,35 @@
 from src.micro_data_core_python.datapolicypair import DataPolicyPair
+from src.micro_data_core_python.errors import AncileException
 
 
 class UserSpecific:
 
-    _user_policies = dict()
-    _user_tokens = dict()
+    def __init__(self, policies, tokens):
+        self._user_policies = policies
+        self._user_tokens = tokens
+        self._active_dps = dict()
+        print(f'\nparsed policies: {self._user_policies}')
 
-    @classmethod
-    def transform_decorator(cls, f):
-        def wrapper(*args, **kwargs):
-            print(f'args: {args}')
-            print(f'kwargs: {kwargs}')
-            if args:
-                # let's just ask to specify kwargs. Useful for policy creation.
-                raise ValueError("Please specify keyword arguments instead of positions.")
+    def get_empty_data_pair(self, data_source):
+        if self._active_dps.get(data_source, False):
+            raise AncileException(f"There already exists a Data Policy pair"
+                                  f"for {data_source}. Either call "
+                                  f"retrieve_existing_dp_pair() or provide empty UUID")
+        if self._user_policies.get(data_source, False):
+            policy = self._user_policies[data_source]
+            token = self._user_tokens[data_source]['access_token']
+            dp_pair = DataPolicyPair(policy, token)
+            self._active_dps[data_source] = dp_pair
+            return dp_pair
+        else:
+            raise AncileException(f"No policies for provider {data_source}, for"
+                                  f" this user. Please ask the user to add the policy.")
 
-            dp_pair = kwargs.get('data', False)
-            if isinstance(dp_pair, DataPolicyPair):
-                return dp_pair.call(f, *args, **kwargs)
-            else:
-                raise ValueError("You need to provide a Data object. Use get_data to get it.")
 
-        return wrapper
-
-    @classmethod
-    def get_data_decorator(cls, f):
-        def wrapper(*args, **kwargs):
-            print(f'args: {args}')
-            print(f'kwargs: {kwargs}')
-            if args:
-                # let's just ask to specify kwargs. Useful for policy creation.
-                raise ValueError("Please specify keyword arguments instead of positions.")
-            ds = kwargs.get('data_source', False)
-            if ds:
-                policy = cls._user_policies[ds]
-                dp_pair = DataPolicyPair(policy)
-                kwargs['data'] = dp_pair
-                kwargs['token'] = cls._user_tokens.get('token', None)
-                dp_pair.call(f, *args, **kwargs)
-                return dp_pair
-            else:
-                raise ValueError("Please specify parameter: data_source.")
-
-        return wrapper
-
-    @classmethod
-    def return_data_decorator(cls, f):
-        def wrapper(*args, **kwargs):
-            print(f'args: {args}')
-            print(f'kwargs: {kwargs}')
-            if args:
-                # let's just ask to specify kwargs. Useful for policy creation.
-                raise ValueError("Please specify keyword arguments instead of positions.")
-
-            dp_pair = kwargs.get('data', False)
-            if isinstance(dp_pair, DataPolicyPair):
-                return dp_pair.return_data(f, *args, **kwargs)
-            else:
-                raise ValueError("You need to provide a Data object. Use get_data to get it.")
-
-        return wrapper
+    def retrieve_existing_dp_pair(self, data_source):
+        if self._active_dps.get(data_source, False):
+            return self._active_dps[data_source]
+        else:
+            raise AncileException(f"The DP for {data_source} doesn't exist. "
+                                  "Create the new one, or provide the correct"
+                                  "UUID to retrieve saved state.")

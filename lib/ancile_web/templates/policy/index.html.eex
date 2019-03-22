@@ -7,6 +7,7 @@
       <th>User</th>
       <th>Purpose</th>
       <th>Policy</th>
+      <th>Provider</th>
       <th>Active</th>
 
       <th></th>
@@ -19,6 +20,7 @@
       <td><%= policy.user_id %></td>
       <td><%= policy.purpose %></td>
       <td><%= policy.policy %></td>
+      <td><%= policy.provider %></td>
       <td><%= policy.active %></td>
 
       <td>

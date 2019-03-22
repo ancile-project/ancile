@@ -1,0 +1,2 @@
+class AncileException(Exception):
+    pass
