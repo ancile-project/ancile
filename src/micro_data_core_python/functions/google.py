@@ -27,15 +27,16 @@ def get_calendar_events_in_relative_window(data, token=None,
     import requests
 
     def format_time(unformatted):
-        return unformatted.strftime("%Y-%m-%dT%H:%M:%S%z")
+        return unformatted.isoformat()
+        # return unformatted.strftime("%Y-%m-%dT%H:%M:%S%z")
 
-    now = datetime.now(tz=timezone.utc)
+    now = datetime.now(timezone.utc).astimezone()
     lower = format_time(now - timedelta(minutes=min_time))
     upper = format_time(now + timedelta(minutes=max_time))
 
     calendar = data.pop('calendar')
 
-    target_url = "https://www.googleapis.com/calendar/v3/users/me/calendarList" + \
+    target_url = "https://www.googleapis.com/calendar/v3/calendars/" + \
                 calendar["id"] + "/events?singleEvents=true&timeMin=" + \
                 lower + "&timeMax=" + upper
 
