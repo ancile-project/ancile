@@ -37,7 +37,8 @@ class DataPolicyPair:
     def _use_method(self, func, *args, **kwargs):
         print(f'return policy: {self._policy}, data: {self._data}')
         check_is_func(func)
-        step_result = DataPolicyPair.e_step(self.d_step(self._policy, func.__name__))
+        self._policy = self.d_step(self._policy, func.__name__)
+        step_result = DataPolicyPair.e_step(self._policy)
         if step_result == 1:
             kwargs['data'] = self._data
             return func(*args, **kwargs)

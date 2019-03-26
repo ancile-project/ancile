@@ -4,7 +4,11 @@ from flask_sqlalchemy import SQLAlchemy
 from src.db.db import *
 from src.micro_data_core_python.core import execute
 import redis
+import yaml
 import pickle
+
+with open('../config/secret.yaml', 'r') as f:
+    config = yaml.load(f)
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_CONNECTION_URI
@@ -24,6 +28,7 @@ def run_api():
     user_id = Account.get_id_by_email(user)
     policies = Policy.get_by_user_app_purpose(app_id, user_id, purpose)
     tokens = UserIdentity.get_tokens_by_user(user_id)
+
     persisted_dp_uuid = js.get('persisted_dp_uuid', None)
     print(f'Policies: {policies}, Tokens: {tokens}')
 
