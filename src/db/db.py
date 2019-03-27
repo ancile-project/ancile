@@ -1,9 +1,6 @@
 # coding: utf-8
-from src.app import db, config
-from sqlalchemy import BigInteger, Boolean, Column, ForeignKey, Index, String, Text, text
-from sqlalchemy.dialects.postgresql import JSONB, TIMESTAMP
-from sqlalchemy.orm import relationship
-from sqlalchemy.ext.declarative import declarative_base
+from app import db, config
+from sqlalchemy.dialects.postgresql import JSONB
 
 
 class Base(db.Model):

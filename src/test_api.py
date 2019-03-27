@@ -2,7 +2,7 @@ import requests
 import json
 
 js = {
-    "token": "SFMyNTY.g3QAAAACZAAEZGF0YWEBZAAGc2lnbmVkbgYArMeRtWkB.3v5L3WHsMFfgsmxnyHyYSZiFhb7T5pdT8iDNrgh0DrI",
+    "token": "SFMyNTY.g3QAAAACZAAEZGF0YWECZAAGc2lnbmVkbgYAEDg9vWkB.h-iDyUq7B9aHw4Bp7UmOShtuFysIELHZb_uyuzx8OnU",
     "user": "user1@abcd.com",
     "purpose": "research",
     "program": """
@@ -14,11 +14,11 @@ result.append_dp_data_to_result(data=dp_1)
     """
 }
 
-res = requests.post('http://127.0.0.1:5000/api/run', json=js)
+res = requests.post('http://dev.ancile.smalldata.io:5000/api/run', json=js)
 
 print(res.status_code)
 new_js = res.json()
 if new_js.get('result', False) == 'error':
     print(new_js['traceback'])
 else:
-    print(new_js)
+    print(json.dumps(new_js, indent=4))
