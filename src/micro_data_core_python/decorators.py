@@ -44,3 +44,30 @@ def use_type_decorator(f):
             raise ValueError("You need to provide a Data object. Use get_data to get it.")
 
     return wrapper
+
+
+def aggregate_decorator(f):
+    def wrapper(*args, **kwargs):
+        new_data = dict()
+        new_policy = None
+        dp_pairs = kwargs.get('data', False)
+        set_users = set()
+        for dp_pair in dp_pairs:
+            if not isinstance(dp_pair, DataPolicyPair):
+                raise ValueError("You need to provide a Data object. Use get_data to get it.")
+            new_data[dp_pair._name] = dp_pair._data
+            set_users.add(dp_pair._username)
+            if new_policy:
+                new_policy = ['intersect', dp_pair._policy, new_policy]
+            else:
+                new_policy = dp_pair._policy
+        if len(set_users) != len(dp_pairs):
+            raise ValueError("You need to provide a separate data object for each username.")
+
+        new_dp = DataPolicyPair(policy=new_policy, token=None, name='Aggregate', username='Aggregate')
+        new_dp._data = {'aggregated': new_data}
+
+        return new_dp._use_method(f, *args, **kwargs)
+
+    return wrapper
+

@@ -3,7 +3,9 @@ from src.micro_data_core_python.errors import AncileException
 
 class DataPolicyPair:
 
-    def __init__(self, policy, token):
+    def __init__(self, policy, token, name, username):
+        self._name = name
+        self._username = username
         self._data = {}
         self._policy = policy
         self._token = token
