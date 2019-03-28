@@ -1,3 +1,4 @@
+from src.micro_data_core_python.datapolicypair import DataPolicyPair
 from src.micro_data_core_python.policy_sly import PolicyParser
 from src.micro_data_core_python.errors import AncileException
 from src.micro_data_core_python.user_specific import UserSpecific
@@ -42,7 +43,7 @@ def save_dps(user_specific):
     active_dps = dict()
     for name, dp in dps_to_save.items():
         # nothing left to execute:
-        if dp._policy in [0, 1]:
+        if DataPolicyPair.e_step(dp._policy) == 1:
             continue
         else:
             print(f'There is a policy not finished: {dp._policy}')
