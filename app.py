@@ -1,7 +1,6 @@
 from src.secret import *
 from flask import Flask, request, json
 from flask_sqlalchemy import SQLAlchemy
-from src.db.db import *
 from src.micro_data_core_python.core import execute
 import redis
 import yaml
@@ -17,6 +16,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 r = redis.Redis(host='localhost', port=6379, db=0)
 
+from src.db.db import *
 
 @app.route('/api/run', methods=['POST'])
 def run_api():
