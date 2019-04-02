@@ -84,6 +84,7 @@ defmodule AncileWeb.Router do
 
     get "/dashboard", UserController, :user_dashboard
     resources "/policies", User.PolicyController, as: :user_policy
+    resources "/identities", User.IdentityController, as: :user_identity
   end
 
   @doc """

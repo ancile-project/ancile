@@ -1,0 +1,30 @@
+<h1>Listing User Identities</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th>User</th>
+      <th>Provider</th>
+      <th>Data</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+<%= for identity <- @user_identities do %>
+    <tr>
+      <td><%= identity.user_id %></td>
+      <td><%= identity.provider %></td>
+      <td><%= identity.data %></td>
+
+      <td>
+        <%= link "Show", to: Routes.user_identity_path(@conn, :show, identity) %>
+        <%= link "Edit", to: Routes.user_identity_path(@conn, :edit, identity) %>
+      </td>
+    </tr>
+<% end %>
+  </tbody>
+</table>
+
+<!--<span><%= link "New identity", to: Routes.user_identity_path(@conn, :new) %></span>-->
+<br>
+<span><a href="/dashboard">Dashboard</a></span>

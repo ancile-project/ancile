@@ -1,0 +1,19 @@
+<h1>Show User Identity</h1>
+
+<ul>
+
+
+    <li>
+        <strong>Provider:</strong>
+        <%= @user_identity.provider %>
+    </li>
+
+    <li>
+        <strong>Data:</strong>
+        <%= @user_identity.data %>
+    </li>
+
+</ul>
+
+<span><%= link "Edit", to: Routes.user_identity_path(@conn, :edit, @user_identity) %></span>
+<span><%= link "Back", to: Routes.user_identity_path(@conn, :index) %></span>
