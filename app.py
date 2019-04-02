@@ -16,7 +16,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 r = redis.Redis(host='localhost', port=6379, db=0)
 
-from src.db.db import *
+from src.db.db import *   # remove circular import 
 
 @app.route('/api/run', methods=['POST'])
 def run_api():
