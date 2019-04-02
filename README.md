@@ -57,10 +57,45 @@ except you need to obtain certificates differently.
                  ]
                ]
         ```
+1. *NEW* Create similar file `secret.yaml`:
+   
+   ```yaml
+   campus_data_service:
+   client_id: "client_id"
+   client_secret: "client_secret"
+   token_url: "https://campus.cornelltech.io/o/token/"
+   authorize_url: "https://campus.cornelltech.io/o/authorize/"
+   location_url: "https://campus.cornelltech.io/api/location/mostrecent/"
+
+   azure:
+     client_id: "client_id"
+     client_secret: "client_id"
+
+   ```
 1. Configure PostgresSQL docker: `sh utils/postgres/create_docker_db.sh` 
 1. Add new tables to your database: `mix ecto.migrate`
 1. Install Node.js dependencies: `cd assets && npm install`. Don't forget to go back: `cd ..`.
 1. Start the server: `mix phx.server`
+
+## Python part. **NEW**
+Currently there is a split between Elixir and Python. We are going to remove it
+completely soon. We have the framework that will handle policy processing in Python
+and Elixir for now only manages account creation and provider connection.   
+ 
+1. Create new venv (Conda, Virtualenv, etc) with Python >= 3.6
+1. Install dependencies `pip install -r src/requirements.txt`
+1. Configure Redis docker: `sh utils/redis/create_docker_redis.sh`
+1. Install RestrictedPython from GitHub master branch
+    ```bash
+    cd /tmp
+    git clone https://github.com/zopefoundation/RestrictedPython.git
+    pip install .
+    ```
+1. Start the Python server: `python app.py`
+
+
+
+
 
 
 ## Development 
