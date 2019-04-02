@@ -1,7 +1,7 @@
 # coding: utf-8
 from app import db, config
 from sqlalchemy.dialects.postgresql import JSONB
-
+from sqlalchemy.orm.attributes import flag_modified
 
 class Base(db.Model):
     __abstract__ = True
@@ -104,20 +104,28 @@ class UserIdentity(Base):
     def update_tokens(self):
         import requests
         import datetime
+        from base64 import b64encode as encode
 
 
         expires_in = self.tokens['expires_in']
-        current_update= (datetime.datetime.now() - self.updated_at).total_seconds()
+        current_update= (datetime.datetime.utcnow() - self.updated_at).total_seconds()
         if expires_in - 100 <= current_update:
             url = config[self.provider]['token_url']
+            client_id = config[self.provider]['client_id']
+            client_secret = config[self.provider]['client_secret']
+            headers = {}
+            if config[self.provider].get('basic_auth', False):
+                headers = {"Authorization": "basic " + str(encode(bytes(client_id + ":" + client_secret,'utf8')), 'utf-8')} 
+
             data = {'refresh_token': self.tokens['refresh_token'],
                     'grant_type': 'refresh_token',
                     'client_id': config[self.provider]['client_id'],
                     'client_secret': config[self.provider]['client_secret']}
-            res = requests.post(url, data=data)
+            res = requests.post(url, data=data, headers=headers)
             if res.status_code == 200:
                 print('Success in updating tokens.')
-                self.tokens = res.json()
+                self.tokens.update(res.json())
+                flag_modified(self, "tokens") # make sure changes
                 self.update()
             else:
                 raise Exception(f"Couldn't update token: {res.json()}")
