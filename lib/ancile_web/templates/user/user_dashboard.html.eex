@@ -21,6 +21,9 @@
     </article>
     <article class="column">
             <h2>Registration</h2>
+            <li>
+                <a href="/user/identities">Add/Edit User Identities</a>
+            </li>
 
 <%= for link <- PowAssent.Phoenix.ViewHelpers.provider_links(@conn),
   do: content_tag(:br, link) %>

@@ -216,4 +216,31 @@ defmodule Ancile.RepoControls do
     # ["vassar", "cds"]
   end
 
+    def list_user_identities(user_id) do
+    query = from p in UserIdentity, where: p.user_id == ^user_id
+    policies = Repo.all(query)
+    Enum.map(
+      policies,
+      fn x ->
+        %{
+          x |
+          user_id: get_email_by_id(x.user_id),
+          data: Jason.encode!(x.data),
+          tokens: ""
+        }
+      end
+    )
+  end
+
+  def get_user_identity!(id), do: Repo.get!(UserIdentity, id)
+
+  def change_user_identity(%UserIdentity{} = user_identity) do
+    UserIdentity.changeset(user_identity, %{})
+  end
+
+  def update_user_identity(%UserIdentity{} = user_identity, attrs) do
+    user_identity
+    |> UserIdentity.changeset(attrs)
+    |> Repo.update()
+  end
 end
