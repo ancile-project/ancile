@@ -1,1 +1,9 @@
-Flask
+flask 
+gunicorn 
+pyyaml
+flask_sqlalchemy
+sly
+restrictedpython==4.0b8
+redis
+psycopg2
+requests
