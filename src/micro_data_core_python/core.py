@@ -1,4 +1,4 @@
-from src.micro_data_core_python.datapolicypair import DataPolicyPair
+from src.micro_data_core_python.datapolicypair import DataPolicyPair, PrivateData
 from src.micro_data_core_python.policy_sly import PolicyParser
 from src.micro_data_core_python.errors import AncileException
 from src.micro_data_core_python.user_specific import UserSpecific
@@ -38,6 +38,7 @@ def assemble_locals(result, user_specific):
     locals = gen_module_namespace()
     locals['result'] = result
     locals['user_specific'] = user_specific
+    locals['private'] = PrivateData
     return locals
 
 
