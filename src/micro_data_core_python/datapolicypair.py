@@ -1,12 +1,18 @@
 from src.micro_data_core_python.errors import AncileException
 
+class PrivateData(object):
+    def __init__(self, key=None):
+        self._key = key
 
 class DataPolicyPair:
 
-    def __init__(self, policy, token):
+    def __init__(self, policy, token, name, username, private_data):
+        self._name = name
+        self._username = username
         self._data = {}
         self._policy = policy
         self._token = token
+        self._private_data = private_data
 
     def _call_transform(self, func, *args, **kwargs):
         check_is_func(func)
@@ -37,9 +43,17 @@ class DataPolicyPair:
     def _use_method(self, func, *args, **kwargs):
         print(f'return policy: {self._policy}, data: {self._data}')
         check_is_func(func)
+        for key, value in kwargs.items():
+            if isinstance(value, PrivateData) and value._key is None:
+                value._key = key
+
         self._policy = self.d_step(self._policy, func.__name__)
         step_result = DataPolicyPair.e_step(self._policy)
         if step_result == 1:
+            for key, value in kwargs.items():
+                if isinstance(value, PrivateData):
+                    kwargs[key] = self._private_data[value._key]
+
             kwargs['data'] = self._data
             return func(*args, **kwargs)
         else:
@@ -149,3 +163,4 @@ class DataPolicyPair:
 def check_is_func(func):
     if not callable(func):
         raise AncileException("You can't call operation on the DataPair object. Use only allowed functions.")
+

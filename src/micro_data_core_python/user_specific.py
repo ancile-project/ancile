@@ -4,13 +4,15 @@ from src.micro_data_core_python.errors import AncileException
 
 class UserSpecific:
 
-    def __init__(self, policies, tokens):
+    def __init__(self, policies, tokens, private_data, username=None):
+        self._username = username
         self._user_policies = policies
         self._user_tokens = tokens
+        self._user_private_data = private_data
         self._active_dps = dict()
         print(f'\nparsed policies: {self._user_policies}')
 
-    def get_empty_data_pair(self, data_source):
+    def get_empty_data_pair(self, data_source, name=None):
         if self._active_dps.get(data_source, False):
             raise AncileException(f"There already exists a Data Policy pair"
                                   f"for {data_source}. Either call "
@@ -18,8 +20,10 @@ class UserSpecific:
         if self._user_policies.get(data_source, False):
             policy = self._user_policies[data_source]
             token = self._user_tokens[data_source]['access_token']
-            dp_pair = DataPolicyPair(policy, token)
-            self._active_dps[data_source] = dp_pair
+            dp_name = name if name else data_source
+            dp_pair = DataPolicyPair(policy, token, dp_name, 
+                                    self._username, self._user_private_data)
+            self._active_dps[dp_name] = dp_pair
             return dp_pair
         else:
             raise AncileException(f"No policies for provider {data_source}, for"

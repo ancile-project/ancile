@@ -50,3 +50,5 @@ npm-debug.log
 *.erl
 __pycache__
 .env
+secret.yaml
+.vscode
