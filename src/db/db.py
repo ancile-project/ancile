@@ -100,6 +100,14 @@ class UserIdentity(Base):
 
         return token_dict
 
+    @classmethod
+    def get_private_data_by_user(cls, user):
+        users = cls.query.filter_by(user_id=user)
+        data_dict = {}
+        for user_info in users:
+            data_dict[user_info.provider] = user_info.data
+        
+        return data_dict
 
     def update_tokens(self):
         import requests

@@ -11,7 +11,7 @@ import redis
 from collections import namedtuple
 
 UserInfoBundle = namedtuple("UserInfo", ['username', 'policies', 
-                                        'sensitive_data'])
+                                        'tokens', 'private_data'])
 
 r = redis.Redis(host='localhost', port=6379, db=0)
 
@@ -80,7 +80,8 @@ def execute(user_info, program, persisted_dp_uuid=None):
     users_specific = {}
     for user in user_info:
         parsed_policies = PolicyParser.parse_policies(user.policies)
-        user_specific = UserSpecific(parsed_policies, user.sensitive_data,
+        user_specific = UserSpecific(parsed_policies, user.tokens,
+                                    user.private_data,
                                     username=user.username)
         users_specific[user.username] = user_specific
         print(user_specific._active_dps)

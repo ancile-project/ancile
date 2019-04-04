@@ -3,12 +3,13 @@ from src.micro_data_core_python.errors import AncileException
 
 class DataPolicyPair:
 
-    def __init__(self, policy, token, name, username):
+    def __init__(self, policy, token, name, username, private_data):
         self._name = name
         self._username = username
         self._data = {}
         self._policy = policy
         self._token = token
+        self._private_data = private_data
 
     def _call_transform(self, func, *args, **kwargs):
         check_is_func(func)

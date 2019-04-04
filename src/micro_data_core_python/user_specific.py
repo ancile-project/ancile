@@ -4,10 +4,11 @@ from src.micro_data_core_python.errors import AncileException
 
 class UserSpecific:
 
-    def __init__(self, policies, tokens, username=None):
+    def __init__(self, policies, tokens, private_data, username=None):
         self._username = username
         self._user_policies = policies
         self._user_tokens = tokens
+        self._user_private_data = private_data
         self._active_dps = dict()
         print(f'\nparsed policies: {self._user_policies}')
 
@@ -20,7 +21,8 @@ class UserSpecific:
             policy = self._user_policies[data_source]
             token = self._user_tokens[data_source]['access_token']
             dp_name = name if name else data_source
-            dp_pair = DataPolicyPair(policy, token, dp_name, self._username)
+            dp_pair = DataPolicyPair(policy, token, dp_name, 
+                                    self._username, self._user_private_data)
             self._active_dps[dp_name] = dp_pair
             return dp_pair
         else:

@@ -67,7 +67,9 @@ def aggregate_decorator(f):
         #     raise ValueError("You need to provide a separate data \
         #                         object for each username.")
 
-        new_dp = DataPolicyPair(policy=new_policy, token=None, name='Aggregate', username='Aggregate')
+        new_dp = DataPolicyPair(policy=new_policy, token=None, 
+                                name='Aggregate', username='Aggregate',
+                                private_data=dict())
         new_dp._data = {'aggregated': new_data}
 
         new_dp._use_method(f, *args, **kwargs)
@@ -100,7 +102,9 @@ def reduce_aggregate_decorator(f):
             else:
                 new_policy = dp_pair._policy
 
-        new_dp = DataPolicyPair(policy=new_policy, token=None, name='Aggregate', username='Aggregate')
+        new_dp = DataPolicyPair(policy=new_policy, token=None, 
+                                name='Aggregate', username='Aggregate',
+                                private_data=dict())
         new_dp._data = {'aggregated': data_list}
 
         new_dp._use_method(f, *args, **kwargs)

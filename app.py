@@ -40,9 +40,11 @@ def run_api():
             user_id = Account.get_id_by_email(user)
             policies = Policy.get_by_user_app_purpose(app_id, user_id, purpose)
             tokens = UserIdentity.get_tokens_by_user(user_id)
+            private_data = UserIdentity.get_private_data_by_user(user_id)
             user_info.append(UserInfoBundle(policies=policies,
-                                            sensitive_data=tokens,
-                                            username=user))
+                                            tokens=tokens,
+                                            username=user,
+                                            private_data=private_data))
         except Exception:
             return json.dumps({"result": "error", "traceback": traceback.format_exc()})
     persisted_dp_uuid = js.get('persisted_dp_uuid', None)
