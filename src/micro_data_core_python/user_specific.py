@@ -13,6 +13,11 @@ class UserSpecific:
         print(f'\nparsed policies: {self._user_policies}')
 
     def get_empty_data_pair(self, data_source, name=None):
+        if data_source == 'test':
+            dp_pair = DataPolicyPair(['star', ['exec', 'ANYF']], None, data_source,
+                                     self._username, None)
+            self._active_dps[data_source] = dp_pair
+            return dp_pair
         if self._active_dps.get(data_source, False):
             raise AncileException(f"There already exists a Data Policy pair"
                                   f"for {data_source}. Either call "

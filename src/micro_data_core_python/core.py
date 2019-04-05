@@ -43,31 +43,41 @@ def assemble_locals(result, user_specific):
 
 
 # We check if policies finished and otherwise save them.
-def save_dps(user_specific):
-    dps_to_save = user_specific._active_dps
+def save_dps(users_specific):
     active_dps = dict()
-    for name, dp in dps_to_save.items():
-        # nothing left to execute:
-        if DataPolicyPair.e_step(dp._policy) == 1:
-            continue
-        else:
-            print(f'There is a policy not finished: {dp._policy}')
-            active_dps[name] = dp
+    for username, user_specific in users_specific.items():
+        active_dps[username] = dict()
+
+        dps_to_save = user_specific._active_dps
+
+        for name, dp in dps_to_save.items():
+            # nothing left to execute:
+            if DataPolicyPair.e_step(dp._policy) == 1:
+                continue
+            else:
+                print(f'There is a policy not finished: {dp._policy}')
+                active_dps[username][name] = dp
 
     if active_dps:
         iid = str(uuid.uuid1())
         pickled_dps = pickle.dumps(active_dps)
-        r.set(iid, pickled_dps)
+        r.set(iid, pickled_dps, ex=3600)
         return iid
     else:
         return None
 
 
-def retrieve_dps(persisted_dp_uuid):
+def retrieve_dps(persisted_dp_uuid, users_specific):
     print("Retrieving previously used Data Policy Pairs")
     dp_pairs = r.get(persisted_dp_uuid)
     if dp_pairs:
-        return pickle.loads(dp_pairs)
+        active_dps = pickle.loads(dp_pairs)
+        for username in users_specific.keys():
+            if active_dps.get(username, False) is False:
+                raise AncileException(f"active_dps don't have a user: {username}. Available names: "
+                                      f"{list(active_dps.keys())}.")
+            users_specific[username]._active_dps = active_dps[username]
+
     else:
         raise AncileException("Your UUID is invalid. Supply correct UUID or "
                               "leave the field empty.")
@@ -88,7 +98,7 @@ def execute(user_info, program, persisted_dp_uuid=None):
         print(user_specific._active_dps)
 
     if persisted_dp_uuid:
-        user_specific._active_dps = retrieve_dps(persisted_dp_uuid)
+        retrieve_dps(persisted_dp_uuid, users_specific)
 
     glbls = safe_globals.copy()
     lcls = assemble_locals(result=result, user_specific=users_specific)
@@ -97,7 +107,7 @@ def execute(user_info, program, persisted_dp_uuid=None):
         if compile_results.errors:
             raise AncileException(compile_results.errors)
         exec(program, glbls, lcls)
-        json_output['persisted_dp_uuid'] = save_dps(user_specific)
+        json_output['persisted_dp_uuid'] = save_dps(users_specific)
     except:
         print(traceback.format_exc())
         json_output = {'result': 'error', 'traceback': traceback.format_exc()}

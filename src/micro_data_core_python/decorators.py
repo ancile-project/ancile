@@ -55,7 +55,7 @@ def aggregate_decorator(f):
         for dp_pair in dp_pairs:
             if not isinstance(dp_pair, DataPolicyPair):
                 raise ValueError("You need to provide a Data object. Use get_data to get it.")
-            new_data[dp_pair._name] = dp_pair._data
+            new_data[f'{dp_pair._username}.{dp_pair._name}'] = dp_pair._data
             set_users.add(dp_pair._username)
             if new_policy:
                 new_policy = ['intersect', dp_pair._policy, new_policy]
@@ -70,7 +70,7 @@ def aggregate_decorator(f):
         new_dp = DataPolicyPair(policy=new_policy, token=None, 
                                 name='Aggregate', username='Aggregate',
                                 private_data=dict())
-        new_dp._data = {'aggregated': new_data}
+        new_dp._data['aggregated'] = new_data
 
         new_dp._use_method(f, *args, **kwargs)
         return new_dp
@@ -102,10 +102,10 @@ def reduce_aggregate_decorator(f):
             else:
                 new_policy = dp_pair._policy
 
-        new_dp = DataPolicyPair(policy=new_policy, token=None, 
+        new_dp = DataPolicyPair(policy=new_policy, token=None,
                                 name='Aggregate', username='Aggregate',
                                 private_data=dict())
-        new_dp._data = {'aggregated': data_list}
+        new_dp._data['aggregated'] = data_list
 
         new_dp._use_method(f, *args, **kwargs)
         return new_dp
