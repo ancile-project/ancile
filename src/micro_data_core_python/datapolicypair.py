@@ -9,7 +9,7 @@ class DataPolicyPair:
     def __init__(self, policy, token, name, username, private_data):
         self._name = name
         self._username = username
-        self._data = {}
+        self._data = {'output': list()}
         self._policy = policy
         self._token = token
         self._private_data = private_data
