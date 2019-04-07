@@ -14,11 +14,18 @@ class DataPolicyPair:
         self._token = token
         self._private_data = private_data
 
-    def _call_transform(self, func, *args, **kwargs):
+    def check_command_allowed(self, command):
+        print(f'Checking {command} against policy: {self._policy}')
+        if DataPolicyPair.d_step(self._policy, command):
+            return True
+        else:
+            return False
+
+    def _call_transform(self, func, *args, scope='transform', **kwargs):
         check_is_func(func)
         command = func.__name__
         print(f'old policy: {self._policy}.')
-        self._policy = DataPolicyPair.d_step(self._policy, command)
+        self._policy = DataPolicyPair.d_step(self._policy, command, scope=scope)
         print(f'new policy: {self._policy}, data: {self._data}')
         if self._policy:
             # replace in kwargs:
@@ -27,11 +34,11 @@ class DataPolicyPair:
         else:
             raise ValueError('Policy prevented from running')
 
-    def _call_fetch(self, func, *args, **kwargs):
+    def _call_external(self, func, *args, scope='external', **kwargs):
         check_is_func(func)
         command = func.__name__
         print(f'old policy: {self._policy}.')
-        self._policy = DataPolicyPair.d_step(self._policy, command)
+        self._policy = DataPolicyPair.d_step(self._policy, command, scope=scope)
         print(f'new policy: {self._policy}, data: {self._data}')
         if self._policy:
             kwargs['data'] = self._data
@@ -40,14 +47,14 @@ class DataPolicyPair:
         else:
             raise ValueError('Policy prevented from running')
 
-    def _use_method(self, func, *args, **kwargs):
+    def _use_method(self, func, *args, scope='return', **kwargs):
         print(f'return policy: {self._policy}, data: {self._data}')
         check_is_func(func)
         for key, value in kwargs.items():
             if isinstance(value, PrivateData) and value._key is None:
                 value._key = key
 
-        self._policy = self.d_step(self._policy, func.__name__)
+        self._policy = self.d_step(self._policy, func.__name__, scope=scope)
         step_result = DataPolicyPair.e_step(self._policy)
         if step_result == 1:
             for key, value in kwargs.items():
@@ -57,10 +64,21 @@ class DataPolicyPair:
             kwargs['data'] = self._data
             return func(*args, **kwargs)
         else:
-            raise ValueError(f'Last E step failed: {self._policy}')
+            error = f'Last E step failed: {self._policy}'
+            raise ValueError(error)
 
     @staticmethod
-    def d_step(policy, command):
+    def d_step(policy, command, scope=None):
+        """
+
+
+        :param policy: current policy
+        :param command:
+        :param scope: a high-level scope of functions (transform, fetch, etc). If scope specified then we check the
+        policy against it as well.
+
+        :return:
+        """
         if policy in [0, 1]:
             return policy
 
@@ -70,28 +88,34 @@ class DataPolicyPair:
                 return 1
             elif policy[1] == 'ANYF':
                 return 1
+            elif policy[1] == scope:
+                return 1
             else:
                 return 0
         elif operator == 'concat':
-            p1 = DataPolicyPair.simplify(['concat', DataPolicyPair.simplify(DataPolicyPair.d_step(policy[1], command)), policy[2]])
-            p2 = DataPolicyPair.simplify(['concat', DataPolicyPair.e_step(policy[1]), DataPolicyPair.simplify(DataPolicyPair.d_step(policy[2], command))])
+            p1 = DataPolicyPair.simplify(['concat', DataPolicyPair.simplify(DataPolicyPair.d_step(policy[1], command,
+                                                                                                  scope
+                                                                                                  )), policy[2]])
+            p2 = DataPolicyPair.simplify(['concat', DataPolicyPair.e_step(policy[1]), DataPolicyPair.simplify(
+                DataPolicyPair.d_step(policy[2], command, scope))])
             return DataPolicyPair.simplify(['union', p1, p2])
         elif operator == 'union':
-            p1 = DataPolicyPair.simplify(DataPolicyPair.d_step(policy[1], command))
-            p2 = DataPolicyPair.simplify(DataPolicyPair.d_step(policy[2], command))
+            p1 = DataPolicyPair.simplify(DataPolicyPair.d_step(policy[1], command, scope))
+            p2 = DataPolicyPair.simplify(DataPolicyPair.d_step(policy[2], command, scope))
             return DataPolicyPair.simplify(['union', p1, p2])
         elif operator == 'star':
-            p1 = DataPolicyPair.simplify(DataPolicyPair.d_step(policy[1], command))
+            p1 = DataPolicyPair.simplify(DataPolicyPair.d_step(policy[1], command, scope))
             p2 = ['star', policy[1]]
             return DataPolicyPair.simplify(['concat', p1, p2])
         elif operator == 'intersect':
-            p1 = DataPolicyPair.simplify(DataPolicyPair.d_step(policy[1], command))
-            p2 = DataPolicyPair.simplify(DataPolicyPair.d_step(policy[2], command))
+            p1 = DataPolicyPair.simplify(DataPolicyPair.d_step(policy[1], command, scope))
+            p2 = DataPolicyPair.simplify(DataPolicyPair.d_step(policy[2], command, scope))
             return DataPolicyPair.simplify(['intersect', p1, p2])
         elif operator == 'neg':
-            return ['neg', DataPolicyPair.simplify(DataPolicyPair.d_step(policy[1], command))]
+            return ['neg', DataPolicyPair.simplify(DataPolicyPair.d_step(policy[1], command, scope))]
         else:
-            raise ValueError(f'Cannot process following policy: {policy}.')
+            error = f'Cannot process following policy: {policy}.'
+            raise ValueError(error)
 
     @staticmethod
     def simplify(policy):
@@ -157,7 +181,8 @@ class DataPolicyPair:
         elif operator == 'neg':
             return abs(DataPolicyPair.e_step(policy[1]) - 1)
         else:
-            raise ValueError(f'Incorrect e_step, input: {policy}.')
+            error = f'Incorrect e_step, input: {policy}.'
+            raise ValueError(error)
 
 
 def check_is_func(func):
