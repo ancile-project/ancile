@@ -26,7 +26,7 @@ def external_request_decorator(f):
         dp_pair = kwargs.get('data', False)
 
         if isinstance(dp_pair, DataPolicyPair):
-            return dp_pair._call_fetch(f, *args, **kwargs)
+            return dp_pair._call_external(f, *args, **kwargs)
         else:
             raise ValueError("You need to provide a Data object. Use get_data to get it.")
 
@@ -72,7 +72,7 @@ def aggregate_decorator(f):
                                 private_data=dict())
         new_dp._data['aggregated'] = new_data
 
-        new_dp._use_method(f, *args, **kwargs)
+        new_dp._call_transform(f, *args, scope='aggregate', **kwargs)
         return new_dp
 
     return wrapper
@@ -107,7 +107,7 @@ def reduce_aggregate_decorator(f):
                                 private_data=dict())
         new_dp._data['aggregated'] = data_list
 
-        new_dp._use_method(f, *args, **kwargs)
+        new_dp._call_transform(f, *args, scope='aggregate', **kwargs)
         return new_dp
 
     return wrapper
