@@ -52,12 +52,14 @@ def save_dps(users_specific):
 
         for name, dp in dps_to_save.items():
             # nothing left to execute:
-            if DataPolicyPair.e_step(dp._policy) == 1:
+            print(f'name: {name}, policy: {dp._policy}')
+            if DataPolicyPair.e_step(dp._policy) == -1:
                 continue
             else:
                 print(f'There is a policy not finished: {dp._policy}')
                 active_dps[username][name] = dp
 
+    print(f'active dps {active_dps.keys()}')
     if active_dps:
         iid = str(uuid.uuid1())
         pickled_dps = pickle.dumps(active_dps)
@@ -72,10 +74,13 @@ def retrieve_dps(persisted_dp_uuid, users_specific):
     dp_pairs = r.get(persisted_dp_uuid)
     if dp_pairs:
         active_dps = pickle.loads(dp_pairs)
-        for username in users_specific.keys():
+        for username in active_dps.keys():
             if active_dps.get(username, False) is False:
                 raise AncileException(f"active_dps don't have a user: {username}. Available names: "
                                       f"{list(active_dps.keys())}.")
+            if users_specific.get(username, False) is False:
+                new_us = UserSpecific(policies=None, tokens=None, private_data=None, username=username)
+                users_specific[username] = new_us
             users_specific[username]._active_dps = active_dps[username]
 
     else:
