@@ -10,6 +10,8 @@ import traceback
 import redis
 from collections import namedtuple
 
+from src.micro_data_core_python.utils import *
+
 UserInfoBundle = namedtuple("UserInfo", ['username', 'policies', 
                                         'tokens', 'private_data'])
 
@@ -45,28 +47,43 @@ def assemble_locals(result, user_specific):
 # We check if policies finished and otherwise save them.
 def save_dps(users_specific):
     active_dps = dict()
-    for username, user_specific in users_specific.items():
-        active_dps[username] = dict()
+    encryption_keys = dict()
+    encrypted_data = dict()
+    redis_persist = False
 
+    for username, user_specific in users_specific.items():
         dps_to_save = user_specific._active_dps
+        if active_dps.get(username, False) is False:
+            active_dps[username] = dict()
+            encryption_keys[username] = dict()
+            encrypted_data[username] = dict()
 
         for name, dp in dps_to_save.items():
+
             # nothing left to execute:
             print(f'name: {name}, policy: {dp._policy}')
-            if DataPolicyPair.e_step(dp._policy) == -1:
-                continue
+            if DataPolicyPair.e_step(dp._policy) == 1:
+                if dp._encryption_keys:
+                    encryption_keys[username][name] = dp._encryption_keys
             else:
-                print(f'There is a policy not finished: {dp._policy}')
+                redis_persist = True
+                print(f'There is a policy not finished: {dp._policy}. Encrypting fields.')
+                keys_dict, enc_dp = encrypt(dp._data)
+                print(keys_dict)
+                print(enc_dp)
+                dp._encryption_keys.update(keys_dict)
+                dp._data = {'output': []}
                 active_dps[username][name] = dp
+                encrypted_data[username][name] = enc_dp
 
     print(f'active dps {active_dps.keys()}')
-    if active_dps:
+    iid = None
+    if redis_persist:
         iid = str(uuid.uuid1())
         pickled_dps = pickle.dumps(active_dps)
         r.set(iid, pickled_dps, ex=3600)
-        return iid
-    else:
-        return None
+
+    return iid, encrypted_data, encryption_keys
 
 
 def retrieve_dps(persisted_dp_uuid, users_specific):
@@ -112,7 +129,12 @@ def execute(user_info, program, persisted_dp_uuid=None):
         if compile_results.errors:
             raise AncileException(compile_results.errors)
         exec(program, glbls, lcls)
-        json_output['persisted_dp_uuid'] = save_dps(users_specific)
+
+        json_output['persisted_dp_uuid'], \
+        json_output['encrypted_data'], \
+        json_output['encryption_keys'] = save_dps(users_specific)
+        if persisted_dp_uuid:
+            r.delete(persisted_dp_uuid)
     except:
         print(traceback.format_exc())
         json_output = {'result': 'error', 'traceback': traceback.format_exc()}
@@ -124,40 +146,3 @@ def execute(user_info, program, persisted_dp_uuid=None):
     json_output['result'] = 'ok'
 
     return json_output
-
-
-if __name__ == '__main__':
-    pass
-#     policies = {'https://campusdataservices.cs.vassar.edu': 'get_data.in_geofences.append_dp_data_to_result'}
-#     user_tokens = {'https://campusdataservices.cs.vassar.edu': {'access_token': 'CiISkjBh2RIOj8ivQeoPQ4RPj1IrTJaTIvx2lKeJf8'}}
-#     program1 = '''
-# dp_1 = user_specific.get_empty_data_pair(data_source='https://campusdataservices.cs.vassar.edu')
-# provider_interaction.get_data(data=dp_1, 
-#     target_url='https://campusdataservices.cs.vassar.edu/api/last_known')
-
-# '''
-
-#     res = execute(policies, program1, sensitive_data=user_tokens)
-#     print(f'Result of the first call: {res}')
-#     if res['result'] != 'error':
-
-
-#         program2 = '''
-# dp_1 = user_specific.retrieve_existing_dp_pair(data_source='https://campusdataservices.cs.vassar.edu')
-# fences = [
-# {"label":"Library", "longitude": -73.8977594,
-#   "latitude": 41.6872415, "radius": 100},
-# {"label":"Quad", "longitude": -73.8969219, 
-#   "latitude": 41.6889501, "radius": 100},
-# {"label":"Main", "longitude": -73.8952052,
-#   "latitude": 41.6868915, "radius": 100} ]
-
-# vassar_location.in_geofences(geofences=fences, data=dp_1)
-# # general.keep_keys(data=dp_1, keys=['in_geofences'])
-# result.append_dp_data_to_result(data=dp_1)
-
-#         '''
-
-#         res = execute(policies, program2, sensitive_data=user_tokens, persisted_dp_uuid=res['persisted_dp_uuid'])
-
-#         print(f'POLICY EVALUATED TO {res}\n')

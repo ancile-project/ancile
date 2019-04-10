@@ -13,6 +13,7 @@ class DataPolicyPair:
         self._policy = policy
         self._token = token
         self._private_data = private_data
+        self._encryption_keys = {}
 
     def check_command_allowed(self, command):
         print(f'Checking {command} against policy: {self._policy}')
@@ -61,6 +62,7 @@ class DataPolicyPair:
                 if isinstance(value, PrivateData):
                     kwargs[key] = self._private_data[value._key]
 
+            kwargs['encryption_keys'] = self._encryption_keys
             kwargs['data'] = self._data
             return func(*args, **kwargs)
         else:

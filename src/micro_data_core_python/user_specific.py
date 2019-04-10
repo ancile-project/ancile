@@ -1,5 +1,6 @@
 from src.micro_data_core_python.datapolicypair import DataPolicyPair
 from src.micro_data_core_python.errors import AncileException
+from src.micro_data_core_python.policy_sly import PolicyParser
 
 
 class UserSpecific:
@@ -14,12 +15,12 @@ class UserSpecific:
 
     def get_empty_data_pair(self, data_source, name=None):
         if data_source == 'test':
-            dp_pair = DataPolicyPair(['star', ['exec', 'ANYF']], None, data_source,
+            dp_pair = DataPolicyPair(PolicyParser.parse_it('ANYF*.return'), None, data_source,
                                      self._username, None)
             self._active_dps[data_source] = dp_pair
             return dp_pair
         if self._active_dps.get(data_source, False):
-            raise AncileException(f"There already exists a Data Policy pair"
+            raise AncileException(f"There already exists a Data Policy pair "
                                   f"for {data_source}. Either call "
                                   f"retrieve_existing_dp_pair() or provide empty UUID")
         if self._user_policies.get(data_source, False):

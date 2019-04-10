@@ -6,11 +6,6 @@ def test(data):
     data['test'] = True
     print('FUNC: test')
     return True
-
-@transform_decorator
-def filter_floor(floor):
-    print("FUNC: filter_floor" + str(floor))
-    return True
     
 @transform_decorator
 def keep_keys(data, keys):
@@ -31,6 +26,23 @@ def drop_keys(data, keys):
     for key in keys:
         del data[key]
     return True
+
+@transform_decorator
+def flatten(data):
+    out = flat_dict(data)
+    data.clear()
+    data.update(out)
+    return True
+
+def flat_dict(d):
+    out = {}
+    for key, val in d.items():
+        if isinstance(val, dict):
+            deeper = flat_dict(val).items()
+            out.update({str(key) + '_' + str(key2): val2 for key2, val2 in deeper})
+        else:
+            out[key] = val
+    return out
 
 @aggregate_decorator
 def basic_aggregation(data):

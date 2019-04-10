@@ -7,5 +7,6 @@ restrictedpython==4.0b8
 redis
 psycopg2
 requests
-torch
+torch>=1.0
 torchvision
+cryptography
