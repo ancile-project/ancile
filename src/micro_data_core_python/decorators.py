@@ -77,9 +77,6 @@ def aggregate_decorator(f):
             new_us = UserSpecific(policies=None, tokens=None, private_data=None, username='aggregated')
             new_us._active_dps['aggregated'] = new_dp
             user_specific_dict['aggregated'] = new_us
-            print('AAAAAA')
-            print(user_specific_dict.keys())
-
 
         new_dp._call_transform(f, *args, scope='aggregate', **kwargs)
         return new_dp
