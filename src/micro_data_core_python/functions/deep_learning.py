@@ -28,7 +28,7 @@ def get_split_train_mnist(data, part, split, token=None):
 
 
 @aggregate_decorator
-def aggregate_train_dataset(data):
+def aggregate_train_dataset(data, user_specific=None):
     import torch
 
     ds_list = list()
@@ -90,7 +90,11 @@ def create_model(data):
             x = self.fc2(x)
             return F.log_softmax(x, dim=1)
 
-    data['model'] = Net()
+    net = Net()
+    if data.get('model', False):
+        data['output'].append('Loading existing model from the state')
+        net.load_state_dict(data['model'])
+    data['model'] = net
     data['output'].append(f'Built model')
     return True
 
@@ -165,3 +169,7 @@ def test(data, epoch):
     data['output'].append(out)
 
     return True
+
+@transform_decorator
+def pickle_model(data):
+    data['model'] = data['model'].state_dict()

@@ -9,9 +9,11 @@ js = {
 dp_1 = user_specific["user1@abcd.com"].get_empty_data_pair(data_source='campus_data_service')
 dp_2 = user_specific["user2@abcd.com"].get_empty_data_pair(data_source='test')
 indoor_location.fetch_location(data=dp_1)
-if dp_1.check_command_allowed('transform'):
-    test.test_transform(data=dp_1)
+#if dp_1.check_command_allowed('transform'):
+#    test.test_transform(data=dp_1)
 #test.test_transform(data=dp_2)
+general.field_comparison(data=dp_1, field_path=['location', 'floor_name'], comparison_operator='eq', 
+value='Third Floor')
 #dp_3 = general.basic_aggregation(data=[dp_1,dp_2])
 #if dp_1.check_command_allowed('help'):
 result.append_dp_data_to_result(data=dp_1)

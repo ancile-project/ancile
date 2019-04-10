@@ -12,7 +12,7 @@ dp_2 = user_specific["user2@abcd.com"].get_empty_data_pair(data_source='test')
 deep_learning.get_split_train_mnist(data=dp_1, split=2, part=0)
 deep_learning.get_split_train_mnist(data=dp_2, split=2, part=1) 
 
-aggr_dp = deep_learning.aggregate_train_dataset(data=[dp_1, dp_2])
+aggr_dp = deep_learning.aggregate_train_dataset(data=[dp_1, dp_2], user_specific=user_specific)
 
 deep_learning.get_test_mnist(data=aggr_dp)
 
@@ -22,13 +22,14 @@ deep_learning.get_loader(data=aggr_dp, dataset_name='test', batch_size=100)
 deep_learning.create_model(data=aggr_dp)
 deep_learning.sgd_optimizer(data=aggr_dp, lr=0.1, momentum=0.9)
 deep_learning.nll_loss(data=aggr_dp)
+ 
+deep_learning.pickle_model(data=aggr_dp)
+#for epoch in range(1):
+#    deep_learning.train_one_epoch(data=aggr_dp, epoch=epoch, log_interval=200)
+#    deep_learning.test(data=aggr_dp, epoch=epoch)
 
-for epoch in range(1):
-    deep_learning.train_one_epoch(data=aggr_dp, epoch=epoch, log_interval=200)
-    deep_learning.test(data=aggr_dp, epoch=epoch)
-
-general.keep_keys(data=aggr_dp, keys=['output'])
-result.append_dp_data_to_result(data=aggr_dp)
+#general.keep_keys(data=aggr_dp, keys=['output'])
+#result.append_dp_data_to_result(data=aggr_dp)
 
     """
 }

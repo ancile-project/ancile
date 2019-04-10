@@ -11,6 +11,20 @@ def test_fetch(data, token=None):
 @transform_decorator
 def test_transform(data):
     import time
+    data['output'].append('Test Transform.')
+    if data.get('test_transform', False):
+        data['test_transform'].append(str(time.time()))
+    else:
+        data['test_transform'] = [str(time.time())]
+    return True
 
-    data['test_transform_' + str(time.time())] = True
+
+@transform_decorator
+def test_transform2(data):
+    import time
+    data['output'].append('Test Transform2.')
+    if data.get('test_transform2', False):
+        data['test_transform2'].append(str(time.time()))
+    else:
+        data['test_transform2'] = [str(time.time())]
     return True
