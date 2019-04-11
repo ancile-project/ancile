@@ -56,3 +56,8 @@ def event_occuring(data, event_title=None):
     data['event_occuring'] = result
     return True
 
+@transform_decorator
+def no_events_occuring(data):
+    events = data.pop('events')
+    data['no_events_occuring'] = len(events) == 0
+    return True

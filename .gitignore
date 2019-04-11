@@ -52,3 +52,4 @@ __pycache__
 .env
 secret.yaml
 .vscode
+logs/*

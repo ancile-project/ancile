@@ -1,2 +1,6 @@
+import logging
+logger = logging.getLogger('primary')
+
 class AncileException(Exception):
-    pass
+    def __init__(self, message):
+        logger.error(message)

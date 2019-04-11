@@ -6,6 +6,10 @@ import redis
 import yaml
 import traceback
 import pickle
+import logging
+from src import logger_setup
+
+logger = logging.getLogger('primary')
 
 with open('./config/secret.yaml', 'r') as f:
     config = yaml.load(f)
@@ -51,10 +55,12 @@ def run_api():
     print(f'Policies: {policies}, Tokens: {tokens}')
     print(user_info)
 
-    res = execute(user_info=user_info, program=program, persisted_dp_uuid=persisted_dp_uuid)
+    res = execute(user_info=user_info, program=program, 
+                    persisted_dp_uuid=persisted_dp_uuid, app_id=app_id)
     print(f'Res: {res}')
     return json.dumps(res)
 
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True, use_reloader=True)
+

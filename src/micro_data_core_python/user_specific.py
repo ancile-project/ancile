@@ -2,16 +2,19 @@ from src.micro_data_core_python.datapolicypair import DataPolicyPair
 from src.micro_data_core_python.errors import AncileException
 from src.micro_data_core_python.policy_sly import PolicyParser
 
+import logging
+logger = logging.getLogger('primary')
 
 class UserSpecific:
 
-    def __init__(self, policies, tokens, private_data, username=None):
+    def __init__(self, policies, tokens, private_data, username=None, app_id=None):
         self._username = username
         self._user_policies = policies
         self._user_tokens = tokens
         self._user_private_data = private_data
         self._active_dps = dict()
-        print(f'\nparsed policies: {self._user_policies}')
+        self._app_id = app_id
+        logger.debug(f'parsed policies for {self._username}: {self._user_policies}')
 
     def get_empty_data_pair(self, data_source, name=None):
         if data_source == 'test':
@@ -28,7 +31,8 @@ class UserSpecific:
             token = self._user_tokens[data_source]['access_token']
             dp_name = name if name else data_source
             dp_pair = DataPolicyPair(policy, token, dp_name, 
-                                    self._username, self._user_private_data)
+                                    self._username, self._user_private_data,
+                                    app_id=self._app_id)
             self._active_dps[dp_name] = dp_pair
             return dp_pair
         else:

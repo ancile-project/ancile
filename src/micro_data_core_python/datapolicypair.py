@@ -6,7 +6,7 @@ class PrivateData(object):
 
 class DataPolicyPair:
 
-    def __init__(self, policy, token, name, username, private_data):
+    def __init__(self, policy, token, name, username, private_data, app_id=None):
         self._name = name
         self._username = username
         self._data = {'output': list()}
@@ -14,6 +14,10 @@ class DataPolicyPair:
         self._token = token
         self._private_data = private_data
         self._encryption_keys = {}
+        self._app_id = app_id
+
+    def __repr__(self):
+        return f'<DataPolicy. User: {self._username} Src: {self._name}>'
 
     def check_command_allowed(self, command):
         print(f'Checking {command} against policy: {self._policy}')
