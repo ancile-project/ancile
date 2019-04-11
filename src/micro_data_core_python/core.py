@@ -86,7 +86,7 @@ def save_dps(users_specific):
     return iid, encrypted_data, encryption_keys
 
 
-def retrieve_dps(persisted_dp_uuid, users_specific):
+def retrieve_dps(persisted_dp_uuid, users_specific, app_id):
     print("Retrieving previously used Data Policy Pairs")
     dp_pairs = r.get(persisted_dp_uuid)
     if dp_pairs:
@@ -96,7 +96,9 @@ def retrieve_dps(persisted_dp_uuid, users_specific):
                 raise AncileException(f"active_dps don't have a user: {username}. Available names: "
                                       f"{list(active_dps.keys())}.")
             if users_specific.get(username, False) is False:
-                new_us = UserSpecific(policies=None, tokens=None, private_data=None, username=username)
+                new_us = UserSpecific(policies=None, tokens=None, 
+                                      private_data=None, username=username,
+                                      app_id=app_id)
                 users_specific[username] = new_us
             users_specific[username]._active_dps = active_dps[username]
 
@@ -106,7 +108,7 @@ def retrieve_dps(persisted_dp_uuid, users_specific):
 
 
 
-def execute(user_info, program, persisted_dp_uuid=None):
+def execute(user_info, program, persisted_dp_uuid=None, app_id=None):
     json_output = dict()
     # object to interact with the program
     result = Result()
@@ -115,12 +117,13 @@ def execute(user_info, program, persisted_dp_uuid=None):
         parsed_policies = PolicyParser.parse_policies(user.policies)
         user_specific = UserSpecific(parsed_policies, user.tokens,
                                     user.private_data,
-                                    username=user.username)
+                                    username=user.username,
+                                    app_id=app_id)
         users_specific[user.username] = user_specific
         print(user_specific._active_dps)
 
     if persisted_dp_uuid:
-        retrieve_dps(persisted_dp_uuid, users_specific)
+        retrieve_dps(persisted_dp_uuid, users_specific, app_id)
 
     glbls = safe_globals.copy()
     lcls = assemble_locals(result=result, user_specific=users_specific)
