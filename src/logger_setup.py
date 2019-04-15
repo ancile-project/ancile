@@ -1,5 +1,10 @@
 import logging
 
+import os
+
+if not os.path.isdir('logs'):
+    os.mkdir('logs')
+
 primary = logging.getLogger('primary')
 primary.setLevel(logging.DEBUG)
 api_logger = logging.getLogger('api')
