@@ -171,6 +171,21 @@ def test(data, epoch):
     return True
 
 
+@transform_decorator
+def get_prediction(data, image_id=1):
+    import torch
+
+    test_loader = data['test_loader']
+    data = test_loader.data[image_id]
+    data = data.unsqueeze(0).unsqueeze(0).type(torch.float32)
+    model = data['model']
+    model.eval()
+
+    prediction = model(data)
+    confidence, label = torch.max(prediction, dim=1)
+
+    data['prediction'] = {'confidence': confidence, 'label': label}
+
 
 @transform_decorator
 def pickle_model(data):
@@ -179,5 +194,6 @@ def pickle_model(data):
 
 @transform_decorator
 def obfuscate_prediction(data):
-    # @TODO
+
+
     return True

@@ -16,9 +16,9 @@ class UserSpecific:
         self._app_id = app_id
         logger.debug(f'parsed policies for {self._username}: {self._user_policies}')
 
-    def get_empty_data_pair(self, data_source, name=None):
+    def get_empty_data_pair(self, data_source, name=None, sample_policy='ANYF*.return'):
         if data_source == 'test':
-            dp_pair = DataPolicyPair(PolicyParser.parse_it('ANYF*.return'), None, data_source,
+            dp_pair = DataPolicyPair(PolicyParser.parse_it(sample_policy), None, data_source,
                                      self._username, None)
             self._active_dps[data_source] = dp_pair
             return dp_pair

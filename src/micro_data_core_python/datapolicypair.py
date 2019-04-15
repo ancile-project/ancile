@@ -19,9 +19,9 @@ class DataPolicyPair:
     def __repr__(self):
         return f'<DataPolicy. User: {self._username} Src: {self._name}>'
 
-    def check_command_allowed(self, command):
+    def check_command_allowed(self, command, kwargs=None):
         print(f'Checking {command} against policy: {self._policy}')
-        if DataPolicyPair.d_step(self._policy, command):
+        if DataPolicyPair.d_step(self._policy, {'command': command, 'kwargs': kwargs}):
             return True
         else:
             return False
@@ -30,7 +30,7 @@ class DataPolicyPair:
         check_is_func(func)
         command = func.__name__
         print(f'old policy: {self._policy}.')
-        self._policy = DataPolicyPair.d_step(self._policy, command, scope=scope)
+        self._policy = DataPolicyPair.d_step(self._policy, {'command': command, 'kwargs': kwargs}, scope=scope)
         print(f'new policy: {self._policy}, data: {self._data}')
         if self._policy:
             # replace in kwargs:
@@ -43,7 +43,7 @@ class DataPolicyPair:
         check_is_func(func)
         command = func.__name__
         print(f'old policy: {self._policy}.')
-        self._policy = DataPolicyPair.d_step(self._policy, command, scope=scope)
+        self._policy = DataPolicyPair.d_step(self._policy, {'command': command, 'kwargs': kwargs}, scope=scope)
         print(f'new policy: {self._policy}, data: {self._data}')
         if self._policy:
             kwargs['data'] = self._data
@@ -55,11 +55,12 @@ class DataPolicyPair:
     def _use_method(self, func, *args, scope='return', **kwargs):
         print(f'return policy: {self._policy}, data: {self._data}')
         check_is_func(func)
+        command = func.__name__
         for key, value in kwargs.items():
             if isinstance(value, PrivateData) and value._key is None:
                 value._key = key
 
-        self._policy = self.d_step(self._policy, func.__name__, scope=scope)
+        self._policy = self.d_step(self._policy, {'command': command, 'kwargs': kwargs}, scope=scope)
         step_result = DataPolicyPair.e_step(self._policy)
         if step_result == 1:
             for key, value in kwargs.items():
@@ -90,7 +91,15 @@ class DataPolicyPair:
 
         operator = policy[0]
         if operator == 'exec':
-            if policy[1] == command:
+            if policy[1] == command['command']:
+                # add params check:
+                if len(policy)>2 and policy[2]:
+                    policy_kwargs = policy[2]
+                    kwargs = command['kwargs']
+                    for key, value in policy_kwargs.items():
+                        print(f'Checking for key: {key} and value: {value}, passed param: {kwargs.get(key, False)}')
+                        if key!='data' and value != kwargs.get(key, False):
+                            return 0
                 return 1
             elif policy[1] == 'ANYF':
                 return 1
