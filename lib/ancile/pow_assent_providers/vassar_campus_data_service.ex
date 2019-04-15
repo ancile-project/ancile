@@ -11,7 +11,8 @@ defmodule Ancile.PowAssentProviders.VassarCampusDataService do
       authorize_url: "https://campusdataservices.cs.vassar.edu/oauth/authorize",
       token_url: "https://campusdataservices.cs.vassar.edu/oauth/token",
       authorization_params: [scope: "profile"],
-      use_basic: True
+      use_basic: True,
+      param_encoding: True
     ]
   end
 
