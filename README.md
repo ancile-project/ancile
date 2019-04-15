@@ -10,8 +10,8 @@ I think it's a good start to deploy Ancile locally first
 and then move to the server version. Steps are similar 
 except you need to obtain certificates differently. 
 
-1. Setup [Docker](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-18-04)
- and [Elixir](https://elixir-lang.org/install.html) and [Node.JS](https://nodejs.org/en/download/package-manager/).
+1. Setup [Docker](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-18-04), [Elixir](https://elixir-lang.org/install.html) and [Node.JS](https://nodejs.org/en/download/package-manager/).
+1. Install postgresql: `pip install postgres`.
 1. Fetch dependencies: `mix deps.get` and build the project: `mix`.
 1. Get SSL certificates (run `mix phx.gen.cert` locally and use LetsEncrypt remotely)
    1. For the local deployment just check SSL location in `dev.exs`
@@ -57,7 +57,7 @@ except you need to obtain certificates differently.
                  ]
                ]
         ```
-1. *NEW* Create similar file `secret.yaml`:
+1. *NEW* Create similar file `/config/secret.yaml`:
    
    ```yaml
    campus_data_service:
@@ -89,6 +89,7 @@ and Elixir for now only manages account creation and provider connection.
     ```bash
     cd /tmp
     git clone https://github.com/zopefoundation/RestrictedPython.git
+    cd RestrictedPython
     pip install .
     ```
 1. Start the Python server: `python app.py`
