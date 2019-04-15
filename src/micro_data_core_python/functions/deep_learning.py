@@ -170,6 +170,14 @@ def test(data, epoch):
 
     return True
 
+
+
 @transform_decorator
 def pickle_model(data):
     data['model'] = data['model'].state_dict()
+
+
+@transform_decorator
+def obfuscate_prediction(data):
+    # @TODO
+    return True
