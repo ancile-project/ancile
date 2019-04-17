@@ -9,8 +9,12 @@ import pickle
 import traceback
 import redis
 from collections import namedtuple
-
+import yaml
 from src.micro_data_core_python.utils import *
+
+with open('./config/secret.yaml', 'r') as f:
+    config = yaml.load(f)
+
 
 UserInfoBundle = namedtuple("UserInfo", ['username', 'policies', 
                                         'tokens', 'private_data'])
@@ -67,14 +71,18 @@ def save_dps(users_specific):
                     encryption_keys[username][name] = dp._encryption_keys
             else:
                 redis_persist = True
-                print(f'There is a policy not finished: {dp._policy}. Encrypting fields.')
-                keys_dict, enc_dp = encrypt(dp._data)
-                print(keys_dict)
-                print(enc_dp)
-                dp._encryption_keys.update(keys_dict)
-                dp._data = {'output': []}
-                active_dps[username][name] = dp
-                encrypted_data[username][name] = enc_dp
+                if config.get('encrypt', False):
+                    print(f'There is a policy not finished: {dp._policy}. Encrypting fields.')
+                    keys_dict, enc_dp = encrypt(dp._data)
+                    print(keys_dict)
+                    print(enc_dp)
+                    dp._encryption_keys.update(keys_dict)
+                    dp._data = {'output': []}
+                    active_dps[username][name] = dp
+                    encrypted_data[username][name] = enc_dp
+                else:
+                    print(f'There is a policy not finished: {dp._policy}. Saving data.')
+                    active_dps[username][name] = dp
 
     print(f'active dps {active_dps.keys()}')
     iid = None
@@ -132,10 +140,11 @@ def execute(user_info, program, persisted_dp_uuid=None, app_id=None):
         if compile_results.errors:
             raise AncileException(compile_results.errors)
         exec(program, glbls, lcls)
+        json_output['persisted_dp_uuid'], encrypted_data, encryption_keys = save_dps(users_specific)
+        if config.get('encrypt', False):
+            json_output['encrypted_data'] = encrypted_data
+            json_output['encryption_keys'] = encryption_keys
 
-        json_output['persisted_dp_uuid'], \
-        json_output['encrypted_data'], \
-        json_output['encryption_keys'] = save_dps(users_specific)
         if persisted_dp_uuid:
             r.delete(persisted_dp_uuid)
     except:
