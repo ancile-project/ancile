@@ -20,11 +20,11 @@ def test_transform(data):
 
 
 @transform_decorator
-def test_transform2(data):
+def test_transform_param(data, param):
     import time
-    data['output'].append('Test Transform2.')
-    if data.get('test_transform2', False):
-        data['test_transform2'].append(str(time.time()))
+    data['output'].append('Test Transform with Param.')
+    if data.get('test_transform_param', False):
+        data['test_transform_param'].append(str(param) + str(time.time()))
     else:
-        data['test_transform2'] = [str(time.time())]
+        data['test_transform_param'] = [str(param) + str(time.time())]
     return True

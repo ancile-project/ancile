@@ -17,3 +17,9 @@ class Result:
         else:
             encryption_keys.clear()
         return True
+
+    def append_keys_to_result(self, data):
+        print(f"Releasing keys: {data._data.keys()}")
+        self._dp_pair_data.append({'data_keys': list(data._data.keys())})
+
+        return True

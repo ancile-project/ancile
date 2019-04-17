@@ -8,12 +8,10 @@ js = {
     "purpose": "research",
     "program": """
 dp_1 = user_specific["user1@abcd.com"].get_empty_data_pair(data_source='test')
-#indoor_location.fetch_location(data=dp_1)
 test.test_transform(data=dp_1)
-test.test_transform2(data=dp_1)
+test.test_transform(data=dp_1)
 general.flatten(data=dp_1)
-#general.keep_path_keys(data=dp_1, path="location", keys=["floor_name"])
-#result.append_dp_data_to_result(data=dp_1)
+result.append_keys_to_result(data=dp_1)
     """
 }
 
@@ -35,9 +33,8 @@ js2 = {
     "program": """
 dp_1 = user_specific["user1@abcd.com"].retrieve_existing_dp_pair(data_source='test')
 test.test_transform(data=dp_1)
-test.test_transform2(data=dp_1)
+test.test_transform(data=dp_1)
 general.flatten(data=dp_1)
-#general.keep_path_keys(data=dp_1, path="location", keys=["floor_name"])
 result.append_dp_data_to_result(data=dp_1, decrypt_field_list=["test_transform", "test_transform2"])
     """
 }
@@ -48,11 +45,11 @@ if new_js2.get('result', False) == 'error':
     print(new_js2['traceback'])
 else:
     print(json.dumps(new_js2, indent=4))
-
-for key, value in new_js['encrypted_data'].items():
-    for key2, value2 in value.items():
-        for key3, value3 in value2.items():
-            print(value3)
-            enc_key = new_js2['encryption_keys'][key][key2][key3]
-            f = Fernet(enc_key.encode('utf-8'))
-            print(f.decrypt(value3.encode('utf-8')))
+#
+# for key, value in new_js['encrypted_data'].items():
+#     for key2, value2 in value.items():
+#         for key3, value3 in value2.items():
+#             print(value3)
+#             enc_key = new_js2['encryption_keys'][key][key2][key3]
+#             f = Fernet(enc_key.encode('utf-8'))
+#             print(f.decrypt(value3.encode('utf-8')))

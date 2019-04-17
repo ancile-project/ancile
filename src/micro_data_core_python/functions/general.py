@@ -94,3 +94,10 @@ def field_comparison(data, field_path, comparison_operator, value):
     else:
         error = f"The value {data_value} couldn't be compared with {value} using operator {comparison_operator}"
         raise AncileException(error)
+
+
+@transform_decorator
+def counter(data: dict):
+    if data.get('counter', False):
+        data['counter'] = 0
+    data['counter'] += 1
