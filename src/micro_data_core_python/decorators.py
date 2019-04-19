@@ -54,7 +54,7 @@ def use_type_decorator(f):
 
     return wrapper
 
-def contextual_event_decorator(f):
+def comparison_decorator(f):
     def wrapper(*args, **kwargs):
         if args:
             # let's just ask to specify kwargs. Useful for policy creation.
@@ -64,7 +64,8 @@ def contextual_event_decorator(f):
         if isinstance(dp_pair, DataPolicyPair):
             logger.info(f'function: {f.__name__}. args: {args}, kwargs: {kwargs}, app: {dp_pair._app_id}')
             result = dp_pair._call_transform(f, *args, **kwargs)
-            dp_pair._advance_policy(str(result))
+            dp_pair._advance_policy_after_comparison("_enforce_comparison", 
+                                                    {"result": result})
             return result
         else:
             raise ValueError("You need to provide a Data object. Use get_data to get it.")

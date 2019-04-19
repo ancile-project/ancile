@@ -44,7 +44,7 @@ class DataPolicyPair:
         else:
             return False
 
-    def _advance_policy(self, command, kwargs=None):
+    def _advance_policy_after_comparison(self, command, kwargs=None):
         print(f'Advancing {command} against policy: {self._policy}')
         self._policy = DataPolicyPair.d_step(self._policy, {'command': command, 
                                                             'kwargs': kwargs})
