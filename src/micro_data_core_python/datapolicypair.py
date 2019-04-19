@@ -4,6 +4,20 @@ class PrivateData(object):
     def __init__(self, key=None):
         self._key = key
 
+    def __eq__(self, other):
+        if self is other:
+            return True
+        elif isinstance(other, self.__class__):
+            return self._key == other._key
+        else:
+            return False
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+    
+    def __repr__(self):
+        return f'<PrivateData. {self._key}>'
+
 class DataPolicyPair:
 
     def __init__(self, policy, token, name, username, private_data, app_id=None):
@@ -12,9 +26,13 @@ class DataPolicyPair:
         self._data = {'output': list()}
         self._policy = policy
         self._token = token
-        self._private_data = private_data
         self._encryption_keys = {}
         self._app_id = app_id
+
+        try:
+            self._private_data = private_data[self._name]
+        except KeyError:
+            self._private_data = {}
 
     def __repr__(self):
         return f'<DataPolicy. User: {self._username} Src: {self._name}>'
@@ -26,14 +44,23 @@ class DataPolicyPair:
         else:
             return False
 
+    def _advance_policy(self, command, kwargs=None):
+        print(f'Advancing {command} against policy: {self._policy}')
+        self._policy = DataPolicyPair.d_step(self._policy, {'command': command, 
+                                                            'kwargs': kwargs})
+        if not self._policy:
+            raise ValueError('Policy prevented from running') 
+
     def _call_transform(self, func, *args, scope='transform', **kwargs):
         check_is_func(func)
         command = func.__name__
         print(f'old policy: {self._policy}.')
+        self._resolve_private_data_keys(kwargs)
         self._policy = DataPolicyPair.d_step(self._policy, {'command': command, 'kwargs': kwargs}, scope=scope)
         print(f'new policy: {self._policy}, data: {self._data}')
         if self._policy:
             # replace in kwargs:
+            self._resolve_private_data_values(kwargs)
             kwargs['data'] = self._data
             return func(*args, **kwargs)
         else:
@@ -43,9 +70,11 @@ class DataPolicyPair:
         check_is_func(func)
         command = func.__name__
         print(f'old policy: {self._policy}.')
+        self._resolve_private_data_keys(kwargs)
         self._policy = DataPolicyPair.d_step(self._policy, {'command': command, 'kwargs': kwargs}, scope=scope)
         print(f'new policy: {self._policy}, data: {self._data}')
         if self._policy:
+            self._resolve_private_data_values(kwargs)
             kwargs['data'] = self._data
             kwargs['token'] = self._token
             return func(*args, **kwargs)
@@ -56,23 +85,28 @@ class DataPolicyPair:
         print(f'return policy: {self._policy}, data: {self._data}')
         check_is_func(func)
         command = func.__name__
-        for key, value in kwargs.items():
-            if isinstance(value, PrivateData) and value._key is None:
-                value._key = key
 
+        self._resolve_private_data_keys(kwargs)
         self._policy = self.d_step(self._policy, {'command': command, 'kwargs': kwargs}, scope=scope)
         step_result = DataPolicyPair.e_step(self._policy)
         if step_result == 1:
-            for key, value in kwargs.items():
-                if isinstance(value, PrivateData):
-                    kwargs[key] = self._private_data[value._key]
-
+            self._resolve_private_data_values(kwargs)
             kwargs['encryption_keys'] = self._encryption_keys
             kwargs['data'] = self._data
             return func(*args, **kwargs)
         else:
             error = f'Last E step failed: {self._policy}'
             raise ValueError(error)
+    
+    def _resolve_private_data_keys(self, kwargs):
+        for key, value in kwargs.items():
+            if isinstance(value, PrivateData) and value._key is None:
+                value._key = key
+
+    def _resolve_private_data_values(self, kwargs):
+        for key, value in kwargs.items():
+            if isinstance(value, PrivateData):
+                kwargs[key] = self._private_data[value._key]
 
     @staticmethod
     def d_step(policy, command, scope=None):

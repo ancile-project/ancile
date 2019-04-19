@@ -5,18 +5,21 @@ import os
 if not os.path.isdir('logs'):
     os.mkdir('logs')
 
-primary = logging.getLogger('primary')
-primary.setLevel(logging.DEBUG)
-api_logger = logging.getLogger('api')
-api_logger.setLevel(logging.INFO)
+log_flag = os.getenv('LOGGING', 'true').lower() == 'true'
 
-debug_file = logging.FileHandler('logs/debug.log')
-api_file = logging.FileHandler('logs/api_calls.log')
+if log_flag:
+    primary = logging.getLogger('primary')
+    primary.setLevel(logging.DEBUG)
+    api_logger = logging.getLogger('api')
+    api_logger.setLevel(logging.INFO)
 
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-debug_file.setFormatter(formatter)
-api_file.setFormatter(formatter)
+    debug_file = logging.FileHandler('logs/debug.log')
+    api_file = logging.FileHandler('logs/api_calls.log')
 
-primary.addHandler(debug_file)
-api_logger.addHandler(debug_file)
-api_logger.addHandler(api_file)
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    debug_file.setFormatter(formatter)
+    api_file.setFormatter(formatter)
+
+    primary.addHandler(debug_file)
+    api_logger.addHandler(debug_file)
+    api_logger.addHandler(api_file)

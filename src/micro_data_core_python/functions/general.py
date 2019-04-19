@@ -1,4 +1,4 @@
-from src.micro_data_core_python.decorators import transform_decorator, aggregate_decorator, reduce_aggregate_decorator
+from src.micro_data_core_python.decorators import transform_decorator, aggregate_decorator, reduce_aggregate_decorator, contextual_event_decorator
 from src.micro_data_core_python.errors import AncileException
 
 @transform_decorator
@@ -64,7 +64,7 @@ def aggregate_or(data):
         raise AncileException("All values to \"aggregate_and()\" must be booleans")
 
 
-@transform_decorator
+@contextual_event_decorator
 def field_comparison(data, field_path, comparison_operator, value):
     """
 
@@ -89,11 +89,7 @@ def field_comparison(data, field_path, comparison_operator, value):
     data['output'].append(
         f"Comparing {data_value} from {field_path} with {value} using operator {comparison_operator}")
 
-    if comparison(data_value, value):
-        return True
-    else:
-        error = f"The value {data_value} couldn't be compared with {value} using operator {comparison_operator}"
-        raise AncileException(error)
+    return comparison(data_value, value)
 
 
 @transform_decorator
