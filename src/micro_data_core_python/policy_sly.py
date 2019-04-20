@@ -1,20 +1,27 @@
 from sly import Lexer, Parser
+from src.micro_data_core_python.datapolicypair import PrivateData
+import operator
 
 class PolicyLexer(Lexer):
     tokens = { TEXT, NUMBER, FLOAT, UNION, CONCAT, INTERSECT,  NEG, STAR,
-               ANYF, LPAREN, RPAREN, LBRACKET, RBRACKET, QUOTE, COMMA, EQ }
+               ANYF, LPAREN, RPAREN, LBRACKET, RBRACKET, QUOTE, COMMA, EQ, 
+               PRIVATE, STRING }
     ignore = ' \s\t\n\r'
 
+
+    ANYF = 'ANYF'
+    PRIVATE = 'private'
     # Tokens
     TEXT = r'[a-zA-Z_][a-zA-Z0-9_]*'
+    STRING = r'\"[a-zA-Z_][a-zA-Z0-9_:/\.]*\"'
     NUMBER = r'\d+'
     FLOAT = r'\f+'
 
     # Special symbols
+    
     UNION = r'\+'
     CONCAT = r'\.'
-    INTERSECT = r'\&'
-    ANYF = 'ANYF'
+    INTERSECT = r'\&'    
     LPAREN = r'\('
     RPAREN = r'\)'
     LBRACKET = r'\['
@@ -24,6 +31,9 @@ class PolicyLexer(Lexer):
     EQ = r'\='
     NEG = r'\!'
     STAR = r'\*'
+    
+    # comparison operators
+    # COMPARISON = r'(\<\=)|(\>\=)|(\<)|(\>)|(\!\=)'
 
     # Ignored pattern
     ignore_newline = r'\n+'
@@ -47,7 +57,6 @@ class PolicyParser(Parser):
     def __init__(self):
         self.names = { }
 
-
     @_('NUMBER')
     def clause(self, p):
         return int(p.NUMBER)
@@ -67,6 +76,10 @@ class PolicyParser(Parser):
     @_('clause UNION clause')
     def clause(self, p):
         return ['union', p.clause0, p.clause1]
+
+    @_('LPAREN clause RPAREN')
+    def clause(self, p):
+        return p.clause
 
     @_('clause INTERSECT clause')
     def clause(self, p):
@@ -94,9 +107,9 @@ class PolicyParser(Parser):
     def params(self, p):
         return p.param
 
-    @_('TEXT EQ QUOTE TEXT QUOTE')
+    @_('TEXT EQ STRING')
     def param(self, p):
-        return {p.TEXT0: p.TEXT1}
+        return {p.TEXT: p.STRING.strip('"')}
 
     @_('TEXT EQ NUMBER')
     def param(self, p):
@@ -111,6 +124,23 @@ class PolicyParser(Parser):
 
         return {p.TEXT: p.plists}
 
+    @_('TEXT EQ PRIVATE LPAREN STRING RPAREN')
+    def param(self, p):
+        return {p.TEXT: PrivateData(p.STRING.strip('"'))}
+
+    # @_('TEXT EQ comparison')
+    # def param(self, p):
+    #     return {p.TEXT: p.comparison}
+
+    @_('TEXT EQ TEXT')
+    def param(self, p):
+        value = None
+        if p.TEXT1.lower() == 'false':
+            value = False
+        elif p.TEXT1.lower() == 'true':
+            value = True
+        return {p.TEXT0: value}
+
     @_('plist')
     def plists(self, p):
         return p.plist
@@ -121,9 +151,9 @@ class PolicyParser(Parser):
         params.extend(p.plists)
         return params
 
-    @_('QUOTE TEXT QUOTE')
+    @_('STRING')
     def plist(self, p):
-        return [p.TEXT]
+        return [p.STRING.strip('"')]
 
     @_('FLOAT')
     def plist(self, p):
@@ -132,6 +162,21 @@ class PolicyParser(Parser):
     @_('NUMBER')
     def plist(self, p):
         return [int(p.NUMBER)]
+
+    # @_('EQ')
+    # def comparison(self, p):
+    #     return operator.eq
+    
+    # @_('COMPARISON')
+    # def comparison(self, p):
+    #     if p.COMPARISON == '<=': return operator.le
+    #     elif p.COMPARISON == '<': return operator.lt
+    #     elif p.COMPARISON == '>=': return operator.ge
+    #     elif p.COMPARISON == '>': return operator.gt
+
+    # @_('NEG EQ')
+    # def comparison(self, p):
+    #     return operator.ne
 
     @staticmethod
     def parse_it(text):
