@@ -38,14 +38,14 @@ class DataPolicyPair:
         return f'<DataPolicy. User: {self._username} Src: {self._name}>'
 
     def check_command_allowed(self, command, kwargs=None):
-        print(f'Checking {command} against policy: {self._policy}')
+        #print(f'Checking {command} against policy: {self._policy}')
         if DataPolicyPair.d_step(self._policy, {'command': command, 'kwargs': kwargs}):
             return True
         else:
             return False
 
     def _advance_policy_after_comparison(self, command, kwargs=None):
-        print(f'Advancing {command} against policy: {self._policy}')
+        #print(f'Advancing {command} against policy: {self._policy}')
         self._policy = DataPolicyPair.d_step(self._policy, {'command': command, 
                                                             'kwargs': kwargs})
         if not self._policy:
@@ -54,10 +54,10 @@ class DataPolicyPair:
     def _call_transform(self, func, *args, scope='transform', **kwargs):
         check_is_func(func)
         command = func.__name__
-        print(f'old policy: {self._policy}.')
+        #print(f'old policy: {self._policy}.')
         self._resolve_private_data_keys(kwargs)
         self._policy = DataPolicyPair.d_step(self._policy, {'command': command, 'kwargs': kwargs}, scope=scope)
-        print(f'new policy: {self._policy}, data: {self._data}')
+        #print(f'new policy: {self._policy}, data: {self._data}')
         if self._policy:
             # replace in kwargs:
             self._resolve_private_data_values(kwargs)
@@ -69,10 +69,10 @@ class DataPolicyPair:
     def _call_external(self, func, *args, scope='external', **kwargs):
         check_is_func(func)
         command = func.__name__
-        print(f'old policy: {self._policy}.')
+        #print(f'old policy: {self._policy}.')
         self._resolve_private_data_keys(kwargs)
         self._policy = DataPolicyPair.d_step(self._policy, {'command': command, 'kwargs': kwargs}, scope=scope)
-        print(f'new policy: {self._policy}, data: {self._data}')
+        #print(f'new policy: {self._policy}, data: {self._data}')
         if self._policy:
             self._resolve_private_data_values(kwargs)
             kwargs['data'] = self._data
@@ -82,7 +82,7 @@ class DataPolicyPair:
             raise ValueError('Policy prevented from running')
 
     def _use_method(self, func, *args, scope='return', **kwargs):
-        print(f'return policy: {self._policy}, data: {self._data}')
+        #print(f'return policy: {self._policy}, data: {self._data}')
         check_is_func(func)
         command = func.__name__
 
@@ -131,7 +131,7 @@ class DataPolicyPair:
                     policy_kwargs = policy[2]
                     kwargs = command['kwargs']
                     for key, value in policy_kwargs.items():
-                        print(f'Checking for key: {key} and value: {value}, passed param: {kwargs.get(key, False)}')
+                        #print(f'Checking for key: {key} and value: {value}, passed param: {kwargs.get(key, False)}')
                         if key!='data' and value != kwargs.get(key, False):
                             return 0
                 return 1

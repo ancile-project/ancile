@@ -25,7 +25,7 @@ from src.db.db import *   # remove circular import
 @app.route('/api/run', methods=['POST'])
 def run_api():
     js = request.json
-    print(js)
+    #print(js)
     token = js['token']
     users = js['users']
     purpose = js['purpose']
@@ -52,12 +52,12 @@ def run_api():
         except Exception:
             return json.dumps({"result": "error", "traceback": traceback.format_exc()})
     persisted_dp_uuid = js.get('persisted_dp_uuid', None)
-    print(f'Policies: {policies}, Tokens: {tokens}')
-    print(user_info)
+    #print(f'Policies: {policies}, Tokens: {tokens}')
+    #print(user_info)
 
     res = execute(user_info=user_info, program=program, 
                     persisted_dp_uuid=persisted_dp_uuid, app_id=app_id)
-    print(f'Res: {res}')
+    # print(f'Res: {res}')
     return json.dumps(res)
 
 

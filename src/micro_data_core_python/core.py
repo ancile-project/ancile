@@ -65,26 +65,26 @@ def save_dps(users_specific):
         for name, dp in dps_to_save.items():
 
             # nothing left to execute:
-            print(f'name: {name}, policy: {dp._policy}')
+            # print(f'name: {name}, policy: {dp._policy}')
             if DataPolicyPair.e_step(dp._policy) == 1:
                 if dp._encryption_keys:
                     encryption_keys[username][name] = dp._encryption_keys
             else:
                 redis_persist = True
                 if config.get('encrypt', False):
-                    print(f'There is a policy not finished: {dp._policy}. Encrypting fields.')
+                    # print(f'There is a policy not finished: {dp._policy}. Encrypting fields.')
                     keys_dict, enc_dp = encrypt(dp._data)
-                    print(keys_dict)
-                    print(enc_dp)
+                    # print(keys_dict)
+                    # print(enc_dp)
                     dp._encryption_keys.update(keys_dict)
                     dp._data = {'output': []}
                     active_dps[username][name] = dp
                     encrypted_data[username][name] = enc_dp
                 else:
-                    print(f'There is a policy not finished: {dp._policy}. Saving data.')
+                    # print(f'There is a policy not finished: {dp._policy}. Saving data.')
                     active_dps[username][name] = dp
 
-    print(f'active dps {active_dps.keys()}')
+    # print(f'active dps {active_dps.keys()}')
     iid = None
     if redis_persist:
         iid = str(uuid.uuid1())
@@ -95,7 +95,7 @@ def save_dps(users_specific):
 
 
 def retrieve_dps(persisted_dp_uuid, users_specific, app_id):
-    print("Retrieving previously used Data Policy Pairs")
+    # print("Retrieving previously used Data Policy Pairs")
     dp_pairs = r.get(persisted_dp_uuid)
     if dp_pairs:
         active_dps = pickle.loads(dp_pairs)
@@ -128,7 +128,7 @@ def execute(user_info, program, persisted_dp_uuid=None, app_id=None):
                                     username=user.username,
                                     app_id=app_id)
         users_specific[user.username] = user_specific
-        print(user_specific._active_dps)
+        # print(user_specific._active_dps)
 
     if persisted_dp_uuid:
         retrieve_dps(persisted_dp_uuid, users_specific, app_id)
@@ -148,7 +148,7 @@ def execute(user_info, program, persisted_dp_uuid=None, app_id=None):
         if persisted_dp_uuid:
             r.delete(persisted_dp_uuid)
     except:
-        print(traceback.format_exc())
+        # print(traceback.format_exc())
         json_output = {'result': 'error', 'traceback': traceback.format_exc()}
         if persisted_dp_uuid:
             json_output[persisted_dp_uuid] = persisted_dp_uuid
