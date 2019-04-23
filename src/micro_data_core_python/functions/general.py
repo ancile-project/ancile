@@ -4,7 +4,7 @@ from src.micro_data_core_python.errors import AncileException
 @transform_decorator
 def test(data):
     data['test'] = True
-    print('FUNC: test')
+    # print('FUNC: test')
     return True
     
 @transform_decorator
