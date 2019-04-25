@@ -29,9 +29,9 @@ class DataPolicyPair:
         self._encryption_keys = {}
         self._app_id = app_id
 
-        try:
+        if isinstance(private_data, dict) and private_data.get(self._name, False):
             self._private_data = private_data[self._name]
-        except KeyError:
+        else:
             self._private_data = {}
 
     def __repr__(self):
