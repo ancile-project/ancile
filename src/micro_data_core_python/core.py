@@ -16,7 +16,7 @@ with open('./config/secret.yaml', 'r') as f:
     config = yaml.load(f)
 
 
-UserInfoBundle = namedtuple("UserInfo", ['username', 'policies', 
+UserInfoBundle = namedtuple("UserInfoBundle", ['username', 'policies', 
                                         'tokens', 'private_data'])
 
 r = redis.Redis(host='localhost', port=6379, db=0)
