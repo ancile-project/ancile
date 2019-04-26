@@ -3,7 +3,7 @@ from src.micro_data_core_python.policy_sly import PolicyParser
 from src.micro_data_core_python.errors import AncileException
 from src.micro_data_core_python.user_specific import UserSpecific
 from src.micro_data_core_python.result import Result
-from RestrictedPython import compile_restricted_exec, safe_globals
+from RestrictedPython import compile_restricted_exec, safe_globals, limited_builtins, safe_builtins
 import uuid
 import pickle
 import traceback
@@ -114,13 +114,26 @@ def retrieve_dps(persisted_dp_uuid, users_specific, app_id):
         raise AncileException("Your UUID is invalid. Supply correct UUID or "
                               "leave the field empty.")
 
+def retrieve_compiled(program):
+    import dill
+    redis_response = r.get(program)
 
+    if redis_response is None:
+        compile_results = compile_restricted_exec(program)
+        if compile_results.errors:
+            raise AncileException(compile_results.errors)
+        r.set(program, dill.dumps(compile_results.code), ex=600)
+        
+        return compile_results.code
+    print("USED CACHED PROGRAM")
+    return dill.loads(redis_response)
+    
 
 def execute(user_info, program, persisted_dp_uuid=None, app_id=None):
     json_output = dict()
     # object to interact with the program
     result = Result()
-    users_specific = {}
+    users_specific = dict()
     for user in user_info:
         parsed_policies = PolicyParser.parse_policies(user.policies)
         user_specific = UserSpecific(parsed_policies, user.tokens,
@@ -133,13 +146,11 @@ def execute(user_info, program, persisted_dp_uuid=None, app_id=None):
     if persisted_dp_uuid:
         retrieve_dps(persisted_dp_uuid, users_specific, app_id)
 
-    glbls = safe_globals.copy()
+    glbls = {'__builtins__': safe_builtins}
     lcls = assemble_locals(result=result, user_specific=users_specific)
     try:
-        compile_results = compile_restricted_exec(program)
-        if compile_results.errors:
-            raise AncileException(compile_results.errors)
-        exec(program, glbls, lcls)
+        c_program = retrieve_compiled(program)
+        exec(c_program, glbls, lcls)
         json_output['persisted_dp_uuid'], encrypted_data, encryption_keys = save_dps(users_specific)
         if config.get('encrypt', False):
             json_output['encrypted_data'] = encrypted_data

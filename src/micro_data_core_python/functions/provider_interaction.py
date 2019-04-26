@@ -11,8 +11,8 @@ def fetch_test_data(data=None, target_url=None, token=None):
 @external_request_decorator
 def get_data(data, target_url=None, token=None):
     import requests
-    print("FUNC: SIMPLE_API")
-    print("  target_url: " + target_url)
+    # print("FUNC: SIMPLE_API")
+    # print("  target_url: " + target_url)
 
     r = requests.get(target_url, headers={'Authorization': "Bearer " + token})
 
