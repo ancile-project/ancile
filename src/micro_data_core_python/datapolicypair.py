@@ -66,6 +66,21 @@ class DataPolicyPair:
         else:
             raise ValueError('Policy prevented from running')
 
+    def _call_store(self, func, *args, scope='store', **kwargs):
+        # This is the same as call transform, it just leaves data as the dp_obj
+        check_is_func(func)
+        command = func.__name__
+        #print(f'old policy: {self._policy}.')
+        self._resolve_private_data_keys(kwargs)
+        self._policy = DataPolicyPair.d_step(self._policy, {'command': command, 'kwargs': kwargs}, scope=scope)
+        #print(f'new policy: {self._policy}, data: {self._data}')
+        if self._policy:
+            # replace in kwargs:
+            self._resolve_private_data_values(kwargs)
+            return func(*args, **kwargs)
+        else:
+            raise ValueError('Policy prevented from running')
+
     def _call_external(self, func, *args, scope='external', **kwargs):
         check_is_func(func)
         command = func.__name__

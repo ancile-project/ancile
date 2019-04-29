@@ -80,7 +80,8 @@ def run_api():
     #print(user_info)
 
     res = execute(user_info=user_info, program=program, 
-                    persisted_dp_uuid=persisted_dp_uuid, app_id=app_id)
+                    persisted_dp_uuid=persisted_dp_uuid, app_id=app_id,
+                    purpose=purpose)
     # print(f'Res: {res}')
     return json.dumps(res)
 

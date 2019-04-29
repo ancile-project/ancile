@@ -21,6 +21,21 @@ def transform_decorator(f):
 
     return wrapper
 
+def store_decorator(f):
+    def wrapper(*args, **kwargs):
+        # print(f'function: {f.__name__}. args: {args}, kwargs: {kwargs}')
+        if args:
+            # let's just ask to specify kwargs. Useful for policy creation.
+            raise ValueError("Please specify keyword arguments instead of positions.")
+        dp_pair = kwargs.get('data', False)
+
+        if isinstance(dp_pair, DataPolicyPair):
+            logger.info(f'function: {f.__name__}. args: {args}, kwargs: {kwargs}, app: {dp_pair._app_id}')
+            return dp_pair._call_store(f, *args, **kwargs)
+        else:
+            raise ValueError("You need to provide a Data object. Use get_data to get it.")
+
+    return wrapper
 
 def external_request_decorator(f):
     def wrapper(*args, **kwargs):

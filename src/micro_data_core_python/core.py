@@ -3,6 +3,7 @@ from src.micro_data_core_python.policy_sly import PolicyParser
 from src.micro_data_core_python.errors import AncileException
 from src.micro_data_core_python.user_specific import UserSpecific
 from src.micro_data_core_python.result import Result
+from src.micro_data_core_python.storage import DPStore
 from RestrictedPython import compile_restricted_exec, safe_globals, limited_builtins, safe_builtins
 import uuid
 import pickle
@@ -40,13 +41,41 @@ def gen_module_namespace():
             if not is_pac and mod_name not in exclude}
 
 
-def assemble_locals(result, user_specific):
+def assemble_locals(result, user_specific, app_id, user_info, purpose):
+    from src.micro_data_core_python.decorators import store_decorator
     locals = gen_module_namespace()
+    dp_store = get_storage_items(app_id, user_info, purpose)
+
+    @store_decorator
+    def add_to_store(data, namespace, expiry_sec):
+        storage_ob = dp_store[data._username]
+        storage_ob.add(data, namespace, expiry_sec)
+        storage_ob._store_DPS()
+    
+    @store_decorator
+    def add_to_store_time_constraint(data, namespace, 
+                                    expiry_sec, min_time_limit):
+        storage_ob = dp_store[data._username]
+        storage_ob.add_time_constraint(data, namespace, 
+                                       expiry_sec, min_time_limit)
+        storage_ob._store_DPS()
+
+    def retrieve_storage_dps(username, namespace):
+        return dp_store[username].return_dps(namespace)
+
+
     locals['result'] = result
     locals['user_specific'] = user_specific
     locals['private'] = PrivateData
+    locals['add_to_store'] = add_to_store
+    locals['add_to_store_time_constraint'] = add_to_store_time_constraint
+    locals['retrieve_storage_dps'] = retrieve_storage_dps
     return locals
 
+def get_storage_items(app_id, user_info, purpose):
+    """Retrieves storage items for each user"""
+    return {x.username:DPStore.retrieve(x.username, app_id, purpose) 
+            for x in user_info}
 
 # We check if policies finished and otherwise save them.
 def save_dps(users_specific):
@@ -129,7 +158,8 @@ def retrieve_compiled(program):
     return dill.loads(redis_response)
     
 
-def execute(user_info, program, persisted_dp_uuid=None, app_id=None):
+def execute(user_info, program, persisted_dp_uuid=None, app_id=None, 
+            purpose=None):
     json_output = dict()
     # object to interact with the program
     result = Result()
@@ -147,7 +177,9 @@ def execute(user_info, program, persisted_dp_uuid=None, app_id=None):
         retrieve_dps(persisted_dp_uuid, users_specific, app_id)
 
     glbls = {'__builtins__': safe_builtins}
-    lcls = assemble_locals(result=result, user_specific=users_specific)
+    lcls = assemble_locals(result=result, user_specific=users_specific,
+                            app_id=app_id, user_info=user_info, 
+                            purpose=purpose)
     try:
         c_program = retrieve_compiled(program)
         exec(c_program, glbls, lcls)
