@@ -2,7 +2,7 @@ from src.micro_data_core_python.decorators import transform_decorator, external_
 from src.micro_data_core_python.errors import AncileException
 
 @external_request_decorator
-def test_fetch(data, token=None):
+def test_fetch(data, token=None, **kwargs):
     data['token'] = token
     data['test_fetch'] = True
     return True

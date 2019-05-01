@@ -3,6 +3,8 @@ from src.micro_data_core_python.errors import AncileException
 
 import logging
 
+from src.micro_data_core_python.user_specific import UserSpecific
+
 logger = logging.getLogger('api')
 
 def transform_decorator(f):
@@ -15,7 +17,8 @@ def transform_decorator(f):
 
         if isinstance(dp_pair, DataPolicyPair):
             logger.info(f'function: {f.__name__}. args: {args}, kwargs: {kwargs}, app: {dp_pair._app_id}')
-            return dp_pair._call_transform(f, *args, **kwargs)
+            dp_pair._call_transform(f, *args, **kwargs)
+            return True
         else:
             raise ValueError("You need to provide a Data object. Use get_data to get it.")
 
@@ -23,19 +26,30 @@ def transform_decorator(f):
 
 
 def external_request_decorator(f):
+    """
+    Intended call:
+    dp_1 = fetch_data(user_specific=user_specific['user'], data_source='name')
+    :param f:
+    :return:
+    """
     def wrapper(*args, **kwargs):
         # logger.info(f'function: {f.__name__}. args: {args}, kwargs: {kwargs}')
         # print(f'function: {f.__name__}. args: {args}, kwargs: {kwargs}')
         if args:
             # let's just ask to specify kwargs. Useful for policy creation.
             raise ValueError("Please specify keyword arguments instead of positions.")
-        dp_pair = kwargs.get('data', False)
+        user_specific = kwargs.get('user_specific', False)
+        data_source = kwargs.get('data_source', False)
+        name = kwargs.get('name', False)
+        sample_policy = kwargs.get('sample_policy', 'ANYF*.return')
 
-        if isinstance(dp_pair, DataPolicyPair):
-            logger.info(f'function: {f.__name__}. args: {args}, kwargs: {kwargs}, app: {dp_pair._app_id}')
-            return dp_pair._call_external(f, *args, **kwargs)
+        if isinstance(user_specific, UserSpecific):
+            logger.info(f'function: {f.__name__}. args: {args}, kwargs: {kwargs}, app: {user_specific}')
+            dp_pair = user_specific.get_empty_data_pair(data_source, name=name, sample_policy=sample_policy)
+            dp_pair._call_external(f, *args, **kwargs)
+            return dp_pair
         else:
-            raise ValueError("You need to provide a Data object. Use get_data to get it.")
+            raise ValueError("You have to provide a UserSpecific object to fetch new data.")
 
     return wrapper
 
@@ -53,6 +67,7 @@ def use_type_decorator(f):
             raise ValueError("You need to provide a Data object. Use get_data to get it.")
 
     return wrapper
+
 
 def comparison_decorator(f):
     def wrapper(*args, **kwargs):

@@ -2,7 +2,7 @@ from src.micro_data_core_python.decorators import transform_decorator, external_
 from src.micro_data_core_python.errors import AncileException
 
 @external_request_decorator
-def get_primary_calendar_metadata(data, token=None):
+def get_primary_calendar_metadata(data, token=None, **kwargs):
     import requests
     target_url = "https://www.googleapis.com/calendar/v3/users/me/calendarList"
     r = requests.get(target_url, 
@@ -22,7 +22,7 @@ def get_primary_calendar_metadata(data, token=None):
 
 @external_request_decorator
 def get_calendar_events_in_relative_window(data, token=None, 
-                    min_time=0, max_time=1):
+                    min_time=0, max_time=1, **kwargs):
     from datetime import datetime, timedelta, timezone
     import requests
 

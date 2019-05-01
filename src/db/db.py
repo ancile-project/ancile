@@ -115,7 +115,7 @@ class UserIdentity(Base):
         from base64 import b64encode as encode
 
 
-        expires_in = self.tokens['expires_in']
+        expires_in = int(self.tokens['expires_in'])
         current_update= (datetime.datetime.utcnow() - self.updated_at).total_seconds()
         if expires_in - 100 <= current_update:
             url = config[self.provider]['token_url']
