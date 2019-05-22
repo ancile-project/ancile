@@ -12,12 +12,14 @@ except you need to obtain certificates differently.
 
 1. Setup [Docker](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-18-04), [Elixir](https://elixir-lang.org/install.html) and [Node.JS](https://nodejs.org/en/download/package-manager/).
 1. Install postgresql: `pip install postgres`.
+1. Create dev.secret.exs in the config directory using template below. Replace hostname with localhost.
 1. Fetch dependencies: `mix deps.get` and build the project: `mix`.
 1. Get SSL certificates (run `mix phx.gen.cert` locally and use LetsEncrypt remotely)
    1. For the local deployment just check SSL location in `dev.exs`
    1. Create empty `dev.secret.exs`. For remote deployment put the following config: 
    
         ```elixir
+        use Mix.Config
         config :ancile, AncileWeb.Endpoint,
           http: [port: 4000],
            https: [
