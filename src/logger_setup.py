@@ -1,13 +1,12 @@
 import logging
-
+from src import configs
 import os
 
 if not os.path.isdir('logs'):
     os.mkdir('logs')
 
-log_flag = os.getenv('LOGGING', 'true').lower() == 'true'
 
-if log_flag:
+if configs.enable_logs:
     primary = logging.getLogger('primary')
     primary.setLevel(logging.DEBUG)
     api_logger = logging.getLogger('api')

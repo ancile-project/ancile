@@ -3,7 +3,8 @@ from src.micro_data_core_python.policy_sly import PolicyParser
 from src.micro_data_core_python.errors import AncileException
 from src.micro_data_core_python.user_specific import UserSpecific
 from src.micro_data_core_python.result import Result
-from RestrictedPython import compile_restricted_exec, safe_globals
+from src.micro_data_core_python.storage import DPStore
+from RestrictedPython import compile_restricted_exec, safe_globals, limited_builtins, safe_builtins
 import uuid
 import pickle
 import traceback
@@ -11,13 +12,14 @@ import redis
 from collections import namedtuple
 import yaml
 from src.micro_data_core_python.utils import *
+from src import configs
 
 with open('./config/secret.yaml', 'r') as f:
-    config = yaml.load(f)
+    config = yaml.safe_load(f)
 
 
-UserInfoBundle = namedtuple("UserInfo", ['username', 'policies', 
-                                        'tokens', 'private_data'])
+UserInfoBundle = namedtuple("UserInfoBundle", ['username', 'policies',
+                                               'tokens', 'private_data'])
 
 r = redis.Redis(host='localhost', port=6379, db=0)
 
@@ -32,21 +34,49 @@ def gen_module_namespace():
 
     prefix_name = base.__name__ + '.'
 
-    # This slightly gross comprehension creates a dictionary with the module name
-    # and the imported module for all modules (NOT PACKAGES) in the given base package
-    # excludes any module mentioned in the exclude list (see functions._config.py)
+    # This slightly gross comprehension creates a dictionary with the module
+    # name and the imported module for all modules (NOT PACKAGES) in the given
+    # base package excludes any module mentioned in the exclude list
+    # (see functions._config.py)
     return {mod_name: importlib.import_module(prefix_name + mod_name)
             for _, mod_name, is_pac in pkgutil.iter_modules(path=base.__path__)
             if not is_pac and mod_name not in exclude}
 
 
-def assemble_locals(result, user_specific):
+def assemble_locals(result, user_specific, app_id, user_info, purpose):
+    from src.micro_data_core_python.decorators import store_decorator
     locals = gen_module_namespace()
+    # dp_store = get_storage_items(app_id, user_info, purpose)
+
+    # @store_decorator
+    # def add_to_store(data, namespace, expiry_sec):
+    #     storage_ob = dp_store[data._username]
+    #     storage_ob.add(data, namespace, expiry_sec)
+    #     storage_ob._store_DPS()
+
+    # @store_decorator
+    # def add_to_store_time_constraint(data, namespace,
+    #                                  expiry_sec, min_time_limit):
+    #     storage_ob = dp_store[data._username]
+    #     storage_ob.add_time_constraint(data, namespace,
+    #                                    expiry_sec, min_time_limit)
+    #     storage_ob._store_DPS()
+
+    # def retrieve_storage_dps(username, namespace):
+    #     return dp_store[username].return_dps(namespace)
+
     locals['result'] = result
     locals['user_specific'] = user_specific
     locals['private'] = PrivateData
+    # locals['add_to_store'] = add_to_store
+    # locals['add_to_store_time_constraint'] = add_to_store_time_constraint
+    # locals['retrieve_storage_dps'] = retrieve_storage_dps
     return locals
 
+# def get_storage_items(app_id, user_info, purpose):
+#     """Retrieves storage items for each user."""
+#     return {x.username: DPStore.retrieve(x.username, app_id, purpose)
+#             for x in user_info}
 
 # We check if policies finished and otherwise save them.
 def save_dps(users_specific):
@@ -65,26 +95,26 @@ def save_dps(users_specific):
         for name, dp in dps_to_save.items():
 
             # nothing left to execute:
-            print(f'name: {name}, policy: {dp._policy}')
+            # print(f'name: {name}, policy: {dp._policy}')
             if DataPolicyPair.e_step(dp._policy) == 1:
                 if dp._encryption_keys:
                     encryption_keys[username][name] = dp._encryption_keys
             else:
                 redis_persist = True
                 if config.get('encrypt', False):
-                    print(f'There is a policy not finished: {dp._policy}. Encrypting fields.')
+                    # print(f'There is a policy not finished: {dp._policy}. Encrypting fields.')
                     keys_dict, enc_dp = encrypt(dp._data)
-                    print(keys_dict)
-                    print(enc_dp)
+                    # print(keys_dict)
+                    # print(enc_dp)
                     dp._encryption_keys.update(keys_dict)
                     dp._data = {'output': []}
                     active_dps[username][name] = dp
                     encrypted_data[username][name] = enc_dp
                 else:
-                    print(f'There is a policy not finished: {dp._policy}. Saving data.')
+                    # print(f'There is a policy not finished: {dp._policy}. Saving data.')
                     active_dps[username][name] = dp
 
-    print(f'active dps {active_dps.keys()}')
+    # print(f'active dps {active_dps.keys()}')
     iid = None
     if redis_persist:
         iid = str(uuid.uuid1())
@@ -95,7 +125,7 @@ def save_dps(users_specific):
 
 
 def retrieve_dps(persisted_dp_uuid, users_specific, app_id):
-    print("Retrieving previously used Data Policy Pairs")
+    # print("Retrieving previously used Data Policy Pairs")
     dp_pairs = r.get(persisted_dp_uuid)
     if dp_pairs:
         active_dps = pickle.loads(dp_pairs)
@@ -114,32 +144,47 @@ def retrieve_dps(persisted_dp_uuid, users_specific, app_id):
         raise AncileException("Your UUID is invalid. Supply correct UUID or "
                               "leave the field empty.")
 
+def retrieve_compiled(program):
+    import dill
+    redis_response = r.get(program) if configs.enable_cache else None
+
+    if redis_response is None:
+        compile_results = compile_restricted_exec(program)
+        if compile_results.errors:
+            raise AncileException(compile_results.errors)
+        if configs.enable_cache:
+            r.set(program, dill.dumps(compile_results.code), ex=600)
+
+        return compile_results.code
+    print("USED CACHED PROGRAM")
+    return dill.loads(redis_response)
 
 
-def execute(user_info, program, persisted_dp_uuid=None, app_id=None):
+def execute(user_info, program, persisted_dp_uuid=None, app_id=None,
+            purpose=None):
     json_output = dict()
     # object to interact with the program
     result = Result()
-    users_specific = {}
+    users_specific = dict()
     for user in user_info:
         parsed_policies = PolicyParser.parse_policies(user.policies)
         user_specific = UserSpecific(parsed_policies, user.tokens,
-                                    user.private_data,
-                                    username=user.username,
-                                    app_id=app_id)
+                                     user.private_data,
+                                     username=user.username,
+                                     app_id=app_id)
         users_specific[user.username] = user_specific
-        print(user_specific._active_dps)
+        # print(user_specific._active_dps)
 
     if persisted_dp_uuid:
         retrieve_dps(persisted_dp_uuid, users_specific, app_id)
 
-    glbls = safe_globals.copy()
-    lcls = assemble_locals(result=result, user_specific=users_specific)
+    glbls = {'__builtins__': safe_builtins}
+    lcls = assemble_locals(result=result, user_specific=users_specific,
+                           app_id=app_id, user_info=user_info,
+                           purpose=purpose)
     try:
-        compile_results = compile_restricted_exec(program)
-        if compile_results.errors:
-            raise AncileException(compile_results.errors)
-        exec(program, glbls, lcls)
+        c_program = retrieve_compiled(program)
+        exec(c_program, glbls, lcls)
         json_output['persisted_dp_uuid'], encrypted_data, encryption_keys = save_dps(users_specific)
         if config.get('encrypt', False):
             json_output['encrypted_data'] = encrypted_data
@@ -148,7 +193,7 @@ def execute(user_info, program, persisted_dp_uuid=None, app_id=None):
         if persisted_dp_uuid:
             r.delete(persisted_dp_uuid)
     except:
-        print(traceback.format_exc())
+        # print(traceback.format_exc())
         json_output = {'result': 'error', 'traceback': traceback.format_exc()}
         if persisted_dp_uuid:
             json_output[persisted_dp_uuid] = persisted_dp_uuid
