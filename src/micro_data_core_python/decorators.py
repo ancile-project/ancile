@@ -5,6 +5,7 @@ import logging
 
 logger = logging.getLogger('api')
 
+
 def transform_decorator(f):
     def wrapper(*args, **kwargs):
         # print(f'function: {f.__name__}. args: {args}, kwargs: {kwargs}')
@@ -21,6 +22,7 @@ def transform_decorator(f):
 
     return wrapper
 
+
 def store_decorator(f):
     def wrapper(*args, **kwargs):
         # print(f'function: {f.__name__}. args: {args}, kwargs: {kwargs}')
@@ -36,6 +38,7 @@ def store_decorator(f):
             raise ValueError("You need to provide a Data object. Use get_data to get it.")
 
     return wrapper
+
 
 def external_request_decorator(f):
     def wrapper(*args, **kwargs):
@@ -57,7 +60,7 @@ def external_request_decorator(f):
 
 def use_type_decorator(f):
     def wrapper(*args, **kwargs):
-        
+
         # print(f'USE function: {f.__name__}. args: {args}, kwargs: {kwargs}')
 
         dp_pair = kwargs.get('data', False)
@@ -68,6 +71,7 @@ def use_type_decorator(f):
             raise ValueError("You need to provide a Data object. Use get_data to get it.")
 
     return wrapper
+
 
 def comparison_decorator(f):
     def wrapper(*args, **kwargs):
@@ -142,7 +146,7 @@ def reduce_aggregate_decorator(f):
 
         if isinstance(keys, str):
             keys = [keys] * len(dp_pairs)
-        
+
         if len(keys) != len(dp_pairs):
             raise AncileException("value_keys must either be a single value or a list of the same length as data")
 

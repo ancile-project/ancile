@@ -12,13 +12,14 @@ import redis
 from collections import namedtuple
 import yaml
 from src.micro_data_core_python.utils import *
+from src import configs
 
 with open('./config/secret.yaml', 'r') as f:
-    config = yaml.load(f)
+    config = yaml.safe_load(f)
 
 
-UserInfoBundle = namedtuple("UserInfoBundle", ['username', 'policies', 
-                                        'tokens', 'private_data'])
+UserInfoBundle = namedtuple("UserInfoBundle", ['username', 'policies',
+                                               'tokens', 'private_data'])
 
 r = redis.Redis(host='localhost', port=6379, db=0)
 
@@ -33,9 +34,10 @@ def gen_module_namespace():
 
     prefix_name = base.__name__ + '.'
 
-    # This slightly gross comprehension creates a dictionary with the module name
-    # and the imported module for all modules (NOT PACKAGES) in the given base package
-    # excludes any module mentioned in the exclude list (see functions._config.py)
+    # This slightly gross comprehension creates a dictionary with the module
+    # name and the imported module for all modules (NOT PACKAGES) in the given
+    # base package excludes any module mentioned in the exclude list
+    # (see functions._config.py)
     return {mod_name: importlib.import_module(prefix_name + mod_name)
             for _, mod_name, is_pac in pkgutil.iter_modules(path=base.__path__)
             if not is_pac and mod_name not in exclude}
@@ -44,38 +46,37 @@ def gen_module_namespace():
 def assemble_locals(result, user_specific, app_id, user_info, purpose):
     from src.micro_data_core_python.decorators import store_decorator
     locals = gen_module_namespace()
-    dp_store = get_storage_items(app_id, user_info, purpose)
+    # dp_store = get_storage_items(app_id, user_info, purpose)
 
-    @store_decorator
-    def add_to_store(data, namespace, expiry_sec):
-        storage_ob = dp_store[data._username]
-        storage_ob.add(data, namespace, expiry_sec)
-        storage_ob._store_DPS()
-    
-    @store_decorator
-    def add_to_store_time_constraint(data, namespace, 
-                                    expiry_sec, min_time_limit):
-        storage_ob = dp_store[data._username]
-        storage_ob.add_time_constraint(data, namespace, 
-                                       expiry_sec, min_time_limit)
-        storage_ob._store_DPS()
+    # @store_decorator
+    # def add_to_store(data, namespace, expiry_sec):
+    #     storage_ob = dp_store[data._username]
+    #     storage_ob.add(data, namespace, expiry_sec)
+    #     storage_ob._store_DPS()
 
-    def retrieve_storage_dps(username, namespace):
-        return dp_store[username].return_dps(namespace)
+    # @store_decorator
+    # def add_to_store_time_constraint(data, namespace,
+    #                                  expiry_sec, min_time_limit):
+    #     storage_ob = dp_store[data._username]
+    #     storage_ob.add_time_constraint(data, namespace,
+    #                                    expiry_sec, min_time_limit)
+    #     storage_ob._store_DPS()
 
+    # def retrieve_storage_dps(username, namespace):
+    #     return dp_store[username].return_dps(namespace)
 
     locals['result'] = result
     locals['user_specific'] = user_specific
     locals['private'] = PrivateData
-    locals['add_to_store'] = add_to_store
-    locals['add_to_store_time_constraint'] = add_to_store_time_constraint
-    locals['retrieve_storage_dps'] = retrieve_storage_dps
+    # locals['add_to_store'] = add_to_store
+    # locals['add_to_store_time_constraint'] = add_to_store_time_constraint
+    # locals['retrieve_storage_dps'] = retrieve_storage_dps
     return locals
 
-def get_storage_items(app_id, user_info, purpose):
-    """Retrieves storage items for each user"""
-    return {x.username:DPStore.retrieve(x.username, app_id, purpose) 
-            for x in user_info}
+# def get_storage_items(app_id, user_info, purpose):
+#     """Retrieves storage items for each user."""
+#     return {x.username: DPStore.retrieve(x.username, app_id, purpose)
+#             for x in user_info}
 
 # We check if policies finished and otherwise save them.
 def save_dps(users_specific):
@@ -145,20 +146,21 @@ def retrieve_dps(persisted_dp_uuid, users_specific, app_id):
 
 def retrieve_compiled(program):
     import dill
-    redis_response = r.get(program)
+    redis_response = r.get(program) if configs.enable_cache else None
 
     if redis_response is None:
         compile_results = compile_restricted_exec(program)
         if compile_results.errors:
             raise AncileException(compile_results.errors)
-        r.set(program, dill.dumps(compile_results.code), ex=600)
-        
+        if configs.enable_cache:
+            r.set(program, dill.dumps(compile_results.code), ex=600)
+
         return compile_results.code
     print("USED CACHED PROGRAM")
     return dill.loads(redis_response)
-    
 
-def execute(user_info, program, persisted_dp_uuid=None, app_id=None, 
+
+def execute(user_info, program, persisted_dp_uuid=None, app_id=None,
             purpose=None):
     json_output = dict()
     # object to interact with the program
@@ -167,9 +169,9 @@ def execute(user_info, program, persisted_dp_uuid=None, app_id=None,
     for user in user_info:
         parsed_policies = PolicyParser.parse_policies(user.policies)
         user_specific = UserSpecific(parsed_policies, user.tokens,
-                                    user.private_data,
-                                    username=user.username,
-                                    app_id=app_id)
+                                     user.private_data,
+                                     username=user.username,
+                                     app_id=app_id)
         users_specific[user.username] = user_specific
         # print(user_specific._active_dps)
 
@@ -178,8 +180,8 @@ def execute(user_info, program, persisted_dp_uuid=None, app_id=None,
 
     glbls = {'__builtins__': safe_builtins}
     lcls = assemble_locals(result=result, user_specific=users_specific,
-                            app_id=app_id, user_info=user_info, 
-                            purpose=purpose)
+                           app_id=app_id, user_info=user_info,
+                           purpose=purpose)
     try:
         c_program = retrieve_compiled(program)
         exec(c_program, glbls, lcls)

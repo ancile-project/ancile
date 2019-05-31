@@ -1,10 +1,23 @@
 from src.micro_data_core_python.errors import AncileException
+import datetime
+
 
 class PrivateData(object):
+    """
+    Wrapper object that represents data to be substituted in.
+
+    The object stores a keyword. When a PrivateData object is used as a
+    parameter to an ancile fn, the key is used to substitute a value from the
+    user's private data store.
+    """
     def __init__(self, key=None):
+        """
+        :param str key: The key held by the object. May be none.
+        """
         self._key = key
 
     def __eq__(self, other):
+        """Equality check. Used during policy checks."""
         if self is other:
             return True
         elif isinstance(other, self.__class__):
@@ -14,13 +27,16 @@ class PrivateData(object):
 
     def __ne__(self, other):
         return not self.__eq__(other)
-    
+
     def __repr__(self):
         return f'<PrivateData. {self._key}>'
 
-class DataPolicyPair:
 
-    def __init__(self, policy, token, name, username, private_data, app_id=None):
+class DataPolicyPair:
+    """An object containing data and the associated policies."""
+
+    def __init__(self, policy, token, name, username, private_data,
+                 app_id=None):
         self._name = name
         self._username = username
         self._data = {'output': list()}
@@ -28,11 +44,29 @@ class DataPolicyPair:
         self._token = token
         self._encryption_keys = {}
         self._app_id = app_id
+        self._expires_at = None
 
         try:
             self._private_data = private_data[self._name]
         except KeyError:
             self._private_data = {}
+
+    @property
+    def is_expired(self):
+        """Return a True if the point has expired."""
+        if self._expires_at is None:
+            return False
+        else:
+            now = datetime.datetime.utcnow()
+            return now > self._expires_at
+
+    def _set_expiry(self, seconds):
+        """Update the _expires_at property.
+
+        :param int seconds: The time in seconds until the point expires.
+        """
+        now = datetime.datetime.utcnow()
+        self._expires_at = now + datetime.timedelta(seconds=seconds)
 
     def __repr__(self):
         return f'<DataPolicy. User: {self._username} Src: {self._name}>'
@@ -97,6 +131,7 @@ class DataPolicyPair:
             raise ValueError('Policy prevented from running')
 
     def _use_method(self, func, *args, scope='return', **kwargs):
+
         #print(f'return policy: {self._policy}, data: {self._data}')
         check_is_func(func)
         command = func.__name__
@@ -112,7 +147,7 @@ class DataPolicyPair:
         else:
             error = f'Last E step failed: {self._policy}'
             raise ValueError(error)
-    
+
     def _resolve_private_data_keys(self, kwargs):
         for key, value in kwargs.items():
             if isinstance(value, PrivateData) and value._key is None:
@@ -142,12 +177,12 @@ class DataPolicyPair:
         if operator == 'exec':
             if policy[1] == command['command']:
                 # add params check:
-                if len(policy)>2 and policy[2]:
+                if len(policy) > 2 and policy[2]:
                     policy_kwargs = policy[2]
                     kwargs = command['kwargs']
                     for key, value in policy_kwargs.items():
                         #print(f'Checking for key: {key} and value: {value}, passed param: {kwargs.get(key, False)}')
-                        if key!='data' and value != kwargs.get(key, False):
+                        if key != 'data' and value != kwargs.get(key, False):
                             return 0
                 return 1
             elif policy[1] == 'ANYF':

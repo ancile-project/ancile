@@ -6,7 +6,7 @@ def test(data):
     data['test'] = True
     # print('FUNC: test')
     return True
-    
+
 @transform_decorator
 def keep_keys(data, keys):
     dropped = set(data.keys()) - set(keys)

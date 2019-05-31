@@ -1,3 +1,7 @@
+"""
+This is a deprecated sketch of the original storage idea. Will be removed
+shortly.
+"""
 from collections import namedtuple
 from datetime import datetime, timedelta
 from src.micro_data_core_python.errors import AncileException
