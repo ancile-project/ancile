@@ -1,11 +1,13 @@
 from src.micro_data_core_python.decorators import transform_decorator, external_request_decorator
 from src.micro_data_core_python.errors import AncileException
 
+name = 'google'
+
 @external_request_decorator
 def get_primary_calendar_metadata(data, token=None, **kwargs):
     import requests
     target_url = "https://www.googleapis.com/calendar/v3/users/me/calendarList"
-    r = requests.get(target_url, 
+    r = requests.get(target_url,
             headers={'Authorization': "Bearer " + token})
 
     if r.status_code != 200:
@@ -42,7 +44,7 @@ def get_calendar_events_in_relative_window(data, token=None,
 
     r = requests.get(target_url, 
             headers={'Authorization': "Bearer " + token})
-    
+
     if r.status_code != 200:
         raise AncileException("Request Error")
 
