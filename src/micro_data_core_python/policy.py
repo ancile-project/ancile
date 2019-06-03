@@ -44,9 +44,14 @@ def _d_step(policy, command, scope=None):
                 policy_kwargs = policy[2]
                 kwargs = command['kwargs']
                 for key, value in policy_kwargs.items():
+                    if key == 'data':
+                        continue
                     print(f'Checking for key: {key} and value: {value}, passed param: {kwargs.get(key, False)}')
-                    if key != 'data' and value != kwargs.get(key, False):
+                    proposed_value = kwargs.get(key, None)
+
+                    if not value.evaluate(proposed_value):
                         return 0
+
             return 1
         elif policy[1] == 'ANYF':
             return 1

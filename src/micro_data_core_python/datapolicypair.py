@@ -89,12 +89,12 @@ class DataPolicyPair:
     def _call_transform(self, func, *args, scope='transform', **kwargs):
         check_is_func(func)
         command = func.__name__
-        #print(f'old policy: {self._policy}.')
+        # print(f'old policy: {self._policy}.')
         self._resolve_private_data_keys(kwargs)
-        self._policy = Policy.d_step(self._policy, {'command': command,
-                                                    'kwargs': kwargs},
+        self._policy = self._policy.d_step({'command': command,
+                                            'kwargs': kwargs},
                                      scope=scope)
-        #print(f'new policy: {self._policy}, data: {self._data}')
+        # print(f'new policy: {self._policy}, data: {self._data}')
         if self._policy:
             # replace in kwargs:
             self._resolve_private_data_values(kwargs)
