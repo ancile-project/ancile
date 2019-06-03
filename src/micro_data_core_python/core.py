@@ -4,6 +4,7 @@ from src.micro_data_core_python.errors import AncileException
 from src.micro_data_core_python.user_specific import UserSpecific
 from src.micro_data_core_python.result import Result
 from src.micro_data_core_python.storage import DPStore
+from src.micro_data_core_python.policy import Policy
 from RestrictedPython import compile_restricted_exec, safe_globals, limited_builtins, safe_builtins
 import uuid
 import pickle
@@ -65,12 +66,16 @@ def assemble_locals(result, user_specific, app_id, user_info, purpose):
     # def retrieve_storage_dps(username, namespace):
     #     return dp_store[username].return_dps(namespace)
 
+    def user(name: str) -> UserSpecific:
+        return user_specific[name]
+
     locals['result'] = result
-    locals['user_specific'] = user_specific
+    # locals['user_specific'] = user_specific
     locals['private'] = PrivateData
     # locals['add_to_store'] = add_to_store
     # locals['add_to_store_time_constraint'] = add_to_store_time_constraint
     # locals['retrieve_storage_dps'] = retrieve_storage_dps
+    locals['user'] = user
     return locals
 
 # def get_storage_items(app_id, user_info, purpose):
@@ -96,7 +101,7 @@ def save_dps(users_specific):
 
             # nothing left to execute:
             # print(f'name: {name}, policy: {dp._policy}')
-            if DataPolicyPair.e_step(dp._policy) == 1:
+            if dp._policy.e_step() == 1:
                 if dp._encryption_keys:
                     encryption_keys[username][name] = dp._encryption_keys
             else:
