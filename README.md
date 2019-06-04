@@ -11,9 +11,9 @@ and then move to the server version. Steps are similar
 except you need to obtain certificates differently. 
 
 1. Setup [Docker](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-18-04), [Elixir](https://elixir-lang.org/install.html) and [Node.JS](https://nodejs.org/en/download/package-manager/).
-1. Install postgresql: `pip install postgres`.
-1. Create dev.secret.exs in the config directory using template below. Replace hostname with localhost.
-1. Fetch dependencies: `mix deps.get` and build the project: `mix`.
+1. Install postgresql: `pip install postgres` (alternatively on OSX install w/Homebrew or for GUI use the Postgres App).
+1. Create dev.secret.exs in the config directory using template below. Replace hostname with localhost. Replace keyfile with keyfile from dev.exs. Replace cacertfile and certfile with keyfile from dev.exs 
+1. Fetch dependencies: `mix deps.get` and build the project: `mix`. Might need to create a Postgres role (i.e. user) for yourself and the ancile_dev_db database.
 1. Get SSL certificates (run `mix phx.gen.cert` locally and use LetsEncrypt remotely)
    1. For the local deployment just check SSL location in `dev.exs`
    1. Create empty `dev.secret.exs`. For remote deployment put the following config: 
@@ -74,7 +74,7 @@ except you need to obtain certificates differently.
      client_secret: "client_id"
 
    ```
-1. Configure PostgresSQL docker: `sh utils/postgres/create_docker_db.sh` 
+1. Configure PostgresSQL docker: `sh utils/postgres/create_docker_db.sh`. Make sure to start docker beforehand. 
 1. Add new tables to your database: `mix ecto.migrate`
 1. Install Node.js dependencies: `cd assets && npm install`. Don't forget to go back: `cd ..`.
 1. Start the server: `mix phx.server`
@@ -85,7 +85,7 @@ completely soon. We have the framework that will handle policy processing in Pyt
 and Elixir for now only manages account creation and provider connection.   
  
 1. Create new venv (Conda, Virtualenv, etc) with Python >= 3.6
-1. Install dependencies `pip install -r src/requirements.txt`
+1. Install dependencies `pip install -r src/requirements.txt`. If you run into nasty errors with psycopg2 on OSX check out this SO answer: https://stackoverflow.com/questions/9678408/cant-install-psycopg2-with-pip-in-virtualenv-on-mac-os-x-10-7/45069401
 1. Configure Redis docker: `sh utils/redis/create_docker_redis.sh`
 1. Install RestrictedPython from GitHub master branch
     ```bash
@@ -94,7 +94,7 @@ and Elixir for now only manages account creation and provider connection.
     cd RestrictedPython
     pip install .
     ```
-1. Start the Python server: `python app.py`
+1. Start the Python server: `python app.py` (use python3 if necessary)
 
 
 
