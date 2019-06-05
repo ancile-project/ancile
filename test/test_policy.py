@@ -155,6 +155,7 @@ class ParamInequalityTest(unittest.TestCase):
         program = "test(data=dp, a=4.99, b=0)"
         self.assertFalse(run_test(policy, program))
 
+
 class ParamRangeTests(unittest.TestCase):
     def test_range1(self):
         policy = 'test(4 < a < 5.0, -0.8 <= b < 4.6)'
@@ -209,4 +210,19 @@ class ParamRangeTests(unittest.TestCase):
     def test_range11(self):
         policy = 'test(4 <= a < 5, -17 < b <= 4.6)'
         program = "test(data=dp, a=3.9, b=-16.9)"
+        self.assertFalse(run_test(policy, program))
+
+    def test_range12(self):
+        policy = 'test(! 4 <= a < 5, -17 < b <= 4.6)'
+        program = "test(data=dp, a=3.9, b=-16.9)"
+        self.assertTrue(run_test(policy, program))
+
+    def test_range13(self):
+        policy = 'test(! 4 <= a < 5, -17 < b <= 4.6)'
+        program = "test(data=dp, a=4, b=-16.9)"
+        self.assertFalse(run_test(policy, program))
+
+    def test_range14(self):
+        policy = 'test(4 <= a < 5, !-17 < b <= 4.6)'
+        program = "test(data=dp, a=4, b=-16.9)"
         self.assertFalse(run_test(policy, program))

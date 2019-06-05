@@ -13,6 +13,11 @@ class RangeType(Enum):
 
 
 class ParamCell(object):
+    """
+    A simple data object that stores information about a parameter's
+    requirements in a policy. Primary use is the evaluate method which checks a
+    given input value for the parameter.
+    """
     def __init__(self, name: str, operation, value):
         self.name = name
         self.op = operation
@@ -21,7 +26,7 @@ class ParamCell(object):
     def evaluate(self, name_val) -> bool:
         """Evaluate the given value against the cell.
 
-        returns name op value
+        returns name_val op value
         """
         return self.op(name_val, self.value)
 
@@ -29,14 +34,27 @@ class ParamCell(object):
         return f'<ParamCell: {self.name} {self.op} {self.value}>'
 
 
-class RangeCell(ParamCell):
-    def __init__(self, name, lower, upper, rtype: RangeType):
+class RangeCell(object):
+    """
+    A data object representing a parameter's requirements in a policy.
+    Specifically for parameters that are limited to (or excluded from) a given 
+    range.
+    """
+
+    def __init__(self, name: str, lower, upper, rtype: RangeType, invert_flag):
         self.name = name
         self.lower = lower
         self.upper = upper
         self.type = rtype
+        self.invert_flag = invert_flag
 
     def evaluate(self, name_val) -> bool:
+        if self.invert_flag:
+            return not self._evaluate(name_val)
+        else:
+            return self._evaluate(name_val)
+
+    def _evaluate(self, name_val) -> bool:
         if self.type == RangeType.OPEN:
             return self.lower < name_val < self.upper
         elif self.type == RangeType.CLOSED:
@@ -47,15 +65,15 @@ class RangeCell(ParamCell):
             return self.lower <= name_val < self.upper
 
     def __repr__(self):
+        invert_str = '!' if self.invert_flag else ''
         if self.type == RangeType.OPEN:
-            return f'<RangeCell: {self.lower} < {self.name} < {self.upper} >'
+            return f'<RangeCell: {invert_str} {self.lower} < {self.name} < {self.upper} >'
         elif self.type == RangeType.CLOSED:
-            return f'<RangeCell: {self.lower} <= {self.name} <= {self.upper} >'
+            return f'<RangeCell: {invert_str} {self.lower} <= {self.name} <= {self.upper} >'
         elif self.type == RangeType.LOPEN:
-            return f'<RangeCell: {self.lower} < {self.name} <= {self.upper} >'
+            return f'<RangeCell: {invert_str} {self.lower} < {self.name} <= {self.upper} >'
         elif self.type == RangeType.ROPEN:
-            return f'<RangeCell: {self.lower} <= {self.name} < {self.upper} >'
-
+            return f'<RangeCell: {invert_str} {self.lower} <= {self.name} < {self.upper} >'
 
 
 class PolicyLexer(Lexer):
@@ -213,7 +231,27 @@ class PolicyParser(Parser):
         else:
             raise ParseError("Invalid range")
 
-        return {p.TEXT: RangeCell(p.TEXT, lower, upper, type_val)}
+        return {p.TEXT: RangeCell(p.TEXT, lower, upper, type_val, False)}
+
+    @_('NEG numeric range_op TEXT range_op numeric')
+    def param(self, p):
+        lower = p.numeric0
+        upper = p.numeric1
+        comp1 = p.range_op0
+        comp2 = p.range_op1
+
+        if comp1 == operator.lt and comp2 == operator.lt:
+            type_val = RangeType.OPEN
+        elif comp1 == operator.le and comp2 == operator.le:
+            type_val = RangeType.CLOSED
+        elif comp1 == operator.lt and comp2 == operator.le:
+            type_val = RangeType.LOPEN
+        elif comp1 == operator.le and comp2 == operator.lt:
+            type_val = RangeType.ROPEN
+        else:
+            raise ParseError("Invalid range")
+
+        return {p.TEXT: RangeCell(p.TEXT, lower, upper, type_val, True)}
 
     @_('NUMBER')
     def numeric(self, p):
