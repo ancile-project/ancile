@@ -14,6 +14,15 @@ class AncileException(BaseError):
     def __str__(self):
         return f'AncileException: {self.message}'
 
+
+class ParseError(BaseError):
+    def __init__(self, message):
+        self.message = message
+
+    def __str__(self):
+        return f'ParseError: {self.message}'
+
+
 class ConfigError(BaseError):
     def __init__(self, param, r_value, acceptable_vals):
         self.param = param

@@ -1,5 +1,6 @@
 from src.micro_data_core_python.datapolicypair import DataPolicyPair
 from src.micro_data_core_python.errors import AncileException
+import inspect
 
 import logging
 
@@ -56,10 +57,10 @@ def external_request_decorator(f):
         if args:
             # let's just ask to specify kwargs. Useful for policy creation.
             raise ValueError("Please specify keyword arguments instead of positions.")
-        user_specific = kwargs.get('user_specific', False)
-        data_source = kwargs.get('data_source', False)
-        name = kwargs.get('name', False)
-        sample_policy = kwargs.get('sample_policy', 'ANYF*.return')
+        user_specific = kwargs.pop('user', False)
+        data_source = inspect.getmodule(f).name
+        name = kwargs.pop('name', False)
+        sample_policy = kwargs.pop('sample_policy', 'ANYF*.return')
 
         if isinstance(user_specific, UserSpecific):
             logger.info(f'function: {f.__name__}. args: {args}, kwargs: {kwargs}, app: {user_specific}')
@@ -165,7 +166,7 @@ def reduce_aggregate_decorator(f):
             raise AncileException("value_keys must either be a single value or a list of the same length as data")
 
         data_list = []
-        for dp_pair,key in zip(dp_pairs, keys):
+        for dp_pair, key in zip(dp_pairs, keys):
             if not isinstance(dp_pair, DataPolicyPair):
                 raise ValueError("You need to provide a Data object. Use get_data to get it.")
             data_list.append(dp_pair._data[key])

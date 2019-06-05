@@ -1,11 +1,85 @@
 from sly import Lexer, Parser
 from src.micro_data_core_python.datapolicypair import PrivateData
 import operator
+from enum import Enum
+from src.micro_data_core_python.errors import ParseError
+
+
+class RangeType(Enum):
+    OPEN = 1     # (a,b)
+    CLOSED = 2   # [a,b]
+    LOPEN = 3    # (a,b]
+    ROPEN = 4    # [a,b)
+
+
+class ParamCell(object):
+    """
+    A simple data object that stores information about a parameter's
+    requirements in a policy. Primary use is the evaluate method which checks a
+    given input value for the parameter.
+    """
+    def __init__(self, name: str, operation, value):
+        self.name = name
+        self.op = operation
+        self.value = value
+
+    def evaluate(self, name_val) -> bool:
+        """Evaluate the given value against the cell.
+
+        returns name_val op value
+        """
+        return self.op(name_val, self.value)
+
+    def __repr__(self):
+        return f'<ParamCell: {self.name} {self.op} {self.value}>'
+
+
+class RangeCell(object):
+    """
+    A data object representing a parameter's requirements in a policy.
+    Specifically for parameters that are limited to (or excluded from) a given 
+    range.
+    """
+
+    def __init__(self, name: str, lower, upper, rtype: RangeType, invert_flag):
+        self.name = name
+        self.lower = lower
+        self.upper = upper
+        self.type = rtype
+        self.invert_flag = invert_flag
+
+    def evaluate(self, name_val) -> bool:
+        if self.invert_flag:
+            return not self._evaluate(name_val)
+        else:
+            return self._evaluate(name_val)
+
+    def _evaluate(self, name_val) -> bool:
+        if self.type == RangeType.OPEN:
+            return self.lower < name_val < self.upper
+        elif self.type == RangeType.CLOSED:
+            return self.lower <= name_val <= self.upper
+        elif self.type == RangeType.LOPEN:
+            return self.lower < name_val <= self.upper
+        else:
+            return self.lower <= name_val < self.upper
+
+    def __repr__(self):
+        invert_str = '!' if self.invert_flag else ''
+        if self.type == RangeType.OPEN:
+            return f'<RangeCell: {invert_str} {self.lower} < {self.name} < {self.upper} >'
+        elif self.type == RangeType.CLOSED:
+            return f'<RangeCell: {invert_str} {self.lower} <= {self.name} <= {self.upper} >'
+        elif self.type == RangeType.LOPEN:
+            return f'<RangeCell: {invert_str} {self.lower} < {self.name} <= {self.upper} >'
+        elif self.type == RangeType.ROPEN:
+            return f'<RangeCell: {invert_str} {self.lower} <= {self.name} < {self.upper} >'
+
 
 class PolicyLexer(Lexer):
     tokens = { TEXT, NUMBER, FLOAT, UNION, CONCAT, INTERSECT,  NEG, STAR,
-               ANYF, LPAREN, RPAREN, LBRACKET, RBRACKET, QUOTE, COMMA, EQ, 
-               PRIVATE, STRING }
+               ANYF, LPAREN, RPAREN, LBRACKET, RBRACKET, COMMA, EQ,
+               PRIVATE, STRING, NEQ, LEQ, LE, GEQ, GE }
     ignore = ' \s\t\n\r'
 
 
@@ -14,24 +88,32 @@ class PolicyLexer(Lexer):
     # Tokens
     TEXT = r'[a-zA-Z_][a-zA-Z0-9_]*'
     STRING = r'\"[a-zA-Z_][a-zA-Z0-9_:/\.]*\"'
-    NUMBER = r'\d+'
-    FLOAT = r'\f+'
+    FLOAT = r'[-\+]?\d+\.\d+'
+    NUMBER = r'[-\+]?\d+'
+
 
     # Special symbols
-    
+
     UNION = r'\+'
     CONCAT = r'\.'
-    INTERSECT = r'\&'    
+    INTERSECT = r'\&'
     LPAREN = r'\('
     RPAREN = r'\)'
     LBRACKET = r'\['
     RBRACKET = r'\]'
-    QUOTE = r'\"'
+    # LBRACE = r'\{'
+    # RBRACE = r'\}'
+    # QUOTE = r'\"'
     COMMA = r'\,'
+    NEQ = r'\!\='
+    LEQ = r'\<\='
+    LE = r'\<'
+    GEQ = r'\>\='
+    GE = r'\>'
     EQ = r'\='
     NEG = r'\!'
     STAR = r'\*'
-    
+
     # comparison operators
     # COMPARISON = r'(\<\=)|(\>\=)|(\<)|(\>)|(\!\=)'
 
@@ -57,13 +139,16 @@ class PolicyParser(Parser):
     def __init__(self):
         self.names = { }
 
+    def error(self, token):
+        raise ParseError(f'Error at token {token}')
+
     @_('NUMBER')
     def clause(self, p):
         return int(p.NUMBER)
 
     @_('TEXT')
     def clause(self, p):
-        return ['exec', p.TEXT, []]
+        return ['exec', p.TEXT, {}]
 
     @_('ANYF')
     def clause(self, p):
@@ -107,26 +192,116 @@ class PolicyParser(Parser):
     def params(self, p):
         return p.param
 
-    @_('TEXT EQ STRING')
+    @_('TEXT equality_op STRING')
     def param(self, p):
-        return {p.TEXT: p.STRING.strip('"')}
+        return {p.TEXT: ParamCell(p.TEXT, p.equality_op, p.STRING.strip('"'))}
 
-    @_('TEXT EQ NUMBER')
+    @_('TEXT numeric_op NUMBER')
     def param(self, p):
-        return {p.TEXT: int(p.NUMBER)}
+        return {p.TEXT: ParamCell(p.TEXT, p.numeric_op, int(p.NUMBER))}
 
-    @_('TEXT EQ FLOAT')
+    @_('TEXT numeric_op FLOAT')
     def param(self, p):
-        return {p.TEXT: float(p.FLOAT)}
+        return {p.TEXT: ParamCell(p.TEXT, p.numeric_op, float(p.FLOAT))}
 
-    @_('TEXT EQ LBRACKET plists RBRACKET')
+    @_('TEXT equality_op LBRACKET plists RBRACKET')
     def param(self, p):
-
-        return {p.TEXT: p.plists}
+        return {p.TEXT: ParamCell(p.TEXT, p.equality_op, p.plists)}
 
     @_('TEXT EQ PRIVATE LPAREN STRING RPAREN')
     def param(self, p):
-        return {p.TEXT: PrivateData(p.STRING.strip('"'))}
+        return {p.TEXT: ParamCell(p.TEXT, operator.eq,
+                                  PrivateData(p.STRING.strip('"')))}
+
+    @_('numeric range_op TEXT range_op numeric')
+    def param(self, p):
+        lower = p.numeric0
+        upper = p.numeric1
+        comp1 = p.range_op0
+        comp2 = p.range_op1
+
+        if comp1 == operator.lt and comp2 == operator.lt:
+            type_val = RangeType.OPEN
+        elif comp1 == operator.le and comp2 == operator.le:
+            type_val = RangeType.CLOSED
+        elif comp1 == operator.lt and comp2 == operator.le:
+            type_val = RangeType.LOPEN
+        elif comp1 == operator.le and comp2 == operator.lt:
+            type_val = RangeType.ROPEN
+        else:
+            raise ParseError("Invalid range")
+
+        return {p.TEXT: RangeCell(p.TEXT, lower, upper, type_val, False)}
+
+    @_('NEG numeric range_op TEXT range_op numeric')
+    def param(self, p):
+        lower = p.numeric0
+        upper = p.numeric1
+        comp1 = p.range_op0
+        comp2 = p.range_op1
+
+        if comp1 == operator.lt and comp2 == operator.lt:
+            type_val = RangeType.OPEN
+        elif comp1 == operator.le and comp2 == operator.le:
+            type_val = RangeType.CLOSED
+        elif comp1 == operator.lt and comp2 == operator.le:
+            type_val = RangeType.LOPEN
+        elif comp1 == operator.le and comp2 == operator.lt:
+            type_val = RangeType.ROPEN
+        else:
+            raise ParseError("Invalid range")
+
+        return {p.TEXT: RangeCell(p.TEXT, lower, upper, type_val, True)}
+
+    @_('NUMBER')
+    def numeric(self, p):
+        return int(p.NUMBER)
+
+    @_('FLOAT')
+    def numeric(self, p):
+        return float(p.FLOAT)
+
+    @_('equality_op')
+    def numeric_op(self, p):
+        return p.equality_op
+
+    @_('comparison_op')
+    def numeric_op(self, p):
+        return p.comparison_op
+
+    @_('EQ')
+    def equality_op(self, p):
+        return operator.eq
+
+    @_('NEQ')
+    def equality_op(self, p):
+        return operator.ne
+
+    @_('LEQ')
+    def comparison_op(self, p):
+        return operator.le
+
+    @_('LE')
+    def comparison_op(self, p):
+        return operator.lt
+
+    @_('GEQ')
+    def comparison_op(self, p):
+        return operator.ge
+
+    @_('GE')
+    def comparison_op(self, p):
+        return operator.gt
+
+    @_('LEQ')
+    def range_op(self, p):
+        return operator.le
+
+    @_('LE')
+    def range_op(self, p):
+        return operator.lt
+
+
 
     # @_('TEXT EQ comparison')
     # def param(self, p):
@@ -182,7 +357,8 @@ class PolicyParser(Parser):
     def parse_it(text):
         lexer = PolicyLexer()
         parser = PolicyParser()
-        return parser.parse(lexer.tokenize(text))
+        parsed = parser.parse(lexer.tokenize(text))
+        return parsed
 
     @staticmethod
     def parse_policies(policies):
@@ -201,4 +377,6 @@ if __name__ == '__main__':
         except EOFError:
             break
         if text:
-            print(parser.parse(lexer.tokenize(text)))
+            lexed = lexer.tokenize(text)
+            # print(f"lexed: {list(lexed)}\n")
+            print(parser.parse(lexed))

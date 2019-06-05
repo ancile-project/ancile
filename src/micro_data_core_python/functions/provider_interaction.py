@@ -32,7 +32,7 @@ def full_api(data, body=None, target_url=None, token=None):
     print("        body: " + str(body))
 
     r = requests.get(target_url, headers={'Authorization': "Bearer " + token},
-                    body=body)
+                     body=body)
 
     if r.status_code == 200:
         data.update(r.json()) # Need to maintain given dict
