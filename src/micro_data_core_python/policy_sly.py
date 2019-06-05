@@ -121,13 +121,16 @@ class PolicyParser(Parser):
     def __init__(self):
         self.names = { }
 
+    def error(self, token):
+        raise ParseError(f'Error at token {token}')
+
     @_('NUMBER')
     def clause(self, p):
         return int(p.NUMBER)
 
     @_('TEXT')
     def clause(self, p):
-        return ['exec', p.TEXT, []]
+        return ['exec', p.TEXT, {}]
 
     @_('ANYF')
     def clause(self, p):
@@ -185,7 +188,7 @@ class PolicyParser(Parser):
 
     @_('TEXT equality_op LBRACKET plists RBRACKET')
     def param(self, p):
-        return {p.TEXT: ParamCell(p.TEXT, operator.eq, p.plists)}
+        return {p.TEXT: ParamCell(p.TEXT, p.equality_op, p.plists)}
 
     @_('TEXT EQ PRIVATE LPAREN STRING RPAREN')
     def param(self, p):
@@ -218,7 +221,7 @@ class PolicyParser(Parser):
 
     @_('FLOAT')
     def numeric(self, p):
-        return float(p.NUMBER)
+        return float(p.FLOAT)
 
     @_('equality_op')
     def numeric_op(self, p):
@@ -316,7 +319,8 @@ class PolicyParser(Parser):
     def parse_it(text):
         lexer = PolicyLexer()
         parser = PolicyParser()
-        return parser.parse(lexer.tokenize(text))
+        parsed = parser.parse(lexer.tokenize(text))
+        return parsed
 
     @staticmethod
     def parse_policies(policies):
