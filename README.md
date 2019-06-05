@@ -95,7 +95,11 @@ and Elixir for now only manages account creation and provider connection.
 1. Start the Python server: `python app.py`
 
 
-
+## Unit Tests:
+To run the python unit tests:
+```
+ancile$  python -m unittest
+```
 
 
 
