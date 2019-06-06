@@ -1,10 +1,16 @@
 from copy import deepcopy
+from src.micro_data_core_python.policy_sly import PolicyParser
 # from typing import List
 
 
 class Policy(object):
     def __init__(self, initial_policy):
-        self._policy = deepcopy(initial_policy)
+        if isinstance(initial_policy, str):
+            self._policy = PolicyParser.parse_it(initial_policy)
+        elif isinstance(initial_policy, Policy):
+            self._policy = initial_policy
+        else:
+            self._policy = deepcopy(initial_policy)
 
     def d_step(self, command, scope=None, in_place=False):
         if not in_place:
@@ -18,6 +24,9 @@ class Policy(object):
 
     def __bool__(self):
         return self._policy != 0
+
+    def check_allowed(self, command, kwargs=None):
+        return bool(self.d_step({'command': command, 'kwargs': kwargs}))
 
     @staticmethod
     def _d_step(policy, command, scope=None):

@@ -1,36 +1,7 @@
 from src.micro_data_core_python.errors import AncileException
 from src.micro_data_core_python.policy import Policy
+from src.micro_data_core_python.private_data import PrivateData
 import datetime
-
-
-class PrivateData(object):
-    """
-    Wrapper object that represents data to be substituted in.
-
-    The object stores a keyword. When a PrivateData object is used as a
-    parameter to an ancile fn, the key is used to substitute a value from the
-    user's private data store.
-    """
-    def __init__(self, key=None):
-        """
-        :param str key: The key held by the object. May be none.
-        """
-        self._key = key
-
-    def __eq__(self, other):
-        """Equality check. Used during policy checks."""
-        if self is other:
-            return True
-        elif isinstance(other, self.__class__):
-            return self._key == other._key
-        else:
-            return False
-
-    def __ne__(self, other):
-        return not self.__eq__(other)
-
-    def __repr__(self):
-        return f'<PrivateData. {self._key}>'
 
 
 class DataPolicyPair:
@@ -74,10 +45,7 @@ class DataPolicyPair:
 
     def check_command_allowed(self, command, kwargs=None):
         #print(f'Checking {command} against policy: {self._policy}')
-        if self._policy.d_step({'command': command, 'kwargs': kwargs}):
-            return True
-        else:
-            return False
+        return self._policy.check_allowed(command, kwargs)
 
     def _advance_policy_after_comparison(self, command, kwargs=None):
         #print(f'Advancing {command} against policy: {self._policy}')

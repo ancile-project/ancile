@@ -1,5 +1,6 @@
 from src.micro_data_core_python.datapolicypair import DataPolicyPair
 from src.micro_data_core_python.errors import AncileException
+import src.micro_data_core_python.policy as policy
 import inspect
 
 import logging
@@ -98,7 +99,7 @@ def comparison_decorator(f):
         if isinstance(dp_pair, DataPolicyPair):
             logger.info(f'function: {f.__name__}. args: {args}, kwargs: {kwargs}, app: {dp_pair._app_id}')
             result = dp_pair._call_transform(f, *args, **kwargs)
-            dp_pair._advance_policy_after_comparison("_enforce_comparison", 
+            dp_pair._advance_policy_after_comparison("_enforce_comparison",
                                                     {"result": result})
             return result
         else:
@@ -123,7 +124,7 @@ def aggregate_decorator(f):
             new_data[f'{dp_pair._username}.{dp_pair._name}'] = dp_pair._data
             set_users.add(dp_pair._username)
             if new_policy:
-                new_policy = ['intersect', dp_pair._policy, new_policy]
+                new_policy = policy.intersect(dp_pair._policy, new_policy)
             else:
                 new_policy = dp_pair._policy
         # If we're aggregating multiple data pieces from the 
@@ -132,14 +133,14 @@ def aggregate_decorator(f):
         #     raise ValueError("You need to provide a separate data \
         #                         object for each username.")
 
-        new_dp = DataPolicyPair(policy=new_policy, token=None, 
+        new_dp = DataPolicyPair(policy=new_policy, token=None,
                                 name='Aggregate', username='Aggregate',
                                 private_data=dict(), app_id=app_id)
         new_dp._data['aggregated'] = new_data
         if kwargs.get('user_specific', False):
             from src.micro_data_core_python.user_specific import UserSpecific
             user_specific_dict = kwargs['user_specific']
-            new_us = UserSpecific(policies=None, tokens=None, private_data=None, 
+            new_us = UserSpecific(policies=None, tokens=None, private_data=None,
                                   username='aggregated', app_id=app_id)
             new_us._active_dps['aggregated'] = new_dp
             user_specific_dict['aggregated'] = new_us
@@ -173,7 +174,7 @@ def reduce_aggregate_decorator(f):
             app_id = dp_pair._app_id if app_id is None else app_id
 
             if new_policy:
-                new_policy = ['intersect', dp_pair._policy, new_policy]
+                new_policy = policy.intersect(dp_pair._policy, new_policy)
             else:
                 new_policy = dp_pair._policy
 
@@ -187,12 +188,12 @@ def reduce_aggregate_decorator(f):
         if kwargs.get('user_specific', False):
             from src.micro_data_core_python.user_specific import UserSpecific
             user_specific_dict = kwargs['user_specific']
-            new_us = UserSpecific(policies=None, tokens=None, private_data=None, 
+            new_us = UserSpecific(policies=None, tokens=None, private_data=None,
                                   username='aggregated', app_id=app_id)
             new_us._active_dps['aggregated'] = new_dp
             user_specific_dict['aggregated'] = new_us
 
-        logger.info(f'r-aggregate function: {f.__name__}. args: {args}, kwargs: {kwargs}, app: {app_id}')        
+        logger.info(f'r-aggregate function: {f.__name__}. args: {args}, kwargs: {kwargs}, app: {app_id}')
 
         new_dp._call_transform(f, *args, scope='aggregate', **kwargs)
         return new_dp
