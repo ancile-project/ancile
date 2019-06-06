@@ -1,4 +1,4 @@
-from src.micro_data_core_python.errors import AncileException
+from src.micro_data_core_python.errors import AncileException, PolicyError
 from src.micro_data_core_python.policy import Policy
 from src.micro_data_core_python.private_data import PrivateData
 import datetime
@@ -54,73 +54,44 @@ class DataPolicyPair:
         if not self._policy:
             raise ValueError('Policy prevented from running')
 
-    def _call_transform(self, func, *args, scope='transform', **kwargs):
+    def _call(self, func, *args, scope=None, **kwargs):
         check_is_func(func)
         command = func.__name__
-        # print(f'old policy: {self._policy}.')
-        self._resolve_private_data_keys(kwargs)
-        self._policy = self._policy.d_step({'command': command,
-                                            'kwargs': kwargs},
-                                     scope=scope)
-        # print(f'new policy: {self._policy}, data: {self._data}')
-        if self._policy:
-            # replace in kwargs:
-            self._resolve_private_data_values(kwargs)
-            kwargs['data'] = self._data
-            return func(*args, **kwargs)
-        else:
-            raise ValueError('Policy prevented from running')
 
-    def _call_store(self, func, *args, scope='store', **kwargs):
-        # This is the same as call transform, it just leaves data as the dp_obj
-        check_is_func(func)
-        command = func.__name__
-        # print(f'old policy: {self._policy}.')
         self._resolve_private_data_keys(kwargs)
-        self._policy = self._policy.d_step({'command': command,
-                                            'kwargs': kwargs}, scope=scope)
-        # print(f'new policy: {self._policy}, data: {self._data}')
-        if self._policy:
-            # replace in kwargs:
-            self._resolve_private_data_values(kwargs)
-            return func(*args, **kwargs)
-        else:
-            raise ValueError('Policy prevented from running')
+        self._policy = self._policy.d_step({'command': command, 'kwargs': kwargs},
+                                           scope=scope)
 
-    def _call_external(self, func, *args, scope='external', **kwargs):
-        check_is_func(func)
-        command = func.__name__
-        # print(f'old policy: {self._policy}.')
-        self._resolve_private_data_keys(kwargs)
-        self._policy = self._policy.d_step({'command': command,
-                                            'kwargs': kwargs}, scope=scope)
-        # print(f'new policy: {self._policy}, data: {self._data}')
         if self._policy:
             self._resolve_private_data_values(kwargs)
-            kwargs['data'] = self._data
-            kwargs['token'] = self._token
+
+            if scope in {'transform', 'external'}:
+                kwargs['data'] = self._data
+            if scope == 'external':
+                kwargs['token'] = self._token
+
+            if scope == 'return':
+                if self._policy.e_step() != 1:
+                    raise PolicyError()
+                else:
+                    kwargs['encryption_keys'] = self._encryption_keys
+                    kwargs['data'] = self._data
+
             return func(*args, **kwargs)
         else:
-            raise ValueError('Policy prevented from running')
+            raise PolicyError()
 
-    def _use_method(self, func, *args, scope='return', **kwargs):
+    def _call_transform(self, func, *args,  **kwargs):
+        self._call(func, *args, scope='transform', **kwargs)
 
-        #print(f'return policy: {self._policy}, data: {self._data}')
-        check_is_func(func)
-        command = func.__name__
+    def _call_store(self, func, *args, **kwargs):
+        self._call(func, *args, scope='store', **kwargs)
 
-        self._resolve_private_data_keys(kwargs)
-        self._policy = self._policy.d_step({'command': command,
-                                            'kwargs': kwargs}, scope=scope)
-        step_result = self._policy.e_step()
-        if step_result == 1:
-            self._resolve_private_data_values(kwargs)
-            kwargs['encryption_keys'] = self._encryption_keys
-            kwargs['data'] = self._data
-            return func(*args, **kwargs)
-        else:
-            error = f'Last E step failed: {self._policy}'
-            raise ValueError(error)
+    def _call_external(self, func, *args, **kwargs):
+        self._call(func, *args, scope='external', **kwargs)
+
+    def _use_method(self, func, *args, **kwargs):
+        self._call(func, *args, scope='return', **kwargs)
 
     def _resolve_private_data_keys(self, kwargs):
         for key, value in kwargs.items():

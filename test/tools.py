@@ -2,6 +2,7 @@ from src.micro_data_core_python.policy_sly import PolicyParser
 from src.micro_data_core_python.datapolicypair import DataPolicyPair
 from src.micro_data_core_python.decorators import transform_decorator, use_type_decorator
 from RestrictedPython import compile_restricted_exec, safe_builtins
+from src.micro_data_core_python.errors import PolicyError
 
 
 def get_dummy_pair(input_policy: str) -> DataPolicyPair:
@@ -40,5 +41,5 @@ def run_test(input_policy: str, program: str) -> bool:
                 fn_name = e.args[0].split('\'')[1]
                 lcls[fn_name] = gen_dummy_fn(fn_name)
                 lcls['dp'] = get_dummy_pair(input_policy)
-        except ValueError as e:
+        except (ValueError, PolicyError) as e:
             return False

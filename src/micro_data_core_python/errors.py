@@ -32,3 +32,11 @@ class ConfigError(BaseError):
     def __str__(self) -> str:
         return (f'ConfigError: parameter {self.param} received invalid input '
                 f'\'{self.r_value}\'. Valid parameters are {self.acceptable_vals}')
+
+
+class PolicyError(BaseError):
+    def __init__(self):
+        pass
+
+    def __str__(self) -> str:
+        return(f'PolicyError: The policy has prevented this execution.')
