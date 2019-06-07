@@ -9,38 +9,38 @@ from src.micro_data_core_python.user_specific import UserSpecific
 
 logger = logging.getLogger('api')
 
+def check_args(args):
+    if args:
+        raise ValueError("Please specify keyword arguments instead of positions.")
+
+def check_data(dp_pair):
+    if not isinstance(dp_pair, DataPolicyPair):
+        raise ValueError("You need to provide a Data object. Use get_data to get it.")
+
+def decorator_preamble(args, kwargs) -> DataPolicyPair:
+    check_args(args)
+    dp_pair = kwargs.get('data', False)
+    check_data(dp_pair)
+    return dp_pair
+
 
 def transform_decorator(f):
     def wrapper(*args, **kwargs):
-        # print(f'function: {f.__name__}. args: {args}, kwargs: {kwargs}')
-        if args:
-            # let's just ask to specify kwargs. Useful for policy creation.
-            raise ValueError("Please specify keyword arguments instead of positions.")
-        dp_pair = kwargs.get('data', False)
+        dp_pair = decorator_preamble(args, kwargs)
 
-        if isinstance(dp_pair, DataPolicyPair):
-            logger.info(f'function: {f.__name__}. args: {args}, kwargs: {kwargs}, app: {dp_pair._app_id}')
-            dp_pair._call_transform(f, *args, **kwargs)
-            return True
-        else:
-            raise ValueError("You need to provide a Data object. Use get_data to get it.")
+        logger.info(f'function: {f.__name__}. args: {args}, kwargs: {kwargs}, app: {dp_pair._app_id}')
+        dp_pair._call_transform(f, *args, **kwargs)
+        return True
 
     return wrapper
 
 
 def store_decorator(f):
     def wrapper(*args, **kwargs):
-        # print(f'function: {f.__name__}. args: {args}, kwargs: {kwargs}')
-        if args:
-            # let's just ask to specify kwargs. Useful for policy creation.
-            raise ValueError("Please specify keyword arguments instead of positions.")
-        dp_pair = kwargs.get('data', False)
+        dp_pair = decorator_preamble(args, kwargs)
 
-        if isinstance(dp_pair, DataPolicyPair):
-            logger.info(f'function: {f.__name__}. args: {args}, kwargs: {kwargs}, app: {dp_pair._app_id}')
-            return dp_pair._call_store(f, *args, **kwargs)
-        else:
-            raise ValueError("You need to provide a Data object. Use get_data to get it.")
+        logger.info(f'function: {f.__name__}. args: {args}, kwargs: {kwargs}, app: {dp_pair._app_id}')
+        return dp_pair._call_store(f, *args, **kwargs)
 
     return wrapper
 
@@ -53,11 +53,8 @@ def external_request_decorator(f):
     :return:
     """
     def wrapper(*args, **kwargs):
-        # logger.info(f'function: {f.__name__}. args: {args}, kwargs: {kwargs}')
-        # print(f'function: {f.__name__}. args: {args}, kwargs: {kwargs}')
-        if args:
-            # let's just ask to specify kwargs. Useful for policy creation.
-            raise ValueError("Please specify keyword arguments instead of positions.")
+        check_args(args)
+
         user_specific = kwargs.pop('user', False)
         data_source = inspect.getmodule(f).name
         name = kwargs.pop('name', False)
@@ -76,34 +73,24 @@ def external_request_decorator(f):
 
 def use_type_decorator(f):
     def wrapper(*args, **kwargs):
-
-        # print(f'USE function: {f.__name__}. args: {args}, kwargs: {kwargs}')
-
         dp_pair = kwargs.get('data', False)
-        if isinstance(dp_pair, DataPolicyPair):
-            logger.info(f'USE function: {f.__name__}. args: {args}, kwargs: {kwargs}, app: {dp_pair._app_id}')
-            return dp_pair._use_method(f, *args, **kwargs)
-        else:
-            raise ValueError("You need to provide a Data object. Use get_data to get it.")
+        check_data(dp_pair)
+
+        logger.info(f'USE function: {f.__name__}. args: {args}, kwargs: {kwargs}, app: {dp_pair._app_id}')
+        return dp_pair._use_method(f, *args, **kwargs)
 
     return wrapper
 
 
 def comparison_decorator(f):
     def wrapper(*args, **kwargs):
-        if args:
-            # let's just ask to specify kwargs. Useful for policy creation.
-            raise ValueError("Please specify keyword arguments instead of positions.")
-        dp_pair = kwargs.get('data', False)
+        dp_pair = decorator_preamble(args, kwargs)
 
-        if isinstance(dp_pair, DataPolicyPair):
-            logger.info(f'function: {f.__name__}. args: {args}, kwargs: {kwargs}, app: {dp_pair._app_id}')
-            result = dp_pair._call_transform(f, *args, **kwargs)
-            dp_pair._advance_policy_after_comparison("_enforce_comparison",
-                                                    {"result": result})
-            return result
-        else:
-            raise ValueError("You need to provide a Data object. Use get_data to get it.")
+        logger.info(f'function: {f.__name__}. args: {args}, kwargs: {kwargs}, app: {dp_pair._app_id}')
+        result = dp_pair._call_transform(f, *args, **kwargs)
+        dp_pair._advance_policy_after_comparison("_enforce_comparison",
+                                                 {"result": result})
+        return result
 
     return wrapper
 
@@ -127,11 +114,6 @@ def aggregate_decorator(f):
                 new_policy = policy.intersect(dp_pair._policy, new_policy)
             else:
                 new_policy = dp_pair._policy
-        # If we're aggregating multiple data pieces from the 
-        # same user this won't do the right thing
-        # if len(set_users) != len(dp_pairs):
-        #     raise ValueError("You need to provide a separate data \
-        #                         object for each username.")
 
         new_dp = DataPolicyPair(policy=new_policy, token=None,
                                 name='Aggregate', username='Aggregate',
