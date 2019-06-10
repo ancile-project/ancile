@@ -59,3 +59,16 @@ def in_geofences(geofences, data=None):
 
     data['in_geofences'] = result
     return True
+
+def in_geofences_bool(geofences, data=None):
+    """
+    A wrapper around in_geofences that reduces the value to a boolean.
+
+    T if in one of the geofences. F if not or the geofences overlap.
+    """
+    in_geofences(geofences=geofences, data=data)
+
+    val = data._data.pop('in_geofences')
+
+    data._data['in_geofences'] = (val not in ["Location Unknown",
+                                              "Error: Overlapping Geofences"])

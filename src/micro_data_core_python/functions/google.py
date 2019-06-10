@@ -3,12 +3,12 @@ from src.micro_data_core_python.errors import AncileException
 
 name = 'google'
 
-@external_request_decorator
-def get_primary_calendar_metadata(data, token=None, **kwargs):
+
+def _get_primary_metadata(token):
     import requests
     target_url = "https://www.googleapis.com/calendar/v3/users/me/calendarList"
     r = requests.get(target_url,
-            headers={'Authorization': "Bearer " + token})
+                     headers={'Authorization': "Bearer " + token})
 
     if r.status_code != 200:
         raise AncileException("Request Error")
@@ -19,31 +19,34 @@ def get_primary_calendar_metadata(data, token=None, **kwargs):
     if not primary:
         raise AncileException("No Calendar")
 
-    data['calendar'] = primary[0]
+    return primary[0]
+
+@external_request_decorator
+def get_primary_calendar_metadata(data, token=None, **kwargs):
+    data['calendar'] = _get_primary_metadata(token)
     return True
 
 @external_request_decorator
-def get_calendar_events_in_relative_window(data, token=None, 
-                    min_time=0, max_time=1, **kwargs):
+def get_calendar_events_in_relative_window(data, token=None, min_time=0, 
+                                           max_time=1, **kwargs):
     from datetime import datetime, timedelta, timezone
     import requests
 
     def format_time(unformatted):
         return unformatted.isoformat()
-        # return unformatted.strftime("%Y-%m-%dT%H:%M:%S%z")
+
+    cal_id = _get_primary_metadata(token)['id']
 
     now = datetime.now(timezone.utc).astimezone()
     lower = format_time(now - timedelta(minutes=min_time))
     upper = format_time(now + timedelta(minutes=max_time))
 
-    calendar = data.pop('calendar')
-
     target_url = "https://www.googleapis.com/calendar/v3/calendars/" + \
-                calendar["id"] + "/events?singleEvents=true&timeMin=" + \
-                lower + "&timeMax=" + upper
+                 cal_id + "/events?singleEvents=true&timeMin=" + \
+                 lower + "&timeMax=" + upper
 
-    r = requests.get(target_url, 
-            headers={'Authorization': "Bearer " + token})
+    r = requests.get(target_url,
+                     headers={'Authorization': "Bearer " + token})
 
     if r.status_code != 200:
         raise AncileException("Request Error")
@@ -53,13 +56,13 @@ def get_calendar_events_in_relative_window(data, token=None,
 
 @transform_decorator
 def event_occuring(data, event_title=None):
-    events = data.pop('events')
+    events = data.get('events')
     result = event_title in [event['summary'] for event in events]
     data['event_occuring'] = result
     return True
 
 @transform_decorator
 def no_events_occuring(data):
-    events = data.pop('events')
+    events = data.get('events')
     data['no_events_occuring'] = len(events) == 0
     return True

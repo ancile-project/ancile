@@ -1,8 +1,8 @@
 from sly import Lexer, Parser
-from src.micro_data_core_python.datapolicypair import PrivateData
 import operator
 from enum import Enum
 from src.micro_data_core_python.errors import ParseError
+from src.micro_data_core_python.private_data import PrivateData
 
 
 class RangeType(Enum):
@@ -32,6 +32,19 @@ class ParamCell(object):
 
     def __repr__(self):
         return f'<ParamCell: {self.name} {self.op} {self.value}>'
+
+    def __eq__(self, other):
+        if self is other:
+            return True
+        elif not isinstance(other, ParamCell):
+            return False
+        else:
+            return self.name == other.name and                                \
+                   self.op == other.op and                                    \
+                   self.value == other.value
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
 
 
 class RangeCell(object):
@@ -74,6 +87,21 @@ class RangeCell(object):
             return f'<RangeCell: {invert_str} {self.lower} < {self.name} <= {self.upper} >'
         elif self.type == RangeType.ROPEN:
             return f'<RangeCell: {invert_str} {self.lower} <= {self.name} < {self.upper} >'
+
+    def __eq__(self, other):
+        if self is other:
+            return True
+        elif not isinstance(other, RangeCell):
+            return False
+        else:
+            return self.name == other.name and                                \
+                   self.lower == other.lower and                              \
+                   self.upper == other.upper and                              \
+                   self.type == other.type and                                \
+                   self.invert_flag == other.invert_flag
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
 
 
 class PolicyLexer(Lexer):
@@ -341,7 +369,7 @@ class PolicyParser(Parser):
     # @_('EQ')
     # def comparison(self, p):
     #     return operator.eq
-    
+
     # @_('COMPARISON')
     # def comparison(self, p):
     #     if p.COMPARISON == '<=': return operator.le

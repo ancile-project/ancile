@@ -1,36 +1,7 @@
-from src.micro_data_core_python.errors import AncileException
+from src.micro_data_core_python.errors import AncileException, PolicyError
 from src.micro_data_core_python.policy import Policy
+from src.micro_data_core_python.private_data import PrivateData
 import datetime
-
-
-class PrivateData(object):
-    """
-    Wrapper object that represents data to be substituted in.
-
-    The object stores a keyword. When a PrivateData object is used as a
-    parameter to an ancile fn, the key is used to substitute a value from the
-    user's private data store.
-    """
-    def __init__(self, key=None):
-        """
-        :param str key: The key held by the object. May be none.
-        """
-        self._key = key
-
-    def __eq__(self, other):
-        """Equality check. Used during policy checks."""
-        if self is other:
-            return True
-        elif isinstance(other, self.__class__):
-            return self._key == other._key
-        else:
-            return False
-
-    def __ne__(self, other):
-        return not self.__eq__(other)
-
-    def __repr__(self):
-        return f'<PrivateData. {self._key}>'
 
 
 class DataPolicyPair:
@@ -41,7 +12,7 @@ class DataPolicyPair:
         self._name = name
         self._username = username
         self._data = {'output': list()}
-        self._policy = Policy(policy)
+        self._policy = Policy(policy) if not isinstance(policy, Policy) else policy
         self._token = token
         self._encryption_keys = {}
         self._app_id = app_id
@@ -74,10 +45,7 @@ class DataPolicyPair:
 
     def check_command_allowed(self, command, kwargs=None):
         #print(f'Checking {command} against policy: {self._policy}')
-        if self._policy.d_step({'command': command, 'kwargs': kwargs}):
-            return True
-        else:
-            return False
+        return self._policy.check_allowed(command, kwargs)
 
     def _advance_policy_after_comparison(self, command, kwargs=None):
         #print(f'Advancing {command} against policy: {self._policy}')
@@ -86,73 +54,47 @@ class DataPolicyPair:
         if not self._policy:
             raise ValueError('Policy prevented from running')
 
-    def _call_transform(self, func, *args, scope='transform', **kwargs):
+    def _call(self, func, *args, scope=None, **kwargs):
         check_is_func(func)
         command = func.__name__
-        # print(f'old policy: {self._policy}.')
-        self._resolve_private_data_keys(kwargs)
-        self._policy = self._policy.d_step({'command': command,
-                                            'kwargs': kwargs},
-                                     scope=scope)
-        # print(f'new policy: {self._policy}, data: {self._data}')
-        if self._policy:
-            # replace in kwargs:
-            self._resolve_private_data_values(kwargs)
-            kwargs['data'] = self._data
-            return func(*args, **kwargs)
-        else:
-            raise ValueError('Policy prevented from running')
 
-    def _call_store(self, func, *args, scope='store', **kwargs):
-        # This is the same as call transform, it just leaves data as the dp_obj
-        check_is_func(func)
-        command = func.__name__
-        # print(f'old policy: {self._policy}.')
         self._resolve_private_data_keys(kwargs)
-        self._policy = self._policy.d_step({'command': command,
-                                            'kwargs': kwargs}, scope=scope)
-        # print(f'new policy: {self._policy}, data: {self._data}')
-        if self._policy:
-            # replace in kwargs:
-            self._resolve_private_data_values(kwargs)
-            return func(*args, **kwargs)
-        else:
-            raise ValueError('Policy prevented from running')
+        self._policy = self._policy.d_step({'command': command, 'kwargs': kwargs},
+                                           scope=scope)
 
-    def _call_external(self, func, *args, scope='external', **kwargs):
-        check_is_func(func)
-        command = func.__name__
-        # print(f'old policy: {self._policy}.')
-        self._resolve_private_data_keys(kwargs)
-        self._policy = self._policy.d_step({'command': command,
-                                            'kwargs': kwargs}, scope=scope)
-        # print(f'new policy: {self._policy}, data: {self._data}')
         if self._policy:
             self._resolve_private_data_values(kwargs)
-            kwargs['data'] = self._data
-            kwargs['token'] = self._token
+
+            if scope in {'transform', 'external', 'aggregate'}:
+                kwargs['data'] = self._data
+            if scope == 'external':
+                kwargs['token'] = self._token
+
+            if scope == 'return':
+                if self._policy.e_step() != 1:
+                    raise PolicyError()
+                else:
+                    kwargs['encryption_keys'] = self._encryption_keys
+                    kwargs['data'] = self._data
+
             return func(*args, **kwargs)
         else:
-            raise ValueError('Policy prevented from running')
+            raise PolicyError()
 
-    def _use_method(self, func, *args, scope='return', **kwargs):
+    def _call_transform(self, func, *args,  **kwargs):
+        self._call(func, *args, scope='transform', **kwargs)
 
-        #print(f'return policy: {self._policy}, data: {self._data}')
-        check_is_func(func)
-        command = func.__name__
+    def _call_store(self, func, *args, **kwargs):
+        self._call(func, *args, scope='store', **kwargs)
 
-        self._resolve_private_data_keys(kwargs)
-        self._policy = self._policy.d_step({'command': command,
-                                            'kwargs': kwargs}, scope=scope)
-        step_result = self._policy.e_step()
-        if step_result == 1:
-            self._resolve_private_data_values(kwargs)
-            kwargs['encryption_keys'] = self._encryption_keys
-            kwargs['data'] = self._data
-            return func(*args, **kwargs)
-        else:
-            error = f'Last E step failed: {self._policy}'
-            raise ValueError(error)
+    def _call_external(self, func, *args, **kwargs):
+        self._call(func, *args, scope='external', **kwargs)
+
+    def _use_method(self, func, *args, **kwargs):
+        self._call(func, *args, scope='return', **kwargs)
+
+    def _call_collection(self, func, *args, **kwargs):
+        self._call(func, *args, scope='collection', **kwargs)
 
     def _resolve_private_data_keys(self, kwargs):
         for key, value in kwargs.items():
