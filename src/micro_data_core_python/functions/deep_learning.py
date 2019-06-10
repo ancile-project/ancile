@@ -1,5 +1,5 @@
 from src.micro_data_core_python.decorators import transform_decorator, aggregate_decorator, \
-    reduce_aggregate_decorator, external_request_decorator
+    external_request_decorator
 from src.micro_data_core_python.errors import AncileException
 
 
@@ -27,7 +27,7 @@ def get_split_train_mnist(data, part, split, token=None):
     return True
 
 
-@aggregate_decorator
+@aggregate_decorator()
 def aggregate_train_dataset(data, user_specific=None):
     import torch
 

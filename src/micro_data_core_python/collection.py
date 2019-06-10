@@ -4,6 +4,7 @@ from src.micro_data_core_python.errors import PolicyError
 from src.micro_data_core_python.datapolicypair import DataPolicyPair
 from src.micro_data_core_python.decorators import collection_decorator
 import src.micro_data_core_python.policy as policy
+from functools import wraps
 
 import logging
 logger = logging.getLogger('api')
@@ -18,8 +19,8 @@ class Collection(object):
     def __len__(self):
         return len(self._data_points)
 
-    def _check_policy(self, fname, **kwargs):
-        if not self._policy.check_allowed(fname, kwargs):
+    def _check_policy(self, f, **kwargs):
+        if not self._policy.check_allowed(f.__name__, kwargs):
             raise PolicyError()
 
     @collection_decorator
@@ -27,7 +28,7 @@ class Collection(object):
         now = time()
         elapsed_time = now - self._previous_access
 
-        self._check_policy('add_to_collection', elapsed=elapsed_time)
+        self._check_policy(self.add_to_collection, elapsed=elapsed_time)
         self._data_points.append(data)
         self._previous_access = now
 
@@ -37,12 +38,13 @@ class Collection(object):
 
 
 def reduction_fn(f):
+    @wraps(f)
     def wrapper(*args, **kwargs):
         collection = kwargs.get('data', False)
         filter_flag = kwargs.pop('filter', True)
 
         if isinstance(collection, Collection):
-            collection._check_policy(f.__name__, **kwargs)
+            collection._check_policy(f, **kwargs)
 
             data_items = []
             rolling_policy = None

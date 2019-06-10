@@ -65,7 +65,7 @@ class DataPolicyPair:
         if self._policy:
             self._resolve_private_data_values(kwargs)
 
-            if scope in {'transform', 'external'}:
+            if scope in {'transform', 'external', 'aggregate'}:
                 kwargs['data'] = self._data
             if scope == 'external':
                 kwargs['token'] = self._token
