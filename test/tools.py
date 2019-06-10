@@ -3,6 +3,7 @@ from src.micro_data_core_python.datapolicypair import DataPolicyPair
 from src.micro_data_core_python.decorators import transform_decorator, use_type_decorator
 from RestrictedPython import compile_restricted_exec, safe_builtins
 from src.micro_data_core_python.errors import PolicyError
+from src.micro_data_core_python.core import gen_module_namespace
 
 
 def get_dummy_pair(input_policy: str) -> DataPolicyPair:
@@ -22,9 +23,11 @@ def ret(**kwargs):
     pass
 
 
-def run_test(input_policy: str, program: str) -> bool:
-    lcls = {'dp': get_dummy_pair(input_policy),
-            'ret': ret}
+def run_test(program: str, *input_policies) -> bool:
+    lcls = {f'dp{index}': get_dummy_pair(policy)
+            for index, policy in enumerate(input_policies)}
+    lcls.update(gen_module_namespace())
+    lcls['ret'] = ret
     glbls = {'__builtins__': safe_builtins}
 
     while True:
@@ -40,6 +43,7 @@ def run_test(input_policy: str, program: str) -> bool:
             except NameError as e:
                 fn_name = e.args[0].split('\'')[1]
                 lcls[fn_name] = gen_dummy_fn(fn_name)
-                lcls['dp'] = get_dummy_pair(input_policy)
+                lcls.update({f'dp{index}': get_dummy_pair(policy)
+                             for index, policy in enumerate(input_policies)})
         except (ValueError, PolicyError) as e:
             return False
