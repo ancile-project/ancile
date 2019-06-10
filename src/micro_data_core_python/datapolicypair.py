@@ -93,6 +93,9 @@ class DataPolicyPair:
     def _use_method(self, func, *args, **kwargs):
         self._call(func, *args, scope='return', **kwargs)
 
+    def _call_collection(self, func, *args, **kwargs):
+        self._call(func, *args, scope='collection', **kwargs)
+
     def _resolve_private_data_keys(self, kwargs):
         for key, value in kwargs.items():
             if isinstance(value, PrivateData) and value._key is None:

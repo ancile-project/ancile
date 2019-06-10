@@ -1,5 +1,6 @@
 from src.micro_data_core_python.decorators import transform_decorator, aggregate_decorator, reduce_aggregate_decorator, comparison_decorator
 from src.micro_data_core_python.errors import AncileException
+from src.micro_data_core_python.collection import reduction_fn
 
 @transform_decorator
 def test(data):
@@ -97,3 +98,32 @@ def counter(data: dict):
     if data.get('counter', False):
         data['counter'] = 0
     data['counter'] += 1
+
+@reduction_fn
+def collection_average(data: list, results: dict, value_key: str=None):
+    if value_key is None:
+        raise ValueError("'value_key' must have a value.")
+
+    rolling_value = 0
+    for item in data:
+        rolling_value += item[value_key]
+
+    results['collection_average'] = rolling_value / len(data)
+
+@reduction_fn
+def collection_and(data: list, results: dict, value_key: str=None):
+    if value_key is None:
+        raise ValueError("'value_key' must have a value.")
+    if not all((isinstance(item[value_key], bool) for item in data)):
+        raise ValueError("'value_key' must point to a boolean value.")
+
+    results['collection_and'] = all((item[value_key] for item in data))
+
+@reduction_fn
+def collection_or(data: list, results: dict, value_key: str=None):
+    if value_key is None:
+        raise ValueError("'value_key' must have a value.")
+    if not all((isinstance(item[value_key], bool) for item in data)):
+        raise ValueError("'value_key' must point to a boolean value.")
+
+    results['collection_or'] = any((item[value_key] for item in data))
