@@ -127,3 +127,10 @@ def collection_or(data: list, results: dict, value_key: str=None):
         raise ValueError("'value_key' must point to a boolean value.")
 
     results['collection_or'] = any((item[value_key] for item in data))
+
+@reduction_fn
+def collection_sum(data: list, results: dict, value_key: str=None):
+    if value_key is None:
+        raise ValueError("'value_key' must have a value.")
+
+    results['collection_sum'] = sum((item[value_key] for item in data))

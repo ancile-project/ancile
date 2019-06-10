@@ -46,7 +46,8 @@ def store_decorator(f):
 
 def collection_decorator(f):
     def wrapper(*args, **kwargs):
-        dp_pair = decorator_preamble(args, kwargs)
+        dp_pair = kwargs.get('data', False)
+        check_data(dp_pair)
 
         logger.info(f'function: {f.__name__}. args: {args}, kwargs: {kwargs}, app: {dp_pair._app_id}')
         return dp_pair._call_collection(f, *args, **kwargs)

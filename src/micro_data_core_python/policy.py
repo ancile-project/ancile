@@ -8,7 +8,7 @@ class Policy(object):
         if isinstance(initial_policy, str):
             self._policy = PolicyParser.parse_it(initial_policy)
         elif isinstance(initial_policy, Policy):
-            self._policy = initial_policy
+            self._policy = deepcopy(initial_policy._policy)
         else:
             self._policy = deepcopy(initial_policy)
 
@@ -27,6 +27,9 @@ class Policy(object):
 
     def check_allowed(self, command, kwargs=None):
         return bool(self.d_step({'command': command, 'kwargs': kwargs}))
+
+    def __repr__(self):
+        return f'<? POLICY : {self._policy} ?>'
 
     @staticmethod
     def _d_step(policy, command, scope=None):

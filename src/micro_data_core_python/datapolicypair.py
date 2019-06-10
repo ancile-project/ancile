@@ -12,7 +12,7 @@ class DataPolicyPair:
         self._name = name
         self._username = username
         self._data = {'output': list()}
-        self._policy = Policy(policy)
+        self._policy = Policy(policy) if not isinstance(policy, Policy) else policy
         self._token = token
         self._encryption_keys = {}
         self._app_id = app_id

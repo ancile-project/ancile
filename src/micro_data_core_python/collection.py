@@ -18,8 +18,8 @@ class Collection(object):
     def __len__(self):
         return len(self._data_points)
 
-    def _check_policy(self, f, **kwargs):
-        if not self._policy.check_allowed(f.__name__, **kwargs):
+    def _check_policy(self, fname, **kwargs):
+        if not self._policy.check_allowed(fname, kwargs):
             raise PolicyError()
 
     @collection_decorator
@@ -27,7 +27,7 @@ class Collection(object):
         now = time()
         elapsed_time = now - self._previous_access
 
-        self._check_policy(self.add_to_collection, elapsed=elapsed_time)
+        self._check_policy('add_to_collection', elapsed=elapsed_time)
         self._data_points.append(data)
         self._previous_access = now
 
@@ -39,29 +39,33 @@ class Collection(object):
 def reduction_fn(f):
     def wrapper(*args, **kwargs):
         collection = kwargs.get('data', False)
+        filter_flag = kwargs.pop('filter', True)
 
         if isinstance(collection, Collection):
+            collection._check_policy(f.__name__, **kwargs)
+
             data_items = []
             rolling_policy = None
 
-            for item in collection._data_times:
-                pol = item._policy.d_step()
+            for item in collection._data_points:
+                pol = item._policy.d_step({'command': f.__name__, 'kwargs': kwargs})
                 if pol:
                     rolling_policy = pol if rolling_policy is None \
                                      else policy.intersect(rolling_policy, pol)
                     data_items.append(item._data)
+                elif not filter_flag:
+                    raise PolicyError
 
             kwargs['data'] = data_items
-            results = dict()
-            kwargs['results'] = results
-            value = f(*args, **kwargs)
-
             dp = DataPolicyPair(rolling_policy, None, 'reduce', None, None)
-            dp._data = results
+
+            kwargs['results'] = dp._data
+            f(*args, **kwargs)
+
         else:
             raise ValueError("'data' must be a collection object")
 
-        logger.info(f'function: {f.__name__}. args: {args}, kwargs: {kwargs}, app: {dp_pair._app_id}')
+        logger.info(f'function: {f.__name__}. args: {args}, kwargs: {kwargs}')
         return dp
 
     return wrapper

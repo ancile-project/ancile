@@ -4,6 +4,7 @@ from src.micro_data_core_python.decorators import transform_decorator, use_type_
 from RestrictedPython import compile_restricted_exec, safe_builtins
 from src.micro_data_core_python.errors import PolicyError
 from src.micro_data_core_python.core import gen_module_namespace
+from src.micro_data_core_python.collection import Collection
 
 
 def get_dummy_pair(input_policy: str) -> DataPolicyPair:
@@ -22,12 +23,21 @@ def gen_dummy_fn(name):
 def ret(**kwargs):
     pass
 
+@transform_decorator
+def edit(data, key, value):
+    data[key] = value
+
+def display(data):
+    print(data._data)
 
 def run_test(program: str, *input_policies) -> bool:
     lcls = {f'dp{index}': get_dummy_pair(policy)
             for index, policy in enumerate(input_policies)}
     lcls.update(gen_module_namespace())
     lcls['ret'] = ret
+    lcls['edit'] = edit
+    lcls['Collection'] = Collection
+    lcls['display'] = display
     glbls = {'__builtins__': safe_builtins}
 
     while True:
