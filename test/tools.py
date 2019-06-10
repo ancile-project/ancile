@@ -7,10 +7,9 @@ from src.micro_data_core_python.core import gen_module_namespace
 from src.micro_data_core_python.collection import Collection
 
 
-def get_dummy_pair(input_policy: str) -> DataPolicyPair:
+def get_dummy_pair(input_policy: str, id_num) -> DataPolicyPair:
     policy = PolicyParser.parse_it(input_policy)
-    return DataPolicyPair(policy, None, None, None, None)
-
+    return DataPolicyPair(policy, None, str(id_num), None, None)
 
 def gen_dummy_fn(name):
     def fn(**kwargs):
@@ -31,7 +30,7 @@ def display(data):
     print(data._data)
 
 def run_test(program: str, *input_policies) -> bool:
-    lcls = {f'dp{index}': get_dummy_pair(policy)
+    lcls = {f'dp{index}': get_dummy_pair(policy, index)
             for index, policy in enumerate(input_policies)}
     lcls.update(gen_module_namespace())
     lcls['ret'] = ret
@@ -53,7 +52,7 @@ def run_test(program: str, *input_policies) -> bool:
             except NameError as e:
                 fn_name = e.args[0].split('\'')[1]
                 lcls[fn_name] = gen_dummy_fn(fn_name)
-                lcls.update({f'dp{index}': get_dummy_pair(policy)
+                lcls.update({f'dp{index}': get_dummy_pair(policy, index)
                              for index, policy in enumerate(input_policies)})
         except (ValueError, PolicyError) as e:
             return False

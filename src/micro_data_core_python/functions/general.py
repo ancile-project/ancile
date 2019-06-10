@@ -47,7 +47,6 @@ def flat_dict(d):
 
 @aggregate_decorator()
 def basic_aggregation(data):
-    print(data)
     return True
 
 @aggregate_decorator(True)
@@ -60,7 +59,7 @@ def aggregate_and(data):
 @aggregate_decorator(True)
 def aggregate_or(data):
     if all(list(map(lambda x: isinstance(x, bool), data['aggregated']))):
-        data['aggregate_and'] = any(data.pop('aggregated'))
+        data['aggregate_or'] = any(data.pop('aggregated'))
     else:
         raise AncileException("All values to \"aggregate_and()\" must be booleans")
 
