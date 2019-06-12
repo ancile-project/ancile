@@ -4,6 +4,7 @@ from src.micro_data_core_python.errors import PolicyError
 from src.micro_data_core_python.datapolicypair import DataPolicyPair
 from src.micro_data_core_python.decorators import collection_decorator
 import src.micro_data_core_python.policy as policy
+import src.micro_data_core_python.time as ancile_time
 from functools import wraps
 
 import logging
@@ -14,7 +15,8 @@ class Collection(object):
     def __init__(self, initial_policy='ANYF*'):
         self._policy = Policy(initial_policy)
         self._data_points = list()
-        self._previous_access = 0
+        self._created_at = ancile_time.get_timestamp()
+        self._previous_access = self._created_at
 
     def __len__(self):
         return len(self._data_points)
@@ -25,8 +27,8 @@ class Collection(object):
 
     @collection_decorator
     def add_to_collection(self, data):
-        now = time()
-        elapsed_time = now - self._previous_access
+        now = ancile_time.get_timestamp()
+        elapsed_time = ancile_time.seconds_elapsed(self._previous_access, now)
 
         self._check_policy(self.add_to_collection, elapsed=elapsed_time)
         self._data_points.append(data)
@@ -44,16 +46,17 @@ def reduction_fn(f):
         filter_flag = kwargs.pop('filter', True)
 
         if isinstance(collection, Collection):
-            collection._check_policy(f, **kwargs)
-
             data_items = []
-            rolling_policy = None
+            rolling_policy = collection._policy.d_step({'command': f.__name__,
+                                                        'kwargs': kwargs})
+            if not rolling_policy:
+                raise PolicyError()
 
             for item in collection._data_points:
-                pol = item._policy.d_step({'command': f.__name__, 'kwargs': kwargs})
+                pol = item._policy.d_step({'command': f.__name__,
+                                           'kwargs': kwargs})
                 if pol:
-                    rolling_policy = pol if rolling_policy is None \
-                                     else policy.intersect(rolling_policy, pol)
+                    rolling_policy = policy.intersect(rolling_policy, pol)
                     data_items.append(item._data)
                 elif not filter_flag:
                     raise PolicyError
