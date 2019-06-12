@@ -140,13 +140,16 @@ class SetCell(object):
 class PolicyLexer(Lexer):
     tokens = { TEXT, NUMBER, FLOAT, UNION, CONCAT, INTERSECT,  NEG, STAR,
                ANYF, LPAREN, RPAREN, LBRACKET, RBRACKET, COMMA, EQ,
-               PRIVATE, STRING, NEQ, LEQ, LE, GEQ, GE, LBRACE, RBRACE, IN }
+               PRIVATE, STRING, NEQ, LEQ, LE, GEQ, GE, LBRACE, RBRACE, IN,
+               TRUE, FALSE }
     ignore = ' \s\t\n\r'
 
 
     ANYF = 'ANYF'
     PRIVATE = 'private'
     IN = 'in'
+    TRUE = r'(true)|(True)|(TRUE)'
+    FALSE = r'(false)|(False)|(FALSE)'
     # Tokens
     TEXT = r'[a-zA-Z_][a-zA-Z0-9_]*'
     STRING = r'\"[a-zA-Z_][a-zA-Z0-9_:/\.]*\"'
@@ -389,20 +392,17 @@ class PolicyParser(Parser):
     def range_op(self, p):
         return operator.lt
 
-
-
-    # @_('TEXT EQ comparison')
-    # def param(self, p):
-    #     return {p.TEXT: p.comparison}
-
-    @_('TEXT EQ TEXT')
+    @_('TEXT EQ bool_val')
     def param(self, p):
-        value = None
-        if p.TEXT1.lower() == 'false':
-            value = False
-        elif p.TEXT1.lower() == 'true':
-            value = True
-        return {p.TEXT0: value}
+        return {p.TEXT: ParamCell(p.TEXT, operator.eq, p.bool_val)}
+
+    @_('FALSE')
+    def bool_val(self, p):
+        return False
+
+    @_('TRUE')
+    def bool_val(self, p):
+        return True
 
     @_('plist')
     def plists(self, p):
