@@ -3,7 +3,7 @@ from src.micro_data_core_python.policy_sly import PolicyParser
 from src.micro_data_core_python.errors import AncileException
 from src.micro_data_core_python.user_specific import UserSpecific
 from src.micro_data_core_python.result import Result
-from src.micro_data_core_python.storage import DPStore
+from src.micro_data_core_python.storage import store as _store, load
 from src.micro_data_core_python.policy import Policy
 from RestrictedPython import compile_restricted_exec, safe_globals, limited_builtins, safe_builtins
 import uuid
@@ -14,6 +14,7 @@ from collections import namedtuple
 import yaml
 from src.micro_data_core_python.utils import *
 from src import configs
+from src.secret import REDIS_CONFIG
 
 with open('./config/secret.yaml', 'r') as f:
     config = yaml.safe_load(f)
@@ -22,7 +23,7 @@ with open('./config/secret.yaml', 'r') as f:
 UserInfoBundle = namedtuple("UserInfoBundle", ['username', 'policies',
                                                'tokens', 'private_data'])
 
-r = redis.Redis(host='localhost', port=6379, db=0)
+r = redis.Redis(**REDIS_CONFIG)
 
 
 def gen_module_namespace():
@@ -47,107 +48,85 @@ def gen_module_namespace():
 def assemble_locals(result, user_specific, app_id, user_info, purpose):
     from src.micro_data_core_python.decorators import store_decorator
     locals = gen_module_namespace()
-    # dp_store = get_storage_items(app_id, user_info, purpose)
-
-    # @store_decorator
-    # def add_to_store(data, namespace, expiry_sec):
-    #     storage_ob = dp_store[data._username]
-    #     storage_ob.add(data, namespace, expiry_sec)
-    #     storage_ob._store_DPS()
-
-    # @store_decorator
-    # def add_to_store_time_constraint(data, namespace,
-    #                                  expiry_sec, min_time_limit):
-    #     storage_ob = dp_store[data._username]
-    #     storage_ob.add_time_constraint(data, namespace,
-    #                                    expiry_sec, min_time_limit)
-    #     storage_ob._store_DPS()
-
-    # def retrieve_storage_dps(username, namespace):
-    #     return dp_store[username].return_dps(namespace)
 
     def user(name: str) -> UserSpecific:
         return user_specific[name]
 
+    def store(obj):
+        result._stored_keys[obj.__name__] = _store(obj)
+
     locals['result'] = result
-    # locals['user_specific'] = user_specific
+    locals['store'] = store
+    locals['load'] = load
     locals['private'] = PrivateData
-    # locals['add_to_store'] = add_to_store
-    # locals['add_to_store_time_constraint'] = add_to_store_time_constraint
-    # locals['retrieve_storage_dps'] = retrieve_storage_dps
     locals['user'] = user
     return locals
 
-# def get_storage_items(app_id, user_info, purpose):
-#     """Retrieves storage items for each user."""
-#     return {x.username: DPStore.retrieve(x.username, app_id, purpose)
-#             for x in user_info}
-
 # We check if policies finished and otherwise save them.
-def save_dps(users_specific):
-    active_dps = dict()
-    encryption_keys = dict()
-    encrypted_data = dict()
-    redis_persist = False
+# def save_dps(users_specific):
+#     active_dps = dict()
+#     encryption_keys = dict()
+#     encrypted_data = dict()
+#     redis_persist = False
 
-    for username, user_specific in users_specific.items():
-        dps_to_save = user_specific._active_dps
-        if active_dps.get(username, False) is False:
-            active_dps[username] = dict()
-            encryption_keys[username] = dict()
-            encrypted_data[username] = dict()
+#     for username, user_specific in users_specific.items():
+#         dps_to_save = user_specific._active_dps
+#         if active_dps.get(username, False) is False:
+#             active_dps[username] = dict()
+#             encryption_keys[username] = dict()
+#             encrypted_data[username] = dict()
 
-        for name, dp in dps_to_save.items():
+#         for name, dp in dps_to_save.items():
 
-            # nothing left to execute:
-            # print(f'name: {name}, policy: {dp._policy}')
-            if dp._policy.e_step() == 1:
-                if dp._encryption_keys:
-                    encryption_keys[username][name] = dp._encryption_keys
-            else:
-                redis_persist = True
-                if config.get('encrypt', False):
-                    # print(f'There is a policy not finished: {dp._policy}. Encrypting fields.')
-                    keys_dict, enc_dp = encrypt(dp._data)
-                    # print(keys_dict)
-                    # print(enc_dp)
-                    dp._encryption_keys.update(keys_dict)
-                    dp._data = {'output': []}
-                    active_dps[username][name] = dp
-                    encrypted_data[username][name] = enc_dp
-                else:
-                    # print(f'There is a policy not finished: {dp._policy}. Saving data.')
-                    active_dps[username][name] = dp
+#             # nothing left to execute:
+#             # print(f'name: {name}, policy: {dp._policy}')
+#             if dp._policy.e_step() == 1:
+#                 if dp._encryption_keys:
+#                     encryption_keys[username][name] = dp._encryption_keys
+#             else:
+#                 redis_persist = True
+#                 if config.get('encrypt', False):
+#                     # print(f'There is a policy not finished: {dp._policy}. Encrypting fields.')
+#                     keys_dict, enc_dp = encrypt(dp._data)
+#                     # print(keys_dict)
+#                     # print(enc_dp)
+#                     dp._encryption_keys.update(keys_dict)
+#                     dp._data = {'output': []}
+#                     active_dps[username][name] = dp
+#                     encrypted_data[username][name] = enc_dp
+#                 else:
+#                     # print(f'There is a policy not finished: {dp._policy}. Saving data.')
+#                     active_dps[username][name] = dp
 
-    # print(f'active dps {active_dps.keys()}')
-    iid = None
-    if redis_persist:
-        iid = str(uuid.uuid1())
-        pickled_dps = pickle.dumps(active_dps)
-        r.set(iid, pickled_dps, ex=3600)
+#     # print(f'active dps {active_dps.keys()}')
+#     iid = None
+#     if redis_persist:
+#         iid = str(uuid.uuid1())
+#         pickled_dps = pickle.dumps(active_dps)
+#         r.set(iid, pickled_dps, ex=3600)
 
-    return iid, encrypted_data, encryption_keys
+#     return iid, encrypted_data, encryption_keys
 
 
-def retrieve_dps(persisted_dp_uuid, users_specific, app_id):
-    # print("Retrieving previously used Data Policy Pairs")
-    dp_pairs = r.get(persisted_dp_uuid)
-    if dp_pairs:
-        active_dps = pickle.loads(dp_pairs)
-        for username in active_dps.keys():
-            if active_dps.get(username, False) is False:
-                raise AncileException(f"active_dps don't have a user: {username}. Available names: "
-                                      f"{list(active_dps.keys())}.")
-            if users_specific.get(username, False) is False:
-                new_us = UserSpecific(policies=None, tokens=None, 
-                                      private_data=None, username=username,
-                                      app_id=app_id)
-                users_specific[username] = new_us
-            users_specific[username]._active_dps = active_dps[username]
+# def retrieve_dps(persisted_dp_uuid, users_specific, app_id):
+#     # print("Retrieving previously used Data Policy Pairs")
+#     dp_pairs = r.get(persisted_dp_uuid)
+#     if dp_pairs:
+#         active_dps = pickle.loads(dp_pairs)
+#         for username in active_dps.keys():
+#             if active_dps.get(username, False) is False:
+#                 raise AncileException(f"active_dps don't have a user: {username}. Available names: "
+#                                       f"{list(active_dps.keys())}.")
+#             if users_specific.get(username, False) is False:
+#                 new_us = UserSpecific(policies=None, tokens=None, 
+#                                       private_data=None, username=username,
+#                                       app_id=app_id)
+#                 users_specific[username] = new_us
+#             users_specific[username]._active_dps = active_dps[username]
 
-    else:
-        raise AncileException("Your UUID is invalid. Supply correct UUID or "
-                              "leave the field empty.")
+#     else:
+#         raise AncileException("Your UUID is invalid. Supply correct UUID or "
+#                               "leave the field empty.")
 
 def retrieve_compiled(program):
     import dill
@@ -180,8 +159,8 @@ def execute(user_info, program, persisted_dp_uuid=None, app_id=None,
         users_specific[user.username] = user_specific
         # print(user_specific._active_dps)
 
-    if persisted_dp_uuid:
-        retrieve_dps(persisted_dp_uuid, users_specific, app_id)
+    # if persisted_dp_uuid:
+    #     retrieve_dps(persisted_dp_uuid, users_specific, app_id)
 
     glbls = {'__builtins__': safe_builtins}
     lcls = assemble_locals(result=result, user_specific=users_specific,
