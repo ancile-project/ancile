@@ -141,7 +141,7 @@ class FunctionTests(unittest.TestCase):
 
         self.assertTrue(run_test(program, policy0, policy1, policy2))
 
-    def test_collection_policy7(self):
+    def test_collection_policy8(self):
         policy0 = 'edit.add_to_collection.collection_average(value_key="a").ret'
         policy1 = 'edit.add_to_collection.collection_average(value_key="a").ret'
         policy2 = 'edit.add_to_collection.collection_average(value_key="a").ret'
@@ -158,7 +158,7 @@ class FunctionTests(unittest.TestCase):
 
         self.assertFalse(run_test(program, policy0, policy1, policy2))
 
-    def test_collection_policy8(self):
+    def test_collection_policy9(self):
         policy0 = 'edit.add_to_collection.collection_average(value_key="a").ret'
         policy1 = 'edit.add_to_collection.collection_average(value_key="a").ret'
         policy2 = 'edit.add_to_collection.collection_average(value_key="a").ret'

@@ -46,7 +46,7 @@ class Policy(object):
         # policy = policy._policy if isinstance(policy, Policy) else policy
 
         if policy in [0, 1]:
-            return policy
+            return 0
 
         operator = policy[0]
         if operator == 'exec':
