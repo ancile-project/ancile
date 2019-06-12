@@ -152,7 +152,7 @@ class PolicyLexer(Lexer):
     FALSE = r'(false)|(False)|(FALSE)'
     # Tokens
     TEXT = r'[a-zA-Z_][a-zA-Z0-9_]*'
-    STRING = r'\"[a-zA-Z_][a-zA-Z0-9_:/\.]*\"'
+    STRING = r'\"[a-zA-Z0-9_:/\.]*\"'
     FLOAT = r'[-\+]?\d+\.\d+'
     NUMBER = r'[-\+]?\d+'
 

@@ -9,7 +9,7 @@ from src.micro_data_core_python.collection import Collection
 
 def get_dummy_pair(input_policy: str, id_num) -> DataPolicyPair:
     policy = PolicyParser.parse_it(input_policy)
-    return DataPolicyPair(policy, None, str(id_num), None, None)
+    return DataPolicyPair(policy, None, str(id_num), str(id_num), None)
 
 def gen_dummy_fn(name):
     def fn(**kwargs):
@@ -37,22 +37,20 @@ def run_test(program: str, *input_policies) -> bool:
     lcls['edit'] = edit
     lcls['Collection'] = Collection
     lcls['display'] = display
+    lcls['test'] = gen_dummy_fn('test')
+    lcls['filter'] = gen_dummy_fn('filter')
+    lcls['view'] = gen_dummy_fn('view')
     glbls = {'__builtins__': safe_builtins}
 
     while True:
         try:
-            try:
-                compile_results = compile_restricted_exec(program)
-                if compile_results.errors:
-                    raise Exception
-                else:
-                    exec(compile_results.code, glbls, lcls)
+            compile_results = compile_restricted_exec(program)
+            if compile_results.errors:
+                raise Exception
+            else:
+                exec(compile_results.code, glbls, lcls)
 
-                    return True
-            except NameError as e:
-                fn_name = e.args[0].split('\'')[1]
-                lcls[fn_name] = gen_dummy_fn(fn_name)
-                lcls.update({f'dp{index}': get_dummy_pair(policy, index)
-                             for index, policy in enumerate(input_policies)})
-        except (ValueError, PolicyError) as e:
+                return True
+
+        except PolicyError as e:
             return False

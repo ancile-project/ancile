@@ -25,6 +25,12 @@ class DataPolicyPair:
             self._private_data = {}
 
     @property
+    def metadata(self):
+        return {'name': self._name,
+                'username': self._username}
+
+
+    @property
     def is_expired(self):
         """Return a True if the point has expired."""
         if self._expires_at is None:
@@ -49,12 +55,18 @@ class DataPolicyPair:
         #print(f'Checking {command} against policy: {self._policy}')
             return self._policy.check_allowed(command, kwargs)
 
-    def _advance_policy_after_comparison(self, command, kwargs=None):
-        #print(f'Advancing {command} against policy: {self._policy}')
-        self._policy = Policy.d_step(self._policy, {'command': command,
-                                                    'kwargs': kwargs})
-        if not self._policy:
-            raise ValueError('Policy prevented from running')
+    def _advance_policy(self, command, update=True, **kwargs):
+        if update:
+            self._policy = Policy.d_step(self._policy, {'command': command,
+                                                        'kwargs': kwargs})
+            return self._policy
+        else:
+            return Policy.d_step(self._policy, {'command': command,
+                                                'kwargs': kwargs})
+
+    def _advance_policy_error(self, command, **kwargs):
+        if not self._advance_policy(command, **kwargs):
+            raise PolicyError
 
     def _call(self, func, *args, scope=None, **kwargs):
         if self.is_expired:
@@ -62,12 +74,9 @@ class DataPolicyPair:
 
         check_is_func(func)
         command = func.__name__
-
         self._resolve_private_data_keys(kwargs)
-        self._policy = self._policy.d_step({'command': command, 'kwargs': kwargs},
-                                           scope=scope)
 
-        if self._policy:
+        if self._advance_policy(command, **kwargs):
             self._resolve_private_data_values(kwargs)
 
             if scope in {'transform', 'external', 'aggregate'}:
@@ -87,19 +96,19 @@ class DataPolicyPair:
             raise PolicyError()
 
     def _call_transform(self, func, *args,  **kwargs):
-        self._call(func, *args, scope='transform', **kwargs)
+        return self._call(func, *args, scope='transform', **kwargs)
 
     def _call_store(self, func, *args, **kwargs):
-        self._call(func, *args, scope='store', **kwargs)
+        return self._call(func, *args, scope='store', **kwargs)
 
     def _call_external(self, func, *args, **kwargs):
-        self._call(func, *args, scope='external', **kwargs)
+        return self._call(func, *args, scope='external', **kwargs)
 
     def _use_method(self, func, *args, **kwargs):
-        self._call(func, *args, scope='return', **kwargs)
+        return self._call(func, *args, scope='return', **kwargs)
 
     def _call_collection(self, func, *args, **kwargs):
-        self._call(func, *args, scope='collection', **kwargs)
+        return self._call(func, *args, scope='collection', **kwargs)
 
     def _resolve_private_data_keys(self, kwargs):
         for key, value in kwargs.items():

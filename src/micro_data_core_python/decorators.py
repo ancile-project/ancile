@@ -102,10 +102,26 @@ def comparison_decorator(f):
     def wrapper(*args, **kwargs):
         dp_pair = decorator_preamble(args, kwargs)
 
-        logger.info(f'function: {f.__name__}. args: {args}, kwargs: {kwargs}, app: {dp_pair._app_id}')
-        result = dp_pair._call_transform(f, *args, **kwargs)
-        dp_pair._advance_policy_after_comparison("_enforce_comparison",
-                                                 {"result": result})
+        dependent = kwargs.pop('dependent_dp', False)
+
+        if isinstance(dependent, DataPolicyPair):
+            dp_pair._resolve_private_data_keys(kwargs)
+            dependent._advance_policy_error('dependent_comparison', **kwargs,
+                                            **dp_pair.metadata)
+            dp_pair._advance_policy_error(f.__name__, **kwargs,
+                                          **dependent.metadata)
+            dp_pair._resolve_private_data_values(kwargs)
+
+            kwargs['data'] = dependent._data
+            result = f(*args, **kwargs)
+            dp_pair._advance_policy_error("_enforce_comparison",
+                                          result=result)
+        else:
+            logger.info(f'function: {f.__name__}. args: {args}, kwargs: {kwargs}, app: {dp_pair._app_id}')
+            result = dp_pair._call_transform(f, *args, **kwargs)
+            dp_pair._advance_policy_error("_enforce_comparison",
+                                          result=result)
+
         return result
 
     return wrapper
