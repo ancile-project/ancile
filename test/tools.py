@@ -26,6 +26,10 @@ def ret(**kwargs):
 def edit(data, key, value):
     data[key] = value
 
+@transform_decorator
+def double(data, key):
+    data[key] *= 2
+
 def display(data):
     print(data._data)
 
@@ -35,6 +39,7 @@ def run_test(program: str, *input_policies) -> bool:
     lcls.update(gen_module_namespace())
     lcls['ret'] = ret
     lcls['edit'] = edit
+    lcls['double'] = double
     lcls['Collection'] = Collection
     lcls['display'] = display
     lcls['test'] = gen_dummy_fn('test')

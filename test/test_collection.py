@@ -2,7 +2,7 @@ import unittest
 from test.tools import run_test
 
 
-class FunctionTests(unittest.TestCase):
+class CollectionTests(unittest.TestCase):
     def test_simple(self):
         policy = 'test.ret'
         program = ("test(data=dp0);col=Collection()\n"
@@ -191,3 +191,63 @@ class FunctionTests(unittest.TestCase):
                   )
 
         self.assertFalse(run_test(program, policy0, policy1, policy2))
+
+    def test_collection_policy11(self):
+        policy0 = 'edit.add_to_collection.(collection_average + (double.collection_average)).ret'
+        policy1 = 'edit.add_to_collection.(collection_average + (double.collection_average)).ret'
+        policy2 = 'edit.add_to_collection.(collection_average + (double.collection_average)).ret'
+        program = ("edit(data=dp0, key='a', value=4)\n"
+                   "edit(data=dp1, key='a', value=4)\n"
+                   "edit(data=dp2, key='a', value=4)\n"
+                   "col=Collection('(add_to_collection + collection_average + (double.collection_average)).ret')\n"
+                   "col.add_to_collection(data=dp0)\n"
+                   "col.add_to_collection(data=dp1)\n"
+                   "col.add_to_collection(data=dp2)\n"
+                   "res = general.collection_average(data=col, value_key='a')\n"
+                   "col2 = col.for_each(double, key='a')\n"
+                   "res2 = general.collection_average(data=col2, value_key='a')\n"
+                   "ret(data=res)\n"
+                   "ret(data=res2)\n"
+                  )
+
+        self.assertTrue(run_test(program, policy0, policy1, policy2))
+
+    def test_collection_policy12(self):
+        policy0 = 'edit.add_to_collection.(collection_average + (double.collection_sum)).ret'
+        policy1 = 'edit.add_to_collection.(collection_average + (double.collection_sum)).ret'
+        policy2 = 'edit.add_to_collection.(collection_average + (double.collection_sum)).ret'
+        program = ("edit(data=dp0, key='a', value=4)\n"
+                   "edit(data=dp1, key='a', value=4)\n"
+                   "edit(data=dp2, key='a', value=4)\n"
+                   "col=Collection('(add_to_collection + collection_average + (double.collection_sum)).ret')\n"
+                   "col.add_to_collection(data=dp0)\n"
+                   "col.add_to_collection(data=dp1)\n"
+                   "col.add_to_collection(data=dp2)\n"
+                   "res = general.collection_average(data=col, value_key='a')\n"
+                   "col2 = col.for_each(double, key='a')\n"
+                   "res2 = general.collection_average(data=col2, value_key='a')\n"
+                   "ret(data=res)\n"
+                   "ret(data=res2)\n"
+                  )
+
+        self.assertFalse(run_test(program, policy0, policy1, policy2))
+
+    def test_collection_policy13(self):
+        policy0 = 'edit.add_to_collection.(collection_average + (double.collection_sum)).ret'
+        policy1 = 'edit.add_to_collection.(collection_average + (double.collection_sum)).ret'
+        policy2 = 'edit.add_to_collection.(collection_average + (double.collection_sum)).ret'
+        program = ("edit(data=dp0, key='a', value=4)\n"
+                   "edit(data=dp1, key='a', value=4)\n"
+                   "edit(data=dp2, key='a', value=4)\n"
+                   "col=Collection('(add_to_collection + collection_average + (double.collection_sum)).ret')\n"
+                   "col.add_to_collection(data=dp0)\n"
+                   "col.add_to_collection(data=dp1)\n"
+                   "col.add_to_collection(data=dp2)\n"
+                   "res = general.collection_average(data=col, value_key='a')\n"
+                   "col2 = col.for_each(double, key='a')\n"
+                   "res2 = general.collection_sum(data=col2, value_key='a')\n"
+                   "ret(data=res)\n"
+                   "ret(data=res2)\n"
+                  )
+
+        self.assertTrue(run_test(program, policy0, policy1, policy2))

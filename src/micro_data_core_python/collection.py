@@ -6,6 +6,7 @@ from src.micro_data_core_python.decorators import collection_decorator
 import src.micro_data_core_python.policy as policy
 import src.micro_data_core_python.time as ancile_time
 from functools import wraps
+from copy import deepcopy
 
 import logging
 logger = logging.getLogger('api')
@@ -37,6 +38,25 @@ class Collection(object):
     def _delete_expired(self):
         self._data_points = [dp for dp in self._data_points
                                 if not dp.is_expired]
+
+    def for_each(self, f, *args, in_place=False, **kwargs):
+        new_policy = self._policy.d_step({'command':f.__name__,
+                                          'kwargs': kwargs})
+        if new_policy:
+            if in_place:
+                self._policy = new_policy
+                if self._policy:
+                    for dp in self._data_points:
+                        dp._call_transform(f, *args, **kwargs)
+                return self
+            else:
+                new_col = Collection(new_policy)
+                new_col._data_points = deepcopy(self._data_points)
+                for dp in new_col._data_points:
+                    f(*args, data=dp, **kwargs)
+                return new_col
+        else:
+            raise PolicyError()
 
 
 def reduction_fn(f):
