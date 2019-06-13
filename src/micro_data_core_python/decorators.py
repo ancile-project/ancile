@@ -1,6 +1,8 @@
 from src.micro_data_core_python.datapolicypair import DataPolicyPair
 from src.micro_data_core_python.errors import AncileException
 import src.micro_data_core_python.policy as policy
+import src.micro_data_core_python.storage as storage
+
 import inspect
 from functools import wraps
 
@@ -47,17 +49,6 @@ def store_decorator(f):
 
     return wrapper
 
-def collection_decorator(f):
-    @wraps(f)
-    def wrapper(*args, **kwargs):
-        dp_pair = kwargs.get('data', False)
-        check_data(dp_pair)
-
-        logger.info(f'function: {f.__name__}. args: {args}, kwargs: {kwargs}, app: {dp_pair._app_id}')
-        return dp_pair._call_collection(f, *args, **kwargs)
-
-    return wrapper
-
 def external_request_decorator(f):
     """
     Intended call:
@@ -92,7 +83,10 @@ def use_type_decorator(f):
         check_data(dp_pair)
 
         logger.info(f'USE function: {f.__name__}. args: {args}, kwargs: {kwargs}, app: {dp_pair._app_id}')
-        return dp_pair._use_method(f, *args, **kwargs)
+        ret = dp_pair._use_method(f, *args, **kwargs)
+        if dp_pair._was_loaded:
+            storage.del_key(dp_pair._load_key)
+        return ret
 
     return wrapper
 

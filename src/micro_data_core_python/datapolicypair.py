@@ -18,6 +18,8 @@ class DataPolicyPair:
         self._app_id = app_id
         self._expires_at = None
         self._created_at = ancile_time.get_timestamp()
+        self._was_loaded = False
+        self._load_key = ''
 
         if isinstance(private_data, dict) and private_data.get(self._name, False):
             self._private_data = private_data[self._name]

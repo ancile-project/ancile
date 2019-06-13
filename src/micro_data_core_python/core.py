@@ -3,11 +3,9 @@ from src.micro_data_core_python.policy_sly import PolicyParser
 from src.micro_data_core_python.errors import AncileException
 from src.micro_data_core_python.user_specific import UserSpecific
 from src.micro_data_core_python.result import Result
-from src.micro_data_core_python.storage import store as _store, load
+from src.micro_data_core_python.storage import store as _store, load, del_key
 from src.micro_data_core_python.policy import Policy
 from RestrictedPython import compile_restricted_exec, safe_globals, limited_builtins, safe_builtins
-import uuid
-import pickle
 import traceback
 import redis
 from collections import namedtuple
@@ -52,8 +50,10 @@ def assemble_locals(result, user_specific, app_id, user_info, purpose):
     def user(name: str) -> UserSpecific:
         return user_specific[name]
 
-    def store(obj):
-        result._stored_keys[obj.__name__] = _store(obj)
+    def store(obj, name):
+        result._stored_keys[name] = _store(obj)
+        if isinstance(obj, DataPolicyPair) and obj._was_loaded:
+            del_key(obj._load_key)
 
     locals['result'] = result
     locals['store'] = store
@@ -169,10 +169,10 @@ def execute(user_info, program, persisted_dp_uuid=None, app_id=None,
     try:
         c_program = retrieve_compiled(program)
         exec(c_program, glbls, lcls)
-        json_output['persisted_dp_uuid'], encrypted_data, encryption_keys = save_dps(users_specific)
-        if config.get('encrypt', False):
-            json_output['encrypted_data'] = encrypted_data
-            json_output['encryption_keys'] = encryption_keys
+        # json_output['persisted_dp_uuid'], encrypted_data, encryption_keys = save_dps(users_specific)
+        # if config.get('encrypt', False):
+        #     json_output['encrypted_data'] = encrypted_data
+        #     json_output['encryption_keys'] = encryption_keys
 
         if persisted_dp_uuid:
             r.delete(persisted_dp_uuid)
@@ -182,7 +182,7 @@ def execute(user_info, program, persisted_dp_uuid=None, app_id=None,
         if persisted_dp_uuid:
             json_output[persisted_dp_uuid] = persisted_dp_uuid
         return json_output
-
+    json_output['stored_items'] = result._stored_keys
     json_output['data'] = result._dp_pair_data
     json_output['result'] = 'ok'
 

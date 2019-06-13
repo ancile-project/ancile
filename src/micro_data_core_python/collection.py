@@ -2,7 +2,7 @@ from src.micro_data_core_python.policy import Policy
 from time import time
 from src.micro_data_core_python.errors import PolicyError
 from src.micro_data_core_python.datapolicypair import DataPolicyPair
-from src.micro_data_core_python.decorators import collection_decorator
+# from src.micro_data_core_python.decorators import collection_decorator
 import src.micro_data_core_python.policy as policy
 import src.micro_data_core_python.time as ancile_time
 from functools import wraps
@@ -10,6 +10,19 @@ from copy import deepcopy
 
 import logging
 logger = logging.getLogger('api')
+
+
+def collection_decorator(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        dp_pair = kwargs.get('data', False)
+        if not isinstance(dp_pair, DataPolicyPair):
+            raise ValueError("You need to provide a Data object. Use get_data to get it.")
+
+        logger.info(f'function: {f.__name__}. args: {args}, kwargs: {kwargs}, app: {dp_pair._app_id}')
+        return dp_pair._call_collection(f, *args, **kwargs)
+
+    return wrapper
 
 
 class Collection(object):
