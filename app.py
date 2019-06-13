@@ -56,6 +56,10 @@ def get_app_id(token):
     return pickle.loads(redis_response)
 
 
+def get_collection_policies(app_id, user_ids):
+    return Collection.get_collection_policies(app_id, user_ids)
+
+
 @app.route('/api/run', methods=['POST'])
 def run_api():
     js = request.json
@@ -83,11 +87,12 @@ def run_api():
     # print(f'Policies: {policies}, Tokens: {tokens}')
     # print(user_info)
 
-    res = execute(user_info=user_info, 
-                  program=program, 
-                  persisted_dp_uuid=persisted_dp_uuid, 
+    res = execute(user_info=user_info,
+                  program=program,
+                  persisted_dp_uuid=persisted_dp_uuid,
                   app_id=app_id,
-                  purpose=purpose)
+                  purpose=purpose,
+                  collection_info=None)
     # print(f'Res: {res}')
     return json.dumps(res)
 

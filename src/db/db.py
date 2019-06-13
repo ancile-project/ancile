@@ -106,7 +106,7 @@ class UserIdentity(Base):
         data_dict = {}
         for user_info in users:
             data_dict[user_info.provider] = user_info.data
-        
+
         return data_dict
 
     def update_tokens(self):
@@ -139,5 +139,43 @@ class UserIdentity(Base):
                 raise Exception(f"Couldn't update token: {res.json()}")
 
 
+class Collection(Base):
+    __tablename__ = "collections"
 
+    id = db.Column(db.BigInteger, primary_key=True)
+    user_ids = db.Column(db.ARRAY(db.Integer))
+    app_id = db.Column(db.ForeignKey('accounts.id'))
+    policy = db.Column(db.Text)
 
+    active = db.Column(db.Boolean())
+
+    def user_emails(self):
+        users = [Account.query.filter_by(id=user_id).first() for user_id in self.user_ids]
+        return [user.email for user in users if user != None]
+
+    # parse policy
+    def validate(self):
+        return True
+
+    def app_email(self):
+        return Account.query.filter_by(id=self.app_id).first().email
+
+    @classmethod
+    def insert(cls, policy, active, app, users):
+        print(users)
+        coll_obj = cls(policy=policy,
+                       active=active,
+                       app_id=Account.get_id_by_email(app),
+                       user_ids=[Account.get_id_by_email(user) for user in users])
+        if not coll_obj.validate():
+            return False
+        coll_obj.add()
+        coll_obj.update()
+        return True
+
+    # THIS IS A STUB
+    @classmethod
+    def get_collection_policies(cls, app_id, user_ids):
+        return cls.query.filter_by(app_id=app_id)\
+                  .filter(all(usr in Collection.user_ids for usr in user_ids))\
+                  .all()

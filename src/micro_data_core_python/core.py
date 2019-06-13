@@ -6,6 +6,7 @@ from src.micro_data_core_python.result import Result
 from src.micro_data_core_python.storage import store as _store, load, del_key
 from src.micro_data_core_python.policy import Policy
 from RestrictedPython import compile_restricted_exec, safe_globals, limited_builtins, safe_builtins
+from src.micro_data_core_python.collection import Collection
 import traceback
 import redis
 from collections import namedtuple
@@ -43,9 +44,8 @@ def gen_module_namespace():
             if not is_pac and mod_name not in exclude}
 
 
-def assemble_locals(result, user_specific, app_id, user_info, purpose):
-    from src.micro_data_core_python.decorators import store_decorator
-    locals = gen_module_namespace()
+def assemble_locals(result, user_specific, collection_info):
+    lcls = gen_module_namespace()
 
     def user(name: str) -> UserSpecific:
         return user_specific[name]
@@ -55,12 +55,25 @@ def assemble_locals(result, user_specific, app_id, user_info, purpose):
         if isinstance(obj, DataPolicyPair) and obj._was_loaded:
             del_key(obj._load_key)
 
-    locals['result'] = result
-    locals['store'] = store
-    locals['load'] = load
-    locals['private'] = PrivateData
-    locals['user'] = user
-    return locals
+    def new_collection():
+        return Collection()
+
+    def get_dataset(*users):
+        policy = '0'
+        for collection in collection_info:
+            if all(usr in collection.user_ids for usr in users):
+                policy = collection.policy
+                break
+
+        return Collection(policy)
+
+    lcls['result'] = result
+    lcls['store'] = store
+    lcls['load'] = load
+    lcls['private'] = PrivateData
+    lcls['user'] = user
+    lcls['new_collection'] = new_collection
+    return lcls
 
 # We check if policies finished and otherwise save them.
 # def save_dps(users_specific):
@@ -145,7 +158,7 @@ def retrieve_compiled(program):
 
 
 def execute(user_info, program, persisted_dp_uuid=None, app_id=None,
-            purpose=None):
+            purpose=None, collection_info=None):
     json_output = dict()
     # object to interact with the program
     result = Result()
@@ -164,8 +177,7 @@ def execute(user_info, program, persisted_dp_uuid=None, app_id=None,
 
     glbls = {'__builtins__': safe_builtins}
     lcls = assemble_locals(result=result, user_specific=users_specific,
-                           app_id=app_id, user_info=user_info,
-                           purpose=purpose)
+                           collection_info=collection_info)
     try:
         c_program = retrieve_compiled(program)
         exec(c_program, glbls, lcls)
