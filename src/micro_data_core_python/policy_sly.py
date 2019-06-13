@@ -145,16 +145,17 @@ class PolicyLexer(Lexer):
     ignore = ' \s\t\n\r'
 
 
-    ANYF = 'ANYF'
-    PRIVATE = 'private'
-    IN = 'in'
-    TRUE = r'(true)|(True)|(TRUE)'
-    FALSE = r'(false)|(False)|(FALSE)'
     # Tokens
     TEXT = r'[a-zA-Z_][a-zA-Z0-9_]*'
     STRING = r'\"[a-zA-Z0-9_:/\.]*\"'
     FLOAT = r'[-\+]?\d+\.\d+'
     NUMBER = r'[-\+]?\d+'
+
+    TEXT['ANYF'] = ANYF
+    TEXT['private'] = PRIVATE
+    TEXT['in'] = IN
+    TEXT['true'] = TEXT['True'] = TEXT['TRUE'] = TRUE
+    TEXT['false'] = TEXT['False'] = TEXT['FALSE'] = FALSE
 
 
     # Special symbols
