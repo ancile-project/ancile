@@ -166,3 +166,47 @@ class ComparisonTests(unittest.TestCase):
                    "test(data=dp0);ret(data=dp0)\n"
                   )
         self.assertTrue(run_test(program, policy0, policy1))
+
+    def test_time1(self):
+        policy = ('edit.in_time_window(lower_str="11:30", upper_str="12:30")'
+                  '.((_enforce_comparison(result=True).ret) + '
+                  '(_enforce_comparison(result=False).test.ret))'
+                 )
+        program = ("edit(data=dp0, key='a', value=4)\n"
+                   "if time.in_time_window(data=dp0, lower_str='11:30', upper_str='12:30'"
+                   "):\n"
+                   "    ret(data=dp0)\n"
+                   "else:\n"
+                   "    test(data=dp0);ret(data=dp0)\n"
+                  )
+        self.assertTrue(run_test(program, policy))
+
+    def test_time2(self):
+        policy = ('edit.in_time_window(lower_str="00:00", upper_str="23:30", '
+                     'weekday_list=["mon","tue","wed","thur","fri"])'
+                  '.((_enforce_comparison(result=True).double(key="a").ret) + '
+                  '(_enforce_comparison(result=False).test.ret))'
+                 )
+        program = ("edit(data=dp0, key='a', value=4)\n"
+                   "if time.in_time_window(data=dp0, lower_str='00:00', upper_str='23:30',"
+                   "weekday_list=['mon','tue','wed','thur','fri']):\n"
+                   "    double(data=dp0, key='a')\n"
+                   "    ret(data=dp0)\n"
+                   "else:\n"
+                   "    test(data=dp0);ret(data=dp0)\n"
+                  )
+        self.assertTrue(run_test(program, policy))
+
+    def test_time3(self):
+        policy = ('edit.in_time_window(lower_str="11:30", upper_str="11:30")'
+                  '.((_enforce_comparison(result=True).ret) + '
+                  '(_enforce_comparison(result=False).test.ret))'
+                 )
+        program = ("edit(data=dp0, key='a', value=4)\n"
+                   "if time.in_time_window(data=dp0, lower_str='11:30', upper_str='11:30'"
+                   "):\n"
+                   "    ret(data=dp0)\n"
+                   "else:\n"
+                   "    test(data=dp0);ret(data=dp0)\n"
+                  )
+        self.assertTrue(run_test(program, policy))
