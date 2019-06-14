@@ -2,19 +2,35 @@ from src.micro_data_core_python.policy import Policy
 from time import time
 from src.micro_data_core_python.errors import PolicyError
 from src.micro_data_core_python.datapolicypair import DataPolicyPair
-from src.micro_data_core_python.decorators import collection_decorator
+# from src.micro_data_core_python.decorators import collection_decorator
 import src.micro_data_core_python.policy as policy
+import src.micro_data_core_python.time as ancile_time
 from functools import wraps
+from copy import deepcopy
 
 import logging
 logger = logging.getLogger('api')
+
+
+def collection_decorator(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        dp_pair = kwargs.get('data', False)
+        if not isinstance(dp_pair, DataPolicyPair):
+            raise ValueError("You need to provide a Data object. Use get_data to get it.")
+
+        logger.info(f'function: {f.__name__}. args: {args}, kwargs: {kwargs}, app: {dp_pair._app_id}')
+        return dp_pair._call_collection(f, *args, **kwargs)
+
+    return wrapper
 
 
 class Collection(object):
     def __init__(self, initial_policy='ANYF*'):
         self._policy = Policy(initial_policy)
         self._data_points = list()
-        self._previous_access = 0
+        self._created_at = ancile_time.get_timestamp()
+        self._previous_access = self._created_at
 
     def __len__(self):
         return len(self._data_points)
@@ -25,8 +41,8 @@ class Collection(object):
 
     @collection_decorator
     def add_to_collection(self, data):
-        now = time()
-        elapsed_time = now - self._previous_access
+        now = ancile_time.get_timestamp()
+        elapsed_time = ancile_time.seconds_elapsed(self._previous_access, now)
 
         self._check_policy(self.add_to_collection, elapsed=elapsed_time)
         self._data_points.append(data)
@@ -36,6 +52,25 @@ class Collection(object):
         self._data_points = [dp for dp in self._data_points
                                 if not dp.is_expired]
 
+    def for_each(self, f, *args, in_place=False, **kwargs):
+        new_policy = self._policy.d_step({'command':f.__name__,
+                                          'kwargs': kwargs})
+        if new_policy:
+            if in_place:
+                self._policy = new_policy
+                if self._policy:
+                    for dp in self._data_points:
+                        dp._call_transform(f, *args, **kwargs)
+                return self
+            else:
+                new_col = Collection(new_policy)
+                new_col._data_points = deepcopy(self._data_points)
+                for dp in new_col._data_points:
+                    f(*args, data=dp, **kwargs)
+                return new_col
+        else:
+            raise PolicyError()
+
 
 def reduction_fn(f):
     @wraps(f)
@@ -44,16 +79,17 @@ def reduction_fn(f):
         filter_flag = kwargs.pop('filter', True)
 
         if isinstance(collection, Collection):
-            collection._check_policy(f, **kwargs)
-
             data_items = []
-            rolling_policy = None
+            rolling_policy = collection._policy.d_step({'command': f.__name__,
+                                                        'kwargs': kwargs})
+            if not rolling_policy:
+                raise PolicyError()
 
             for item in collection._data_points:
-                pol = item._policy.d_step({'command': f.__name__, 'kwargs': kwargs})
+                pol = item._policy.d_step({'command': f.__name__,
+                                           'kwargs': kwargs})
                 if pol:
-                    rolling_policy = pol if rolling_policy is None \
-                                     else policy.intersect(rolling_policy, pol)
+                    rolling_policy = policy.intersect(rolling_policy, pol)
                     data_items.append(item._data)
                 elif not filter_flag:
                     raise PolicyError

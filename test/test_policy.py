@@ -24,6 +24,16 @@ class FunctionTests(unittest.TestCase):
         program = "test(data=dp0);ret(data=dp0)"
         self.assertFalse(run_test(program, policy))
 
+    def test_simple_error_three(self):
+        policy = 'test'
+        program = "test(data=dp0);ret(data=dp0)"
+        self.assertFalse(run_test(program, policy))
+
+    def test_simple_error_four(self):
+        policy = 'test'
+        program = "test(data=dp0);test(data=dp0);ret(data=dp0)"
+        self.assertFalse(run_test(program, policy))
+
 
 class ParamEqualityTests(unittest.TestCase):
     def test_no_policy_params(self):
@@ -225,4 +235,40 @@ class ParamRangeTests(unittest.TestCase):
     def test_range14(self):
         policy = 'test(4 <= a < 5, !-17 < b <= 4.6)'
         program = "test(data=dp0, a=4, b=-16.9)"
+        self.assertFalse(run_test(program, policy))
+
+class ParamSetTests(unittest.TestCase):
+    def test_set1(self):
+        policy = 'test(a in {4, 5, 6}, b in {"a", "b", "C"})'
+        program = "test(data=dp0, a=4, b='a')"
+        self.assertTrue(run_test(program, policy))
+
+    def test_set2(self):
+        policy = 'test(a in {4, 5, 6}, b in {"a", "b", "C"})'
+        program = "test(data=dp0, a=-3, b='a')"
+        self.assertFalse(run_test(program, policy))
+
+    def test_set3(self):
+        policy = 'test(a in {4, 5, 6}, b in {"a", "b", "C"})'
+        program = "test(data=dp0, a=5, b='b')"
+        self.assertTrue(run_test(program, policy))
+
+    def test_set4(self):
+        policy = 'test(a in {4, 5, 6}, b in {"a", "b", "C"})'
+        program = "test(data=dp0, a=6, b='C')"
+        self.assertTrue(run_test(program, policy))
+
+    def test_set5(self):
+        policy = 'test(a in {4, 5, 6}, b in {"a", "b", "C"})'
+        program = "test(data=dp0, a=4.0, b='a')"
+        self.assertTrue(run_test(program, policy))
+
+    def test_set6(self):
+        policy = 'test(! a in {4, 5, 6}, b in {"a", "b", "C"})'
+        program = "test(data=dp0, a=3, b='a')"
+        self.assertTrue(run_test(program, policy))
+
+    def test_set7(self):
+        policy = 'test(a in {4, 5.0, 6}, ! b in {"a", "b", "C"})'
+        program = "test(data=dp0, a=5, b='a')"
         self.assertFalse(run_test(program, policy))

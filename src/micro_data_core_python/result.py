@@ -5,6 +5,7 @@ class Result:
 
     def __init__(self):
         self._dp_pair_data = list()
+        self._stored_keys = dict()
 
     @use_type_decorator
     def append_dp_data_to_result(self, data, encryption_keys, decrypt_field_list=None):
@@ -23,3 +24,4 @@ class Result:
         self._dp_pair_data.append({'data_keys': list(data._data.keys())})
 
         return True
+

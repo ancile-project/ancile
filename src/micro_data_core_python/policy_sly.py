@@ -103,21 +103,59 @@ class RangeCell(object):
     def __ne__(self, other):
         return not self.__eq__(other)
 
+class SetCell(object):
+    def __init__(self, name, in_objects, invert):
+        self._set = set(in_objects)
+        self._name = name
+        self._invert_flag = invert
+
+    def evaluate(self, name_val) -> bool:
+        """Evaluate the given value against the cell.
+
+        returns name_val op value
+        """
+        if not self._invert_flag:
+            return name_val in self._set
+        else:
+            return name_val not in self._set
+
+    def __repr__(self):
+        inv_str = ' ' if not self._invert_flag else ' not '
+        return f'<? SetCell: {self._name}{inv_str}in {self._set} ?>'
+
+    def __eq__(self, other):
+        if self is other:
+            return True
+        elif not isinstance(other, SetCell):
+            return False
+        else:
+            return self._name == other._name and                              \
+                   self._invert_flag == other._invert_flag and                \
+                   self._set == other._set
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
 
 class PolicyLexer(Lexer):
     tokens = { TEXT, NUMBER, FLOAT, UNION, CONCAT, INTERSECT,  NEG, STAR,
                ANYF, LPAREN, RPAREN, LBRACKET, RBRACKET, COMMA, EQ,
-               PRIVATE, STRING, NEQ, LEQ, LE, GEQ, GE }
+               PRIVATE, STRING, NEQ, LEQ, LE, GEQ, GE, LBRACE, RBRACE, IN,
+               TRUE, FALSE }
     ignore = ' \s\t\n\r'
 
 
-    ANYF = 'ANYF'
-    PRIVATE = 'private'
     # Tokens
     TEXT = r'[a-zA-Z_][a-zA-Z0-9_]*'
-    STRING = r'\"[a-zA-Z_][a-zA-Z0-9_:/\.]*\"'
+    STRING = r'\"[a-zA-Z0-9_:/\.]*\"'
     FLOAT = r'[-\+]?\d+\.\d+'
     NUMBER = r'[-\+]?\d+'
+
+    TEXT['ANYF'] = ANYF
+    TEXT['private'] = PRIVATE
+    TEXT['in'] = IN
+    TEXT['true'] = TEXT['True'] = TEXT['TRUE'] = TRUE
+    TEXT['false'] = TEXT['False'] = TEXT['FALSE'] = FALSE
 
 
     # Special symbols
@@ -129,8 +167,8 @@ class PolicyLexer(Lexer):
     RPAREN = r'\)'
     LBRACKET = r'\['
     RBRACKET = r'\]'
-    # LBRACE = r'\{'
-    # RBRACE = r'\}'
+    LBRACE = r'\{'
+    RBRACE = r'\}'
     # QUOTE = r'\"'
     COMMA = r'\,'
     NEQ = r'\!\='
@@ -281,6 +319,32 @@ class PolicyParser(Parser):
 
         return {p.TEXT: RangeCell(p.TEXT, lower, upper, type_val, True)}
 
+    @_('TEXT IN LBRACE sets RBRACE')
+    def param(self, p):
+        return {p.TEXT: SetCell(p.TEXT, p.sets, False)}
+
+    @_('NEG TEXT IN LBRACE sets RBRACE')
+    def param(self, p):
+        return {p.TEXT: SetCell(p.TEXT, p.sets, True)}
+
+    @_('set_elem COMMA sets')
+    def sets(self, p):
+        element = [p.set_elem]
+        elements = element + p.sets
+        return elements
+
+    @_('set_elem')
+    def sets(self, p):
+        return [p.set_elem]
+
+    @_('numeric')
+    def set_elem(self, p):
+        return p.numeric
+
+    @_('STRING')
+    def set_elem(self, p):
+        return p.STRING.strip('"')
+
     @_('NUMBER')
     def numeric(self, p):
         return int(p.NUMBER)
@@ -329,20 +393,17 @@ class PolicyParser(Parser):
     def range_op(self, p):
         return operator.lt
 
-
-
-    # @_('TEXT EQ comparison')
-    # def param(self, p):
-    #     return {p.TEXT: p.comparison}
-
-    @_('TEXT EQ TEXT')
+    @_('TEXT EQ bool_val')
     def param(self, p):
-        value = None
-        if p.TEXT1.lower() == 'false':
-            value = False
-        elif p.TEXT1.lower() == 'true':
-            value = True
-        return {p.TEXT0: value}
+        return {p.TEXT: ParamCell(p.TEXT, operator.eq, p.bool_val)}
+
+    @_('FALSE')
+    def bool_val(self, p):
+        return False
+
+    @_('TRUE')
+    def bool_val(self, p):
+        return True
 
     @_('plist')
     def plists(self, p):
