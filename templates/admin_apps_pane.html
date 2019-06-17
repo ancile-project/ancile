@@ -1,0 +1,17 @@
+<table class="table table-hover">
+    <thead>
+    <tr>
+        <th scope="col">Email</th>
+        <th scope="col">Delete</th>
+    </tr>
+    </thead>
+
+    <tbody>
+        {% for app in apps %}
+        <tr class="table-default">
+        <td>{{ app.email }}</td>
+        <td><a href={{ url_for("admin_delete_account", id=app.id) }}>Delete</a></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

@@ -1,0 +1,35 @@
+{% extends "default.html" %}
+
+{% block title %}App Panel{% endblock %}
+
+{% block content %}
+
+<h1 class="display-5">Application Control Panel</h1>
+
+<p class="lead">Here, you can set your privacy policies and manage your data providers.</p>
+
+<a class="btn btn-secondary btn-lg" href="/logout">Logout</a>
+
+<hr class="my-4">
+
+<ul class="nav nav-tabs">
+  <li class="nav-item">
+    <a class="nav-link active" data-toggle="tab" href="#jwt">JWT</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" data-toggle="tab" href="#policies">Policies</a>
+  </li>
+</ul>
+
+<div id="myTabContent" class="tab-content">
+  <div class="tab-pane fade active show" id="jwt">
+    {% include "app_jwt_pane.html" %}
+  </div>
+  <div class="tab-pane fade" id="policies">
+    {% include "app_policies_pane.html" %}
+  </div>
+</div>
+
+{% include "panel_script.html" %}
+
+{% endblock %}

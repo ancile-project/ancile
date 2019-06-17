@@ -3,7 +3,7 @@ from src.micro_data_core_python.functions import location
 from src.micro_data_core_python.errors import AncileException
 import requests
 
-name = 'vassar_data_service'
+name = 'cds'
 
 
 @external_request_decorator

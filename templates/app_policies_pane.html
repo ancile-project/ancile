@@ -1,0 +1,24 @@
+<table class="table table-hover">
+  <thead>
+    <tr>
+      <th scope="col">User</th>
+      <th scope="col">Purpose</th>
+      <th scope="col">Provider</th>
+      <th scope="col">Active?</th>
+      <th scope="col">More</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for policy in policies %}
+    <tr class="table-default">
+      <td>{{ policy.user.email }}</td>
+      <td style="word-break:break-all;">{{ policy.purpose }}</td>
+      <td>{{ policy.provider  }}</td>
+      <td>{{ policy.active  }}</td>
+      <td>
+      <a href={{ url_for("app_view_policy", id=policy.id) }}>View</a>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>

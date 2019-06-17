@@ -1,0 +1,23 @@
+<table class="table table-hover">
+  <thead>
+    <tr>
+      <th scope="col">User</th>
+      <th scope="col">Provider</th>
+      <th scope="col">Expires At</th>
+      <th scope="col">Delete Token</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for token in tokens %}
+    <tr class="table-default">
+      <td>{{ token.user_email() }}</td>
+      <td>{{ token.name }}</td>
+      <td>{{ token.expiry_date() }}</td>
+      <td>
+        <a href= {{ url_for("admin_view_token", user_id=token.user_id, name=token.name) }} >View</a>
+        <a href= {{ url_for("admin_delete_token", user_id=token.user_id, name=token.name) }} >Delete</a>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
