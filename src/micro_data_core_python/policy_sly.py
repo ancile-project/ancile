@@ -142,7 +142,7 @@ class PolicyLexer(Lexer):
                ANYF, LPAREN, RPAREN, LBRACKET, RBRACKET, COMMA, EQ,
                PRIVATE, STRING, NEQ, LEQ, LE, GEQ, GE, LBRACE, RBRACE, IN,
                TRUE, FALSE }
-    ignore = ' \s\t\n\r'
+    ignore = ' \t\n\r\f\v'
 
 
     # Tokens
@@ -180,9 +180,6 @@ class PolicyLexer(Lexer):
     NEG = r'\!'
     STAR = r'\*'
 
-    # comparison operators
-    # COMPARISON = r'(\<\=)|(\>\=)|(\<)|(\>)|(\!\=)'
-
     # Ignored pattern
     ignore_newline = r'\n+'
 
@@ -197,6 +194,8 @@ class PolicyLexer(Lexer):
 class PolicyParser(Parser):
     tokens = PolicyLexer.tokens
 
+    start = 'clause'
+
     precedence = (
         ('right', CONCAT, UNION, INTERSECT),
         ('left', STAR, NEG),
@@ -208,33 +207,30 @@ class PolicyParser(Parser):
     def error(self, token):
         raise ParseError(f'Error at token {token}')
 
-    @_('NUMBER')
-    def clause(self, p):
-        return int(p.NUMBER)
 
-    @_('TEXT')
+    @_('policy policy_op rclause')
     def clause(self, p):
-        return ['exec', p.TEXT, {}]
+        return [p.policy_op, p.policy, p.rclause]
 
-    @_('ANYF')
-    def clause(self, p):
-        return ['exec', "ANYF"]
+    @_('policy policy_op rclause')
+    def rclause(self, p):
+        return [p.policy_op, p.policy, p.rclause]
 
-    @_('clause CONCAT clause')
-    def clause(self, p):
-        return ['concat', p.clause0, p.clause1]
-
-    @_('clause UNION clause')
-    def clause(self, p):
-        return ['union', p.clause0, p.clause1]
+    @_('policy')
+    def rclause(self, p):
+        return p.policy
 
     @_('LPAREN clause RPAREN')
-    def clause(self, p):
+    def policy(self, p):
         return p.clause
 
-    @_('clause INTERSECT clause')
-    def clause(self, p):
-        return ['intersect', p.clause0, p.clause1]
+    @_('INTERSECT')
+    def policy_op(self, p):
+        return 'intersect'
+
+    @_('UNION')
+    def policy_op(self, p):
+        return 'union'
 
     @_('NEG clause')
     def clause(self, p):
@@ -244,8 +240,28 @@ class PolicyParser(Parser):
     def clause(self, p):
         return ['star', p.clause]
 
-    @_('TEXT LPAREN params RPAREN')
+    @_('policy')
     def clause(self, p):
+        return p.policy
+
+    @_('policy CONCAT policy')
+    def policy(self, p):
+        return ['concat', p.policy0, p.policy1]
+
+    @_('NUMBER')
+    def policy(self, p):
+        return int(p.NUMBER)
+
+    @_('TEXT')
+    def policy(self, p):
+        return ['exec', p.TEXT, {}]
+
+    @_('ANYF')
+    def policy(self, p):
+        return ['exec', "ANYF"]
+
+    @_('TEXT LPAREN params RPAREN')
+    def policy(self, p):
         return ['exec', p.TEXT, p.params]
 
     @_('param COMMA params')
@@ -426,21 +442,6 @@ class PolicyParser(Parser):
     @_('NUMBER')
     def plist(self, p):
         return [int(p.NUMBER)]
-
-    # @_('EQ')
-    # def comparison(self, p):
-    #     return operator.eq
-
-    # @_('COMPARISON')
-    # def comparison(self, p):
-    #     if p.COMPARISON == '<=': return operator.le
-    #     elif p.COMPARISON == '<': return operator.lt
-    #     elif p.COMPARISON == '>=': return operator.ge
-    #     elif p.COMPARISON == '>': return operator.gt
-
-    # @_('NEG EQ')
-    # def comparison(self, p):
-    #     return operator.ne
 
     @staticmethod
     def parse_it(text):

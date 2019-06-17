@@ -1,5 +1,5 @@
-flask 
-gunicorn 
+flask
+gunicorn
 pyyaml
 flask_sqlalchemy
 sly
@@ -12,3 +12,4 @@ torchvision
 cryptography
 dill
 tzlocal
+geopy

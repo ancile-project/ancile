@@ -55,14 +55,14 @@ def get_calendar_events_in_relative_window(data, token=None, min_time=0,
     return True
 
 @transform_decorator
-def event_occuring(data, event_title=None):
+def event_occurring(data, event_title=None):
     events = data.get('events')
     result = event_title in [event['summary'] for event in events]
-    data['event_occuring'] = result
+    data['event_occurring'] = result
     return True
 
 @transform_decorator
-def no_events_occuring(data):
+def no_events_occurring(data):
     events = data.get('events')
-    data['no_events_occuring'] = len(events) == 0
+    data['no_events_occurring'] = len(events) == 0
     return True
