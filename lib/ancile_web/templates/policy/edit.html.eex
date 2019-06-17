@@ -1,5 +1,0 @@
-<h1>Edit Policy</h1>
-
-<%= render "form.html", Map.put(assigns, :action, Routes.policy_path(@conn, :update, @policy)) %>
-
-<span><%= link "Back", to: Routes.policy_path(@conn, :index) %></span>
