@@ -15,7 +15,6 @@ server:
     SQLALCHEMY_TRACK_MODIFICATIONS: False
     SECRET_KEY: "super-secret"
 
-
 security:
     SECURITY_PASSWORD_SALT: very secret salt
     SECURITY_UNAUTHORIZED_VIEW: "/"
@@ -35,7 +34,7 @@ mail:
     MAIL_USE_SSL: False
     MAIL_USERNAME: 
     MAIL_PASSWORD: 
-    SECURITY_EMAIL_SENDER: EMAIL
+    SECURITY_EMAIL_SENDER: "ancile@localhost"
     SECURITY_EMAIL_SUBJECT_REGISTER: "Welcome to Ancile!"
     SECURITY_EMAIL_SUBJECT_PASSWORD_RESET: "Ancile password reset instructions"
     SECURITY_EMAIL_SUBJECT_PASSWORD_NOTICE: "Your Ancile password has been reset"
