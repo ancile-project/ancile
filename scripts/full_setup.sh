@@ -13,7 +13,10 @@ bash scripts/setup/setup_dockers.sh
 
 bash scripts/setup/copy_templates.sh
 
-sleep 2
+echo "Waiting for docker ..."
+sleep 5
 
+echo "Running migrations"
 bash scripts/setup/run_migrations.sh
 
+echo "... done."
