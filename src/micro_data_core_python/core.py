@@ -13,6 +13,8 @@ from collections import namedtuple
 import yaml
 from src.micro_data_core_python.utils import *
 from config import REDIS_CONFIG, ENABLE_CACHE
+import logging
+logger = logging.getLogger(__name__)
 
 UserInfoBundle = namedtuple("UserInfoBundle", ['username', 'policies',
                                                'tokens', 'private_data'])

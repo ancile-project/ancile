@@ -1,5 +1,5 @@
 import logging
-logger = logging.getLogger('primary')
+logger = logging.getLogger(__name__)
 
 
 class BaseError(Exception):

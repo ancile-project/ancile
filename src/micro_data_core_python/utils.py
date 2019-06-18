@@ -1,5 +1,7 @@
 import json
 from cryptography.fernet import Fernet
+import logging
+logger = logging.getLogger(__name__)
 
 
 def encrypt(data_dict):

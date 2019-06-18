@@ -1,5 +1,6 @@
 from src.micro_data_core_python.decorators import use_type_decorator
-
+import logging
+logger = logging.getLogger(__name__)
 
 class Result:
 

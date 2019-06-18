@@ -14,12 +14,11 @@ import yaml
 import traceback
 import pickle
 import logging
-from src import logger_setup
 import jwt
 import config
 from config import REDIS_CONFIG, ENABLE_CACHE
 
-logger = logging.getLogger('primary')
+logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 config.configure_app(app)

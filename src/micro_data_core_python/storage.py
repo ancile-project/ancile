@@ -5,6 +5,8 @@ import redis
 import pickle
 from uuid import uuid4
 from config import REDIS_CONFIG
+import logging
+logger = logging.getLogger(__name__)
 
 
 r = redis.Redis(**REDIS_CONFIG)

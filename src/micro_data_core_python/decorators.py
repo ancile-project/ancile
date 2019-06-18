@@ -2,15 +2,11 @@ from src.micro_data_core_python.datapolicypair import DataPolicyPair
 from src.micro_data_core_python.errors import AncileException
 import src.micro_data_core_python.policy as policy
 import src.micro_data_core_python.storage as storage
-
 import inspect
 from functools import wraps
-
-import logging
-
 from src.micro_data_core_python.user_specific import UserSpecific
-
-logger = logging.getLogger('api')
+import logging
+logger = logging.getLogger(__name__)
 
 def check_args(args):
     if args:

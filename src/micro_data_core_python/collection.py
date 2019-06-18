@@ -9,7 +9,7 @@ from functools import wraps
 from copy import deepcopy
 
 import logging
-logger = logging.getLogger('api')
+logger = logging.getLogger(__name__)
 
 
 def collection_decorator(f):

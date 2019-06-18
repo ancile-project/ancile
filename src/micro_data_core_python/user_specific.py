@@ -3,7 +3,7 @@ from src.micro_data_core_python.errors import AncileException
 from src.micro_data_core_python.policy_sly import PolicyParser
 
 import logging
-logger = logging.getLogger('primary')
+logger = logging.getLogger(__name__)
 
 class UserSpecific:
 
