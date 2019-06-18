@@ -48,6 +48,14 @@ admin_permission = Permission(RoleNeed('admin'))
 user_permission = Permission(RoleNeed('user'))
 app_permission = Permission(RoleNeed('app'))
 
+def _gen_admin(email):
+    from datetime import datetime
+    from flask_security.confirmable import generate_confirmation_link
+    user = user_datastore.create_user(email=email, password='password')
+    user_datastore.add_role_to_user(user, "admin")
+    user.confirmed_at = datetime.now()
+    db.session.commit()
+
 
 def get_user(user, app_id, purpose):
     key_string = user + str(app_id) + str(purpose)
