@@ -3,7 +3,7 @@ database:
     POSTGRES_PASSWORD: postgres
     POSTGRES_HOST: localhost
     POSTGRES_PORT: 5432
-    POSTGRES_DB: dev_db
+    POSTGRES_DB: ancile_dev_db
 
 redis:
     host: localhost
@@ -11,7 +11,7 @@ redis:
     db: 1
 
 server:
-    SERVER_NAME:
+    SERVER_NAME: NAME
     SQLALCHEMY_TRACK_MODIFICATIONS: False
     SECRET_KEY: "super-secret"
 
@@ -35,7 +35,7 @@ mail:
     MAIL_USE_SSL: False
     MAIL_USERNAME: 
     MAIL_PASSWORD: 
-    SECURITY_EMAIL_SENDER: "no-reply@ancileweb.cs.vassar.edu"
+    SECURITY_EMAIL_SENDER: EMAIL
     SECURITY_EMAIL_SUBJECT_REGISTER: "Welcome to Ancile!"
     SECURITY_EMAIL_SUBJECT_PASSWORD_RESET: "Ancile password reset instructions"
     SECURITY_EMAIL_SUBJECT_PASSWORD_NOTICE: "Your Ancile password has been reset"
