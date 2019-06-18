@@ -1,5 +1,10 @@
 #!/usr/bin/bash
 
+if [[ $(basename $(pwd)) != "ancile" ]]; then
+    echo "This script must be run from the base 'Ancile' directory."
+    exit 1
+fi
+
 mkdir logs
 
 bash scripts/setup/setup_env.sh
