@@ -4,7 +4,7 @@ from src.micro_data_core_python.errors import AncileException
 import redis
 import pickle
 from uuid import uuid4
-from src.secret import REDIS_CONFIG
+from config import REDIS_CONFIG
 
 
 r = redis.Redis(**REDIS_CONFIG)

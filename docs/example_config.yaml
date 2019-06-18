@@ -1,0 +1,46 @@
+database:
+    POSTGRES_USER: postgres
+    POSTGRES_PASSWORD: postgres
+    POSTGRES_HOST: localhost
+    POSTGRES_PORT: 5432
+    POSTGRES_DB: dev_db
+
+redis:
+    host: localhost
+    port: 6379
+    db: 1
+
+server:
+    SERVER_NAME:
+    SQLALCHEMY_TRACK_MODIFICATIONS: False
+    SECRET_KEY: "super-secret"
+
+
+security:
+    SECURITY_PASSWORD_SALT: very secret salt
+    SECURITY_UNAUTHORIZED_VIEW: "/"
+    SECURITY_LOGIN_USER_TEMPLATE: "security/login_user.html"
+    SECURITY_REGISTER_USER_TEMPLATE: "security/register_user.html"
+    SECURITY_RESET_PASSWORD_TEMPLATE: "security/reset_password.html"
+    SECURITY_CHANGE_PASSWORD_TEMPLATE: "security/change_password.html"
+    SECURITY_POST_LOGIN_VIEW: "/panel"
+    SECURITY_REGISTERABLE: True
+    SECURITY_CONFIRMABLE: True
+    SECURITY_RECOVERABLE: True
+    SECURITY_CHANGEABLE: True
+
+mail:
+    MAIL_SERVER: "localhost"
+    MAIL_PORT: 8025
+    MAIL_USE_SSL: False
+    MAIL_USERNAME: 
+    MAIL_PASSWORD: 
+    SECURITY_EMAIL_SENDER: "no-reply@ancileweb.cs.vassar.edu"
+    SECURITY_EMAIL_SUBJECT_REGISTER: "Welcome to Ancile!"
+    SECURITY_EMAIL_SUBJECT_PASSWORD_RESET: "Ancile password reset instructions"
+    SECURITY_EMAIL_SUBJECT_PASSWORD_NOTICE: "Your Ancile password has been reset"
+    SECURITY_EMAIL_SUBJECT_CONFIRM: "Please confirm your email for Ancile"
+
+operational:
+    CACHE: False
+    LOGGING: True

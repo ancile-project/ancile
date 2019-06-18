@@ -55,3 +55,4 @@ secret.yaml
 logs/*
 env/*
 env
+config/*.yaml

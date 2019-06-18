@@ -15,22 +15,20 @@ import traceback
 import pickle
 import logging
 from src import logger_setup
-from src import configs
 import jwt
+import config
+from config import REDIS_CONFIG, ENABLE_CACHE
 
 logger = logging.getLogger('primary')
 
-with open('./config/secret.yaml', 'r') as f:
-    config = yaml.safe_load(f)
-
 app = Flask(__name__)
-app.config.from_pyfile('config.py')
+config.configure_app(app)
 
 mail = Mail(app)
 
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
-r = redis.Redis(host='localhost', port=6379, db=1)
+r = redis.Redis(**REDIS_CONFIG)
 
 from src.db.db import *   # remove circular import
 # import oauth (must be after we've defined the app and db)
@@ -54,7 +52,7 @@ app_permission = Permission(RoleNeed('app'))
 
 def get_user(user, app_id, purpose):
     key_string = user + str(app_id) + str(purpose)
-    redis_response = r.get(key_string) if configs.enable_cache else None
+    redis_response = r.get(key_string) if ENABLE_CACHE else None
 
     if redis_response is None:
         user_id = Account.get_id_by_email(user)
@@ -65,7 +63,7 @@ def get_user(user, app_id, purpose):
                                 username=user,
                                 private_data=private_data)
 
-        if configs.enable_cache:
+        if ENABLE_CACHE:
             r.set(key_string, pickle.dumps(bundle), ex=3600)
         return bundle
     print("USED CACHED USER")
@@ -73,11 +71,11 @@ def get_user(user, app_id, purpose):
 
 
 def get_app_id(token):
-    redis_response = r.get(token) if configs.enable_cache else None
+    redis_response = r.get(token) if ENABLE_CACHE else None
     if redis_response is None:
         token = jwt.decode(token, app.config["SECRET_KEY"])['salt']
         app_id = Account.get_id_by_token(token)
-        if configs.enable_cache:
+        if ENABLE_CACHE:
             r.set(token, pickle.dumps(app_id), ex=3600)
         return app_id
     print('USED CACHED APP_ID')

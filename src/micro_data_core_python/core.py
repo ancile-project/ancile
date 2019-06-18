@@ -12,12 +12,7 @@ import redis
 from collections import namedtuple
 import yaml
 from src.micro_data_core_python.utils import *
-from src import configs
-from src.secret import REDIS_CONFIG
-
-with open('./config/secret.yaml', 'r') as f:
-    config = yaml.safe_load(f)
-
+from config import REDIS_CONFIG, ENABLE_CACHE
 
 UserInfoBundle = namedtuple("UserInfoBundle", ['username', 'policies',
                                                'tokens', 'private_data'])
@@ -143,13 +138,13 @@ def assemble_locals(result, user_specific, collection_info):
 
 def retrieve_compiled(program):
     import dill
-    redis_response = r.get(program) if configs.enable_cache else None
+    redis_response = r.get(program) if ENABLE_CACHE else None
 
     if redis_response is None:
         compile_results = compile_restricted_exec(program)
         if compile_results.errors:
             raise AncileException(compile_results.errors)
-        if configs.enable_cache:
+        if ENABLE_CACHE:
             r.set(program, dill.dumps(compile_results.code), ex=600)
 
         return compile_results.code
