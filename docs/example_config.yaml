@@ -11,7 +11,7 @@ redis:
     db: 1
 
 server:
-    SERVER_NAME: NAME
+    SERVER_NAME: 
     SQLALCHEMY_TRACK_MODIFICATIONS: False
     SECRET_KEY: "super-secret"
 
