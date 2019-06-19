@@ -1,6 +1,6 @@
 import unittest
 from test.tools import run_test
-from src.micro_data_core_python.errors import ParseError
+from ancile_web.errors import ParseError
 
 
 class ComparisonTests(unittest.TestCase):

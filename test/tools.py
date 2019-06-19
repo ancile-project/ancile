@@ -1,10 +1,10 @@
-from src.micro_data_core_python.policy_sly import PolicyParser
-from src.micro_data_core_python.datapolicypair import DataPolicyPair
-from src.micro_data_core_python.decorators import transform_decorator, use_type_decorator
+from ancile_core.policy_sly import PolicyParser
+from ancile_core.datapolicypair import DataPolicyPair
+from ancile_core.decorators import transform_decorator, use_type_decorator
 from RestrictedPython import compile_restricted_exec, safe_builtins
-from src.micro_data_core_python.errors import PolicyError
-from src.micro_data_core_python.core import gen_module_namespace
-from src.micro_data_core_python.collection import Collection
+from ancile_web.errors import PolicyError
+from ancile_core.core import gen_module_namespace
+from ancile_core.collection import Collection
 
 
 def get_dummy_pair(input_policy: str, id_num) -> DataPolicyPair:
