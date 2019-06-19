@@ -331,7 +331,7 @@ def user_handle_edit_token(name):
     # VALIDATE JSON
     token = OAuth2Token.query.filter_by(name=name,
                                         user_id=current_user.id).first()
-    token.data = data
+    token.private_data = data
     token.update()
     return redirect("/user")
 

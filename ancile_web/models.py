@@ -49,7 +49,7 @@ class OAuth2Token(Base):
     refresh_token = db.Column(db.String(256))
     expires_at = db.Column(db.Integer, default=0)
 
-    data = db.Column(JSONB(astext_type=db.Text()))
+    private_data = db.Column(JSONB(astext_type=db.Text()))
 
     def __init__(self, name, token_dict):
         print(name, token_dict)
@@ -87,7 +87,7 @@ class OAuth2Token(Base):
         for token in user:
             # token.update_tokens()
             token_dict[token.name] = token.to_token()
-            data_dict[token.name] = token.data
+            data_dict[token.name] = token.private_data
 
         return token_dict, data_dict
 
