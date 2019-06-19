@@ -30,25 +30,12 @@ Documentation for Ancile:
       - SECURITY_EMAIL_SENDER - ex: "ancile@ancile.cs.vassar.edu"
 5. In `oauth.yaml` replace the values with your client IDs and secrets
 
-### Create an admin user
-Once the basic setup is done you can create an admin user by running the
-following from the ancile directory.
-```
-source .env/bin/activate
-python
-import app
-```
-At this point you can run the `app._gen_admin(EMAIL)` function in the python
-interpreter which will take the email of the admin user and return their
-randomly generated password. Copy the password and store it somewhere. You may
-change it later as needed.
-
-You can now close the python interpreter
-
 ### (optional) Running Locally
-The default configuration will work locally though registration will require
-running an email server on the host machine. This can be done with minimal
-difficulty.
+The default configuration will run locally, however the `SERVER_NAME`
+configuration variable must be left blank.
+
+If running with email enabled, a local email server will need to be run. In a
+separate terminal run:
 ```
 python3 -m venv .env
 source .env/bin/activate
@@ -63,16 +50,34 @@ In the `config.yaml` file, you can enable caching or disable logging by editing
 their respective entires under the `operational` section. By default caching is
 turned off and logging is turned on.
 
-### Deployment Setup
+### (optional) Mail server integration and email confirmation
+TODO: Explain variables
+
+### Setup SSL and Reverse Proxy [remote]
+TODO: Expand instructions and show NGINX conf
+
 Use LetsEncrypt to get SSL certificates for the server and place NGINX in front
 of Ancile. Redirect all requests through NGINX to the Ancile webserver.
 
-## Running Ancile
+### (optional) Setup Supervisor [recommended for remote]
+Setting up a supervisor process is recommended.
+
+TODO: Add instructions
+
+### Running Ancile
 Once everything is setup Ancile can be started by running:
 ```
 bash scripts/start_server.sh
 ```
-Setting up a supervisor process is recommended.
+This will start the server locally on port 8000. If running locally you can now
+access the deployment. If running on a remote machine, ensure that the NGINX
+configurations upgrade connections to SSL and redirect requests to the gunicorn
+server.
+
+
+### Change admin user password
+TODO: Explain sample users and admin user
+
 ## Unit Tests:
 To run the python unit tests:
 ```
