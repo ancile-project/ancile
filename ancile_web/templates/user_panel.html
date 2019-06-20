@@ -13,16 +13,22 @@
 <hr class="my-4">
 
 <ul class="nav nav-tabs">
-  <li class="nav-item">
-    <a class="nav-link active" data-toggle="tab" href="#providers">Data Providers</a>
+  <li class="nav-item" href="#overview" data-toggle="tooltip" data-placement="top" data-original-title="View your account information.">
+    <a class="nav-link active" data-toggle="tab" href="#overview">Account Overview</a>
   </li>
-  <li class="nav-item">
+  <li class="nav-item" data-toggle="tooltip" data-placement="top" data-original-title="View your registered data providers.">
+    <a class="nav-link" data-toggle="tab" href="#providers">Data Providers</a>
+  </li>
+  <li class="nav-item" data-toggle="tooltip" data-placement="top" data-original-title="View your listed data policies.">
     <a class="nav-link" data-toggle="tab" href="#policies">Policies</a>
   </li>
 </ul>
 
 <div id="tabContent" class="tab-content">
-  <div class="tab-pane fade active show" id="providers">
+  <div class="tab-pane fade active show" id="overview">
+    {% include "overview_pane.html" %}
+  </div>
+  <div class="tab-pane fade" id="providers">
     {% include "user_tokens_pane.html" %}
   </div>
   <div class="tab-pane fade" id="policies">
