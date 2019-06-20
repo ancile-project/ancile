@@ -116,12 +116,87 @@ def send_to_panel():
 @login_required
 @admin_permission.require(http_exception=403)
 def admin_panel():
+    providers=OAUTH_BACKENDS
+    ids = [key.replace("_CLIENT_ID", "") for key in app.config.keys() if "CLIENT_ID" in key]
+    secrets = [key.replace("_CLIENT_SECRET", "") for key in app.config.keys() if "CLIENT_SECRET" in key]
+
+    providers_missing_info = [provider for provider in providers if
+                               ((provider.OAUTH_NAME.upper() not in ids) or 
+                                (provider.OAUTH_NAME.upper() not in secrets))]
+
     return render_template('admin_panel.html',
                            users=Account.get_users(),
                            apps=Account.get_apps(),
                            tokens=OAuth2Token.query.all(),
                            policies=Policy.query.all(),
-                           providers=OAUTH_BACKENDS)
+                           providers=providers,
+                           providers_missing_info=providers_missing_info)
+
+@app.route("/admin/edit_provider/<name>")
+@login_required
+@admin_permission.require(http_exception=403)
+def admin_edit_provider(name):
+    for prvdr in OAUTH_BACKENDS:
+        if prvdr.OAUTH_NAME == name:
+            provider = prvdr
+
+    if provider == None:
+        return redirect("/admin")
+
+    return render_template("admin_edit_provider.html", provider=provider)
+
+@app.route("/admin/handle_edit_provider/<name>", methods=["POST"])
+@login_required
+@admin_permission.require(http_exception=403)
+def admin_handle_edit_provider(name):
+
+    id_key = name.upper() + "_CLIENT_ID"
+    secret_key = name.upper() + "_CLIENT_SECRET"
+
+    cl_id = request.form.get("idTextarea")
+    cl_secret = request.form.get("secretTextarea")
+
+    # update config
+    with open("config/oauth.yaml", "r+") as config_stream:
+        config = yaml.safe_load(config_stream)
+        
+        config['secrets'].update( { id_key : cl_id,
+                                    secret_key : cl_secret })
+
+        config_stream.seek(0)
+
+        yaml.dump(config, config_stream)
+
+    # update environment
+    app.config[id_key] = cl_id
+    app.config[secret_key] = cl_secret
+
+    return redirect("/admin#providers")
+
+
+@app.route("/admin/delete_provider/<name>")
+@login_required
+@admin_permission.require(http_exception=403)
+def admin_delete_provider(name):
+
+    # wipe client id and secret from configs
+
+    id_key = name.upper() + "_CLIENT_ID"
+    secret_key = name.upper() + "_CLIENT_SECRET"
+
+    # update config
+    with open("config/oauth.yaml", "r+") as config_stream:
+        config = yaml.safe_load(config_stream)
+        
+        config_stream.seek(0)
+        config_stream.truncate(0)
+
+        config['secrets'].pop(id_key)
+        config['secrets'].pop(secret_key)
+
+        yaml.dump(config, config_stream)
+
+    return redirect("/admin#providers")
 
 @app.route("/admin/add_policy", methods=["POST"])
 @login_required
