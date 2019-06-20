@@ -1,0 +1,41 @@
+{% extends "default.html" %}
+
+{% block title %}User Panel{% endblock %}
+
+{% block content %}
+
+<h1>Token</h1>
+
+<hr class="my-4">
+
+<table style="width:50%; margin:auto; text-align: left;">
+  <tr>
+    <th>Provider:</th>
+    <td>{{ token.name }}</td>
+  </tr>
+  <tr>
+    <th>Access Token:</th>
+    <td>{{ token.access_token }}</td>
+  </tr>
+  <tr>
+    <th>Refresh Token:</th>
+    <td>{{ token.refresh_token }}</td>
+  </tr>
+  <tr>
+    <th>Expires:</th>
+    <td>{{ token.expiry_date() }}</td>
+  </tr>
+</table>
+
+Data:
+<form action={{ url_for("user_handle_edit_token", name=token.name) }} method="POST" id="editDataForm" style="width: 50%; margin: auto;">
+  <textarea class="form-control" id="dataTextarea" name="dataTextarea" rows="3">{% if token.data is ne None %}{{token.data}}{% endif %}</textarea>
+  <br>
+  <input type="submit" class="btn btn-primary" value="Edit data" form="editDataForm">
+</form>
+
+<br>
+
+<a class="btn btn-secondary btn-lg" href="/panel" style="color:white;">Back</a>
+
+{% endblock %}

@@ -1,0 +1,21 @@
+<script>
+var url = window.location.href;
+
+if (url.indexOf("#") !== -1) {
+    activeTab = url.substring(url.indexOf("#") + 1);
+
+    oldPane = document.getElementsByClassName("active show")[0];
+    oldPane.classList.remove("active");
+    oldPane.classList.remove("show");
+
+    oldTab = document.getElementsByClassName("nav-link active")[0];
+    oldTab.classList.remove("active");
+
+    newPane = document.getElementById(activeTab)
+    newPane.classList.add("active")
+    newPane.classList.add("show")
+
+    newTab = document.querySelectorAll("a[href='#" + activeTab + "']")[0];
+    newTab.classList.add("active")
+}
+</script>
