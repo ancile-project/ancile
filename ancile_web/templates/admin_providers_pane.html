@@ -1,0 +1,44 @@
+<table class="table table-hover">
+  <thead>
+    <tr>
+        <th scope="col">Provider</th>
+        <th>More</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for provider in providers %}
+        {% if provider in providers_missing_info %}
+        <tr class="table-danger" data-toggle="tooltip" data-placement="left" data-original-title="Missing Client ID and Secret! Click edit to add them.">
+        {% else %}
+        <tr class="table-default">
+        {% endif %}
+        <td>{{ provider.OAUTH_NAME }}</td>
+        <td>
+            <a href={{ url_for("admin_edit_provider", name=provider.OAUTH_NAME) }}>Edit</a>
+            <a href={{ url_for("admin_delete_provider", name=provider.OAUTH_NAME) }}>Delete</a>
+        </td>
+        </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<div class="modal" id="addprovider">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add Provider</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+          {% include "admin_add_provider_form.html" %}
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<a class="btn btn-secondary btn-lg" data-toggle="modal" data-target="#addprovider" style="color:white;">Add Provider</a>
