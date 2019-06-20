@@ -21,7 +21,7 @@ remote deployment for actual use.
 1. Certbot
 2. NGINX
 
-### Intial installation
+### Initial installation
 From the top directory run `bash scripts/full_setup.sh`, this will assemble
 the virtual environment, docker containers, log folder, and configuration
 file templates needed to run ancile. If there are any errors, the process
