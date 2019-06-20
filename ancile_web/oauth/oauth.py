@@ -1,4 +1,4 @@
-from ancile_web import app
+from ancile_web.app import app
 from flask import redirect
 from authlib.flask.client import OAuth
 from loginpass import create_flask_blueprint, GitHub, Google

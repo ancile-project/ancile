@@ -1,5 +1,5 @@
 # coding: utf-8
-from ancile_web import db
+from ancile_web.app import db
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm.attributes import flag_modified
 from flask_security import UserMixin,RoleMixin

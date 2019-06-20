@@ -1,4 +1,4 @@
-from ancile_web import app
+from ancile_web.app import app
 from flask import Flask, request, json, render_template, url_for, Response, redirect
 from flask_sqlalchemy import SQLAlchemy
 from flask_security import Security, SQLAlchemyUserDatastore, login_required

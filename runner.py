@@ -1,1 +1,1 @@
-from ancile_web import app
+from ancile_web.app import app

@@ -1,4 +1,4 @@
-from ancile_web import app, db, user_datastore
+from ancile_web.app import app, db, user_datastore
 
 with app.app_context():
     from datetime import datetime
