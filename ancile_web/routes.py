@@ -16,10 +16,15 @@ import jwt
 from config.loader import REDIS_CONFIG, ENABLE_CACHE
 from ancile_web.models import *
 from ancile_web.oauth.oauth import oauth, OAUTH_BACKENDS
-
+from ancile_web.errors import AncileException
+import signal
 
 logger = logging.getLogger(__name__)
 r = redis.Redis(**REDIS_CONFIG)
+
+
+def _alarm_handler(signum, frame):
+    raise AncileException("Execution time exceeded allotment")
 
 
 def get_user(user, app_id, purpose):
@@ -87,12 +92,17 @@ def run_api():
     # print(f'Policies: {policies}, Tokens: {tokens}')
     print(user_info)
 
+    signal.signal(signal.SIGALRM, _alarm_handler)
+    signal.alarm(2)
+
     res = execute(user_info=user_info,
                   program=program,
                   persisted_dp_uuid=persisted_dp_uuid,
                   app_id=app_id,
                   purpose=purpose,
                   collection_info=None)
+
+    signal.alarm(0)
     # print(f'Res: {res}')
     return json.dumps(res)
 
