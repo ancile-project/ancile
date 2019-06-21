@@ -8,6 +8,9 @@ Documentation for Ancile:
 There are two ways Ancile can be deployed locally (for development) or on a
 remote deployment for actual use.
 
+### Rolling pre-req list:
+- libpq-dev
+
 ### Pre-reqs
 0. Tested on: Arch Linux, Ubuntu 18.04, OSX Mojave
 1. Python 3.6+
@@ -127,7 +130,7 @@ First ensure that all traffic is redirected to 443 with a block like:
 server {
 	listen 80 default_server;
 	listen [::]:80 default_server;
-	
+
 	server_name YOUR_DOMAIN_GOES_HERE_AND_REPLACES_THIS_TEXT;
 	return 301 https://$server_name$request_uri;
 }
@@ -143,6 +146,7 @@ location / {
                 proxy_set_header Host $host;
                 proxy_set_header X-Real-IP $remote_addr;
                 proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
 	}
 ```
 
