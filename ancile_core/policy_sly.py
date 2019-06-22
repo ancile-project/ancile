@@ -232,13 +232,13 @@ class PolicyParser(Parser):
     def policy_op(self, p):
         return 'union'
 
-    @_('NEG clause')
-    def clause(self, p):
-        return ['NEG', p.clause]
+    @_('NEG policy')
+    def policy(self, p):
+        return ['NEG', p.policy]
 
-    @_('clause STAR')
-    def clause(self, p):
-        return ['star', p.clause]
+    @_('policy STAR')
+    def policy(self, p):
+        return ['star', p.policy]
 
     @_('policy')
     def clause(self, p):

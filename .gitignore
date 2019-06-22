@@ -56,3 +56,4 @@ logs/*
 env/*
 env
 config/*.yaml
+.pidfile
