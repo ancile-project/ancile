@@ -2,18 +2,20 @@ import requests
 import json
 
 js = {
-    "token": "SFMyNTY.g3QAAAACZAAEZGF0YWEBZAAGc2lnbmVkbgYArMeRtWkB.3v5L3WHsMFfgsmxnyHyYSZiFhb7T5pdT8iDNrgh0DrI",
-    "users": ["user1@abcd.com", "user2@abcd.com"],
+    "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzYWx0IjoiXFx4MjQzMjYyMjQzMTMyMjQ0ODMwNDk0NDM5NzY2ZDcxNDQ2MzRkMmY2ZjM3NzU3YTYyNzgyZTc3NjgyZSJ9.vxTjpAIX-GwvnLS5n1j2owa-LcZWcxAtN_yWCDu2X8I",
+    "users": ["user"],
     "purpose": "research",
     "program": """
-dp_1 = user_specific["user1@abcd.com"].get_empty_data_pair(data_source='test')
-dp_2 = user_specific["user2@abcd.com"].get_empty_data_pair(data_source='test')
+#dp_1 = user("user").get_empty_data_pair(data_source='test')
+#dp_2 = user("user").get_empty_data_pair(data_source='test')
 
-deep_learning.get_split_train_mnist(data=dp_1, split=2, part=0)
-deep_learning.get_split_train_mnist(data=dp_2, split=2, part=1) 
+dp_1 = deep_learning.get_split_train_mnist(user=user("user"), name='test', split=2, part=0)
+dp_2 = deep_learning.get_split_train_mnist(user=user("user"), name='test', split=2, part=1) 
 
-aggr_dp = deep_learning.aggregate_train_dataset(data=[dp_1, dp_2], user_specific=user_specific)
+coll = new_collection()
 
+coll.add_to_collection(data=dp_1)
+coll.add_to_collection(data=dp_2)
 deep_learning.get_test_mnist(data=aggr_dp)
 
 deep_learning.get_loader(data=aggr_dp, dataset_name='train', batch_size=64)

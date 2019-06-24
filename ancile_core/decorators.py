@@ -59,7 +59,7 @@ def external_request_decorator(f):
         user_specific = kwargs.pop('user', False)
         data_source = inspect.getmodule(f).name
         name = kwargs.pop('name', False)
-        sample_policy = kwargs.pop('sample_policy', 'ANYF*.return')
+        sample_policy = kwargs.pop('sample_policy', '(ANYF*).return')
 
         if isinstance(user_specific, UserSpecific):
             logger.info(f'function: {f.__name__} args: {args}, kwargs: {kwargs}, app: {user_specific}')

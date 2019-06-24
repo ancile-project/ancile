@@ -2,9 +2,10 @@ from ancile_core.decorators import transform_decorator, aggregate_decorator, \
     external_request_decorator
 from ancile_web.errors import AncileException
 
+name = 'test'
 
 @external_request_decorator
-def get_split_train_mnist(data, part, split, token=None):
+def get_split_train_mnist( data, part, split, token=None, user=None, name=None):
     import torchvision
     from torchvision.transforms import transforms
     import torch
@@ -28,7 +29,7 @@ def get_split_train_mnist(data, part, split, token=None):
 
 
 @aggregate_decorator()
-def aggregate_train_dataset(data, user_specific=None):
+def aggregate_train_dataset(data):
     import torch
 
     ds_list = list()
