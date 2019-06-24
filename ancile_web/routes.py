@@ -18,6 +18,7 @@ from ancile_web.models import *
 from ancile_web.oauth.oauth import oauth, OAUTH_BACKENDS, register_backend
 from ancile_web.errors import AncileException
 import signal
+from ancile_web.utils import reload_server
 
 logger = logging.getLogger(__name__)
 r = redis.Redis(**REDIS_CONFIG)
@@ -177,6 +178,8 @@ def admin_handle_edit_provider(name):
 
         yaml.dump(config, config_stream)
 
+    reload_server()
+
     return redirect("/admin#providers")
 
 @app.route("/admin/add_provider", methods=["POST"])
@@ -206,6 +209,8 @@ def admin_add_provider():
 
     with open("ancile_web/oauth/providers/" + name.lower() + ".py", "w") as class_stream:
         class_stream.write(provider_class) 
+
+    reload_server()
     
     return redirect("/admin")
 
@@ -233,6 +238,8 @@ def admin_delete_provider(name):
         config['secrets'].pop(secret_key)
 
         yaml.dump(config, config_stream)
+
+    reload_server()
 
     return redirect("/admin#providers")
 
