@@ -259,7 +259,7 @@ get_last_location
             op='eq', username='user',
             datasource='google'
             )
-.(_enforce_true.in_geofences(geofences=GEOFENCES)
+.(_enforce_true.s
   .keep_keys(keys=['in_geofences'])
   .return
   +
