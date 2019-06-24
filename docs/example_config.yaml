@@ -47,3 +47,6 @@ mail:
 operational:
     CACHE: False
     LOGGING: True
+
+providers:
+    ["GitHub", "Google"]

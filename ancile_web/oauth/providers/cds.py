@@ -1,7 +1,6 @@
 from loginpass._core import UserInfo, OAuthBackend
 
-
-class CDS(OAuthBackend):
+class Cds(OAuthBackend):
     OAUTH_TYPE = '2.0'
     OAUTH_NAME = 'cds'
     OAUTH_CONFIG = {
