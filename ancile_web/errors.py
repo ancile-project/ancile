@@ -37,7 +37,7 @@ class ConfigError(BaseError):
 
 class PolicyError(BaseError):
     def __init__(self):
-        logger.error("Policy Error")
+        logger.info("Policy Error")
         pass
 
     def __str__(self) -> str:
