@@ -1,13 +1,18 @@
 const policyArea = document.getElementById("policyTextarea");
 
-policyArea.addEventListener("input", updateVisualization);
+policyArea.addEventListener("input", function(inputUpdate) {
+  updateVisualization(inputUpdate.srcElement.value)
+});
+
 const request = new XMLHttpRequest();
+const idRegex = /(?:^|\n)([A-Z]*)([0-9]+)/g;
 request.onreadystatechange = processResponse;
 
-function updateVisualization(inputUpdate) {
-  var currentValue = inputUpdate.srcElement.value;
+updateVisualization(policyArea.value);
+
+function updateVisualization(value) {
   var formData = new FormData();
-  formData.append("policy", currentValue);
+  formData.append("policy", value);
 
   request.open(
     "POST",
@@ -19,18 +24,19 @@ function updateVisualization(inputUpdate) {
 
 function processResponse() {
   if (request.readyState === 4 && request.status === 200) {
-    console.log(request.responseText);
+    //console.log(request.responseText);
     var request_json = JSON.parse(request.responseText);
     frame = document.getElementById("graph-frame")
     
     if (request_json["status"] == 'ok') {
-      frame.innerHTML = policyToGraph(request_json["parsed_policy"]);
-      console.log(frame.innerHTML)
+      frame.innerHTML = parsePolicy(request_json["parsed_policy"])["code"];
+      //console.log(frame.innerHTML)
+      frame.removeAttribute("data-processed");
+      mermaid.init(undefined, frame);
     } else {
-      frame.innerHTML = "graph TD\n0[Error]";
+      //console.log(request_json["traceback"])
     }
-    frame.removeAttribute("data-processed");
-    mermaid.init(undefined, frame);
+
   }
 }
 
@@ -43,47 +49,97 @@ function objectToString(object) {
   return objectString.slice(0, -2);
 }
 
-function policyToGraph(policy, parentNumber, mermaidCode, nextNumber, branch, parentBranch) {
-  if (mermaidCode === undefined) mermaidCode = "graph TD\n";
-  if (branch == undefined) branch = "";
-  if (parentBranch == undefined) parentBranch = branch;
-
-  if (nextNumber == undefined) {
-    if (parentNumber == undefined) {
-      nextNumber = 0;
-    } else {
-      nextNumber = parentNumber + 1;
+function findMaxId(children) {
+  var max = 0;
+  for (index in children) {
+    if (children[index]["id"] > max) {
+      max = children[index]["id"] > max;
     }
   }
+  return max;
+}
 
+function parsePolicy(policy, parents, code, currentId, star) {
+  console.log(policy);
+  if (code == undefined) {
+    code = "graph TD\n";
+  }
 
+  if (parents == undefined) {
+    parents = [];
+  }
 
-  console.log(nextNumber);
+  if (currentId == undefined) {
+    currentId = {
+      "branch": "",
+      "id": 0
+    };
+  }
 
+  if (star == undefined) {
+    star = false;
+  }
+  
   if (policy[0] == "exec") {
-
-    if (parentNumber != undefined) {
-      mermaidCode += parentBranch + parentNumber + " --> " + branch + nextNumber + "[" + policy[1];
-    } else {
-      mermaidCode += "0[" + policy[1];
+    var elementName = currentId["branch"] + currentId["id"];
+    code += elementName + "[" + policy[1] + "]\n";
+    // console.log(parents);
+    for (i in parents) {
+      code += (parents[i]["branch"] + parents[i]["id"]) + " --> " + elementName + "\n";
+    }
+    if (star == true) {
+      for (i in parents) {
+        code += elementName + " --> "  + "\n" + (parents[i]["branch"] + parents[i]["id"]);
+      }
     }
 
-    if (Object.keys(policy[2]) != 0) {
-      mermaidCode += "(" + objectToString(policy[2]) + ")";
-    }
-
-    mermaidCode += "]\n";
-
-  } else if (policy[0] == "concat") {
-    mermaidCode = policyToGraph(policy[1], parentNumber, mermaidCode, undefined, branch, parentBranch);
-    mermaidCode = policyToGraph(policy[2], nextNumber, mermaidCode, undefined, branch);
-  } else if (policy[0] == "union") {
-    branchA = branch + 'A';
-    branchB = branch + "B";
-    mermaidCode = policyToGraph(policy[1], parentNumber, mermaidCode, nextNumber, branchA, branch);
-    mermaidCode = policyToGraph(policy[2], parentNumber, mermaidCode, nextNumber, branchB, branch);
-
+    return {
+      "children": [currentId],
+      "code": code
+    };
   }
 
-  return mermaidCode;
+  else if (policy[0] == "concat") {
+
+    var result = parsePolicy(policy[1], parents, code, currentId);
+    
+    result = parsePolicy(policy[2], result["children"], result["code"], {
+      "branch": currentId["branch"],
+      "id": findMaxId(result["children"]) + 1
+    });
+
+    return result;
+  }
+
+  else if (policy[0] == "union") {
+    var result = parsePolicy(policy[1], parents, code, {
+      "branch": currentId["branch"] + "A",
+      "id": currentId["id"]
+    });
+
+    var secondResult = parsePolicy(policy[2], parents, result["code"], {
+      "branch": currentId["branch"] + "B",
+      "id": currentId["id"]
+    });
+
+    return {
+      "children": result["children"].concat(secondResult["children"]),
+      "code": secondResult["code"]
+    };
+  }
+  
+  else if (policy[0] == "star") {
+
+    var result = parsePolicy(policy[1], parents, code, currentId, true);
+
+    matches = [...result["code"].matchAll(idRegex)];
+    
+  }
+
+  else {
+    return {
+      "children": [],
+      "code": code
+    };
+  }
 }
