@@ -45,8 +45,8 @@ def get_user(user, app_id, purpose):
 def get_app_id(token):
     redis_response = r.get(token) if ENABLE_CACHE else None
     if redis_response is None:
-        token = jwt.decode(token, app.config["SECRET_KEY"])['salt']
-        app_id = Account.get_id_by_token(token)
+        salt = jwt.decode(token, app.config["SECRET_KEY"])['salt']
+        app_id = Account.get_id_by_token(salt)
         if ENABLE_CACHE:
             r.set(token, pickle.dumps(app_id), ex=3600)
         return app_id
