@@ -28,7 +28,7 @@ def transform_decorator(f):
     def wrapper(*args, **kwargs):
         dp_pair = decorator_preamble(args, kwargs)
 
-        logger.info(f'function: {f.__name__}. args: {args}, kwargs: {kwargs}, app: {dp_pair._app_id}')
+        logger.info(f'function: {f.__name__} args: {args}, kwargs: {kwargs}, app: {dp_pair._app_id}')
         dp_pair._call_transform(f, *args, **kwargs)
         return True
 
@@ -40,7 +40,7 @@ def store_decorator(f):
     def wrapper(*args, **kwargs):
         dp_pair = decorator_preamble(args, kwargs)
 
-        logger.info(f'function: {f.__name__}. args: {args}, kwargs: {kwargs}, app: {dp_pair._app_id}')
+        logger.info(f'function: {f.__name__} args: {args}, kwargs: {kwargs}, app: {dp_pair._app_id}')
         return dp_pair._call_store(f, *args, **kwargs)
 
     return wrapper
@@ -62,7 +62,7 @@ def external_request_decorator(f):
         sample_policy = kwargs.pop('sample_policy', 'ANYF*.return')
 
         if isinstance(user_specific, UserSpecific):
-            logger.info(f'function: {f.__name__}. args: {args}, kwargs: {kwargs}, app: {user_specific}')
+            logger.info(f'function: {f.__name__} args: {args}, kwargs: {kwargs}, app: {user_specific}')
             dp_pair = user_specific.get_empty_data_pair(data_source, name=name, sample_policy=sample_policy)
             dp_pair._call_external(f, *args, **kwargs)
             return dp_pair
@@ -78,7 +78,7 @@ def use_type_decorator(f):
         dp_pair = kwargs.get('data', False)
         check_data(dp_pair)
 
-        logger.info(f'USE function: {f.__name__}. args: {args}, kwargs: {kwargs}, app: {dp_pair._app_id}')
+        logger.info(f'USE function: {f.__name__} args: {args}, kwargs: {kwargs}, app: {dp_pair._app_id}')
         ret = dp_pair._use_method(f, *args, **kwargs)
         if dp_pair._was_loaded:
             storage.del_key(dp_pair._load_key)
@@ -107,7 +107,7 @@ def comparison_decorator(f):
             dp_pair._advance_policy_error("_enforce_comparison",
                                           result=result)
         else:
-            logger.info(f'function: {f.__name__}. args: {args}, kwargs: {kwargs}, app: {dp_pair._app_id}')
+            logger.info(f'function: {f.__name__} args: {args}, kwargs: {kwargs}, app: {dp_pair._app_id}')
             result = dp_pair._call_transform(f, *args, **kwargs)
             dp_pair._advance_policy_error("_enforce_comparison",
                                           result=result)

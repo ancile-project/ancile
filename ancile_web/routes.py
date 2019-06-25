@@ -23,7 +23,7 @@ r = redis.Redis(**REDIS_CONFIG)
 
 
 def get_user(user, app_id, purpose):
-    key_string = user + str(app_id) + str(purpose)
+    key_string = user + ":" + str(app_id) + ":" + str(purpose)
     redis_response = r.get(key_string) if ENABLE_CACHE else None
 
     if redis_response is None:
@@ -37,9 +37,12 @@ def get_user(user, app_id, purpose):
 
         if ENABLE_CACHE:
             r.set(key_string, pickle.dumps(bundle), ex=3600)
+            logger.debug(f'Cache miss for user_key: {key_string}')
         return bundle
-    print("USED CACHED USER")
-    return pickle.loads(redis_response)
+
+    info = pickle.loads(redis_response)
+    logger.debug(f"Used cached user info: {info}")
+    return info
 
 
 def get_app_id(token):
@@ -49,8 +52,10 @@ def get_app_id(token):
         app_id = Account.get_id_by_token(salt)
         if ENABLE_CACHE:
             r.set(token, pickle.dumps(app_id), ex=3600)
+            logger.debug(f'Cache miss for app token: {token}')
         return app_id
-    print('USED CACHED APP_ID')
+    app_id = pickle.loads(redis_response)
+    logger.debug(f'Used cached app id: {app_id}')
     return pickle.loads(redis_response)
 
 
@@ -63,7 +68,7 @@ app_permission = Permission(RoleNeed('app'))
 @app.route('/api/run', methods=['POST'])
 def run_api():
     js = request.json
-    #print(js)
+    logger.info(f'Request: {js}')
     token = js['token']
     users = js['users']
     purpose = js['purpose']
@@ -72,7 +77,7 @@ def run_api():
     try:
         app_id = get_app_id(token)
     except Exception:
-            return json.dumps({"result": "error", 
+            return json.dumps({"result": "error",
                                "traceback": traceback.format_exc()})
 
     user_info = []
@@ -81,11 +86,10 @@ def run_api():
         try:
             user_info.append(get_user(user, app_id, purpose))
         except Exception:
-            return json.dumps({"result": "error", 
+            return json.dumps({"result": "error",
                                "traceback": traceback.format_exc()})
     persisted_dp_uuid = js.get('persisted_dp_uuid', None)
-    # print(f'Policies: {policies}, Tokens: {tokens}')
-    print(user_info)
+    logger.debug(f'Passing user_info: {user_info}')
 
     res = execute(user_info=user_info,
                   program=program,
@@ -93,7 +97,7 @@ def run_api():
                   app_id=app_id,
                   purpose=purpose,
                   collection_info=None)
-    # print(f'Res: {res}')
+    logger.info(f'Returning: {res}')
     return json.dumps(res)
 
 

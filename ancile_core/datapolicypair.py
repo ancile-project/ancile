@@ -50,7 +50,7 @@ class DataPolicyPair:
         self._expires_at = ancile_web_time.get_timestamp_from_now(seconds)
 
     def __repr__(self):
-        return f'<DataPolicy. User: {self._username} ancile_web: {self._name}>'
+        return f'<DataPolicy. User: {self._username} Datasource: {self._name}>'
 
     def check_command_allowed(self, command, kwargs=None):
         if self.is_expired:
