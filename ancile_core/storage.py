@@ -21,6 +21,8 @@ def store(obj):
         r.set(key, pickle.dumps(obj), ex=600)
     else:
         r.set(key, pickle.dumps(obj))
+
+    logger.info(f'Stored object {obj} under id \'{key}\'')
     return key
 
 
@@ -32,6 +34,8 @@ def load(key):
     if isinstance(obj, DataPolicyPair):
         obj._was_loaded = True
         obj._load_key = key
+
+    logger.info(f'Loaded object {obj} from id \'{key}\'')
     return obj
 
 

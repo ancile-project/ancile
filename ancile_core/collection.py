@@ -19,7 +19,7 @@ def collection_decorator(f):
         if not isinstance(dp_pair, DataPolicyPair):
             raise ValueError("You need to provide a Data object. Use get_data to get it.")
 
-        logger.info(f'function: {f.__name__}. args: {args}, kwargs: {kwargs}, app: {dp_pair._app_id}')
+        logger.info(f'function: {f.__name__} args: {args}, kwargs: {kwargs}, app: {dp_pair._app_id}')
         return dp_pair._call_collection(f, *args, **kwargs)
 
     return wrapper
@@ -38,6 +38,9 @@ class Collection(object):
     def _check_policy(self, f, **kwargs):
         if not self._policy.check_allowed(f.__name__, kwargs):
             raise PolicyError()
+
+    def __repr__(self):
+        return f"<Collection size:{len(self)}"
 
     @collection_decorator
     def add_to_collection(self, data):
@@ -103,7 +106,7 @@ def reduction_fn(f):
         else:
             raise ValueError("'data' must be a collection object")
 
-        logger.info(f'function: {f.__name__}. args: {args}, kwargs: {kwargs}')
+        logger.info(f'function: {f.__name__} args: {args}, kwargs: {kwargs}')
         return dp
 
     return wrapper
