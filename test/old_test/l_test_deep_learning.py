@@ -6,15 +6,15 @@ js = {
     "users": ["user"],
     "purpose": "research",
     "program": """
-#path = '/Users/ebagdasaryan/Documents/development/ancile/location_dump.json'
-#dp_1 = indoor_location.preload_location(user=user("user"), path=path)
-dp_1 = indoor_location.fetch_history_location(user=user("user"), fr=1520073308, to=1561559648)
+path = '/Users/ebagdasaryan/Documents/development/ancile/location_dump.json'
+dp_1 = indoor_location.preload_location(user=user("user"), path=path)
+#dp_1 = indoor_location.fetch_history_location(user=user("user"), fr=1520073308, to=1561559648)
 
 deep_learning.make_dataset(data=dp_1)
-deep_learning.train(data=dp_1, epochs=10, batch_size=20, bptt=20, lr=2, log_interval=5, clip=0.25)
+deep_learning.train(data=dp_1, epochs=1, batch_size=20, bptt=20, lr=2, log_interval=5, clip=0.25)
 
 #deep_learning.train_dp(data=dp_1, epochs=10, batch_size=20, bptt=20, lr=0.2, log_interval=5, sigma=0.8, S=1)
-
+#deep_learning.prepare_for_json(data=dp_1)
 general.keep_keys(data=dp_1, keys=['output'])
 
 result.append_dp_data_to_result(data=dp_1)

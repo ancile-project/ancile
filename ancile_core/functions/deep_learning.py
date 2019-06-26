@@ -194,6 +194,14 @@ def pickle_model(data):
 
 
 @transform_decorator
+def prepare_for_json(data):
+    js = dict()
+    for name, value in  data['model'].state_dict().items():
+        js[name] = value.tolist()
+    data['json_model'] = js
+
+
+@transform_decorator
 def make_dataset(data, batch_size=20):
     from ancile_core.functions.dl.corpus import Corpus
     from ancile_core.functions.dl.helpers import batchify
