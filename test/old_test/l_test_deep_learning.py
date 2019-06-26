@@ -13,9 +13,11 @@ dp_1 = deep_learning.get_split_train_mnist(user=user("user"), name='test', split
 dp_2 = deep_learning.get_split_train_mnist(user=user("user"), name='test', split=2, part=1) 
 
 coll = new_collection()
-
 coll.add_to_collection(data=dp_1)
 coll.add_to_collection(data=dp_2)
+
+collection=coll
+
 deep_learning.get_test_mnist(data=aggr_dp)
 
 deep_learning.get_loader(data=aggr_dp, dataset_name='train', batch_size=64)

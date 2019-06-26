@@ -6,6 +6,7 @@ import inspect
 from functools import wraps
 from ancile_core.user_specific import UserSpecific
 import logging
+from ancile_core.collection import Collection
 logger = logging.getLogger(__name__)
 
 def check_args(args):
@@ -169,3 +170,19 @@ def aggregate_decorator(reduce=False):
             return new_dp
         return wrapper
     return decorator
+
+
+def filter_decorator(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        collection = kwargs.get("collection")
+        new_collection = Collection()
+        for data_point in collection._data_points:
+            value = f(data_point)
+            if value:
+                data_point._policy.check_allowed('filter_keep')
+                new_collection._data_points.append(data_point)
+            else:
+                data_point._policy.check_allowed('filter_remove')
+
+    return wrapper
