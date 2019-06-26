@@ -193,6 +193,7 @@ def admin_add_provider():
     baseURL = request.form.get("baseURLInput")
     accessURL = request.form.get("accessURLInput")
     authURL = request.form.get("authURLInput")
+    scopes = request.form.get("scopeInput")
 
     provider_class = (
         f"from loginpass._core import UserInfo, OAuthBackend\n"
@@ -203,7 +204,7 @@ def admin_add_provider():
         f"          'api_base_url': '{baseURL}',\n"
         f"          'access_token_url': '{accessURL}',\n"
         f"          'authorize_url': '{authURL}',\n"
-        f"          'client_kwargs': {{'scope': 'profile'}},\n"
+        f"          'client_kwargs': {{'scope': '{scopes}'}},\n"
         f"          }}\n"
         f"      def profile(self, **kwargs):\n"
         f"          return 'success'"
