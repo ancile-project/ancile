@@ -13,18 +13,3 @@ class Cds(OAuthBackend):
 
     def profile(self, **kwargs):
         return "success"
-        '''
-        resp = self.get('user', **kwargs)
-        resp.raise_for_status()
-        data = resp.json()
-        params = {
-            'sub': str(data['id']),
-            'name': data['name'],
-            'email': data.get('email'),
-            'preferred_username': data['login'],
-            'profile': data['html_url'],
-            'picture': data['avatar_url'],
-            'website': data.get('blog'),
-        }
-        return UserInfo(params)
-        '''
