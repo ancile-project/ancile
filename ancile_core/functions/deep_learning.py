@@ -194,7 +194,78 @@ def pickle_model(data):
 
 
 @transform_decorator
-def obfuscate_prediction(data):
+def make_dataset(data, batch_size=20):
+    from ancile_core.functions.dl.corpus import Corpus
+    from ancile_core.functions.dl.helpers import batchify
+    import datetime
+
+    from collections import defaultdict
+    locations = defaultdict(int)
+    dates = defaultdict(list)
+    count = 0
+    for x in data['location']:
+        if x['device_type'] == 'iPhone':
+            count += 1
+            name = f"x_{x['sta_location_x']}_y_{x['sta_location_y']}_floor_{x['floor_name']}"
+            ft = datetime.datetime.fromtimestamp(x['aruba_system_checked_at'])
+            dates[(ft.month, ft.day, ft.hour, ft.weekday())].append(name)
+            locations[name] += 1
+
+    corpus = Corpus(dates)
+    train_data = batchify(corpus.train, batch_size)
+    test_data = batchify(corpus.test, batch_size)
+    data['corpus'] = corpus
+    data['train_data'] = train_data
+    data['test_data'] = test_data
+    data['output'].append(f'loaded dataset. Total entries: {count}. ')
 
 
-    return True
+@transform_decorator
+def train(data, epochs, batch_size, bptt, lr, log_interval, clip):
+    from ancile_core.functions.dl.helpers import train, test, batchify
+    from ancile_core.functions.dl.model import RNNModel
+    import torch.nn as nn
+
+    criterion = nn.CrossEntropyLoss()
+    ntokens = len(data['corpus'].dictionary)
+    corpus = data['corpus']
+    train_data = batchify(corpus.train, batch_size)
+    test_data = batchify(corpus.test, batch_size)
+
+    model = RNNModel("LSTM", ntokens, 50, 50, 2, 0.1, True)
+    for epoch in range(epochs):
+        train(model, train_data, ntokens, batch_size, bptt, criterion, epoch, lr, log_interval, clip)
+        acc = test(model, test_data,  ntokens, batch_size, bptt, criterion, epoch)
+        data['output'].append(acc)
+
+    data['model'] = model
+
+
+@transform_decorator
+def train_dp(data, epochs, batch_size, bptt, lr, log_interval, sigma, S):
+    from ancile_core.functions.dl.helpers import train_dp, test, batchify
+    from ancile_core.functions.dl.model import RNNModel
+    from ancile_core.functions.dl.compute_dp_sgd_privacy import apply_dp_sgd_analysis
+    import torch.nn as nn
+
+
+    criterion = nn.CrossEntropyLoss()
+    criterion_dp = nn.CrossEntropyLoss(reduction='none')
+    ntokens = len(data['corpus'].dictionary)
+    corpus = data['corpus']
+    train_data = batchify(corpus.train, batch_size)
+    test_data = batchify(corpus.test, batch_size)
+
+    N = train_data.shape[0]
+    eps = apply_dp_sgd_analysis(N=N, batch_size=batch_size, noise_multiplier=sigma*S, epochs=epochs)
+    data['output'].append(f"Epsilon: {eps}")
+
+    model = RNNModel("LSTM", ntokens, 50, 50, 2, 0.1, True)
+
+    for epoch in range(epochs):
+        train_dp(model, train_data, ntokens, batch_size, bptt, criterion_dp, epoch, lr, log_interval, S, sigma)
+        acc = test(model, test_data,  ntokens, batch_size, bptt, criterion, epoch)
+        data['output'].append(acc)
+
+    data['model'] = model
+

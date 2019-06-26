@@ -1,6 +1,8 @@
 from ancile_core.decorators import transform_decorator, external_request_decorator
 from ancile_web.errors import AncileException
 
+name="location"
+
 @external_request_decorator
 def fetch_location(data, token=None, device_type=None):
     import requests
@@ -23,6 +25,19 @@ def fetch_location(data, token=None, device_type=None):
         raise AncileException("Couldn't fetch location from the server.")
 
     return True
+
+@external_request_decorator
+def preload_location(data, token=None, path=None):
+    import os
+    import json
+
+    with open(path, 'r') as f:
+        data['location'] = json.load(f)
+
+
+
+    return True
+
 
 @external_request_decorator
 def fetch_history_location(data, token=None, fr=None, to=None, device_type=None):

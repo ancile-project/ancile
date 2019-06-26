@@ -6,35 +6,18 @@ js = {
     "users": ["user"],
     "purpose": "research",
     "program": """
-#dp_1 = user("user").get_empty_data_pair(data_source='test')
-#dp_2 = user("user").get_empty_data_pair(data_source='test')
+path = '/Users/ebagdasaryan/Documents/development/ancile/location_dump.json'
 
-dp_1 = deep_learning.get_split_train_mnist(user=user("user"), name='test', split=2, part=0)
-dp_2 = deep_learning.get_split_train_mnist(user=user("user"), name='test', split=2, part=1) 
+dp_1 = indoor_location.preload_location(user=user("user"), path=path)
 
-coll = new_collection()
-coll.add_to_collection(data=dp_1)
-coll.add_to_collection(data=dp_2)
+deep_learning.make_dataset(data=dp_1)
+deep_learning.train(data=dp_1, epochs=10, batch_size=20, bptt=20, lr=2, log_interval=5, clip=0.25)
 
-collection=coll
+#deep_learning.train_dp(data=dp_1, epochs=10, batch_size=20, bptt=20, lr=0.2, log_interval=5, sigma=0.8, S=1)
 
-deep_learning.get_test_mnist(data=aggr_dp)
+general.keep_keys(data=dp_1, keys=['output'])
 
-deep_learning.get_loader(data=aggr_dp, dataset_name='train', batch_size=64)
-deep_learning.get_loader(data=aggr_dp, dataset_name='test', batch_size=100)
-
-deep_learning.create_model(data=aggr_dp)
-deep_learning.sgd_optimizer(data=aggr_dp, lr=0.1, momentum=0.9)
-deep_learning.nll_loss(data=aggr_dp)
- 
-deep_learning.pickle_model(data=aggr_dp)
-#for epoch in range(1):
-#    deep_learning.train_one_epoch(data=aggr_dp, epoch=epoch, log_interval=200)
-#    deep_learning.test(data=aggr_dp, epoch=epoch)
-
-#general.keep_keys(data=aggr_dp, keys=['output'])
-#result.append_dp_data_to_result(data=aggr_dp)
-
+result.append_dp_data_to_result(data=dp_1)
     """
 }
 
