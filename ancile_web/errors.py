@@ -18,6 +18,7 @@ class AncileException(BaseError):
 class ParseError(BaseError):
     def __init__(self, message):
         self.message = message
+        logger.error(message)
 
     def __str__(self):
         return f'ParseError: {self.message}'
@@ -36,6 +37,7 @@ class ConfigError(BaseError):
 
 class PolicyError(BaseError):
     def __init__(self):
+        logger.info("Policy Error")
         pass
 
     def __str__(self) -> str:

@@ -2,60 +2,102 @@
 
 1. Conditions:
 
-    *Syntax*: `condition(field, operation, value)`. Followed by
-    `enforce_true` and `enforce_false` operations.
+    *Syntax*: `condition(field, operation, value)`. Followed by `enforce_true`
+    and `enforce_false` operations.
 
-    *Effect*: Enforces that the DataPolicyPair meets certain criteria,
-    before advancing the policy.
+    *Effect*: Enforces that the DataPolicyPair meets certain criteria, before
+    advancing the policy.
 
  1. Conditions on the other DPP:
 
-    *Syntax*: if DPP_1 depends on the value from another DPP_2 the policy for DPP_1 should specify: `condition_dependent(field='oh', operation='eq', value=True, datasource='google', username='same', time='same')`. Whereas DPP_2 can just have `comparison`.
-    
-    *Effect*: the program has to call `condition` method and supply the correct arguments along with param: `dependent_dpp=dpp_1`.
+    *Syntax*: if DPP_1 depends on the value from another DPP_2 the policy for
+    DPP_1 should specify: `condition_dependent(field='oh', operation='eq',
+    value=True, datasource='google', username='same', time='same')`. Whereas
+    DPP_2 can just have `comparison`.
+
+    *Effect*: the program has to call `condition` method and supply the correct
+    arguments along with param: `dependent_dpp=dpp_1`.
 
 1. Collections:
-    
-    *Syntax*: 
-    * `get_collection(users, datasource)` - retrieves data for
-    set of users and a specific datasource.
-    * `get_empty_collection([dpp_1, dpp_2, etc])` - creates a collection
-      with policy `ANYF*`
-    * `get_collection_policy(user, datasource)` - returns an empty
-      collection.
-    
 
+    *Syntax*:
+    * `new_collection()` - Returns an empty collection object.
+    * `col.add_to_collection(data=dp)` - Adds a datapolicy object (`dp`) to the
+      collection `col`. The policy on `col` is now dependent on the policies on
+      the newly added `dp` and any other datapolicy objects contained in the
+      collection.
+
+    *Effect*:
+    * Collections provide a structure for working with multiple pieces of
+      homogenous data without trampling individual policy.
+    * Higher order functions can take collections and compute values based on
+      the datapolicy objects contained.
 
 
 
 ## Ancile Program
 
-An application is allowed to submit a program in Python  -- a sequence of commands executed by Ancile. The goal of the program is to consume data from data sources. However, each command in the program is only executed on data if it satisfies the associated policy.
+An application is allowed to submit a program in Python  -- a sequence of
+commands executed by Ancile. The goal of the program is to consume data from
+data sources. However, each command in the program is only executed on data if
+it satisfies the associated policy.
 
-The program can use two objects that Ancile exposes: `user_ctx` and `result`. Ancile as well exposes modules with commands enforceable by policies that will be used to interact with both objects. Additionally, Ancile exposes methods for external interactions that take `user_ctx` object with the name of a data source and produce a `DataPolicyPair` that binds incoming data with the corresponding policy.
+The program can use two objects that Ancile exposes: `user_ctx` and `result`.
+Ancile as well exposes modules with commands enforceable by policies that will
+be used to interact with both objects. Additionally, Ancile exposes methods for
+external interactions that take `user_ctx` object with the name of a data
+source and produce a `DataPolicyPair` that binds incoming data with the
+corresponding policy.
 
-`DataPolicyPair` - an object of this class binds policy and data, none of the fields can be accessed from the program. The only way this object can be modified is if it passed as an argument to one of Ancile provided methods and the associated policy allows execution of this method.
+`DataPolicyPair` - an object of this class binds policy and data, none of the
+fields can be accessed from the program. The only way this object can be
+modified is if it passed as an argument to one of Ancile provided methods and
+the associated policy allows execution of this method.
 
-`user_ctx` - an object that stores all policies, access tokens, and active DataPolicyPairs. Commands that can fetch data will take this object as a parameter and output a DataPolicyPair.
+`user_ctx` - an object that stores all policies, access tokens, and active
+DataPolicyPairs. Commands that can fetch data will take this object as a
+parameter and output a DataPolicyPair.
 
 
-**command** - a trusted implementation of some functionality that takes data as an input. Each command is either:
+**command** - a trusted implementation of some functionality that takes data as
+an input. Each command is either:
 
-1. **External Calls to Data Sources** (policy name:`fetch`) - commands that call data source and return a `DataPolicyPair` (take `user_ctx` as an argument). On data ingress a policy is associated with incoming data. The policy can specify what external calls are allowed or just say `fetch` to allow all external commands for this datasource. The external call can only be the first command that creates a data policy pair. 
+1. **External Calls to Data Sources** (policy name:`fetch`) - commands that
+   call data source and return a `DataPolicyPair` (take `user_ctx` as an
+   argument). On data ingress a policy is associated with incoming data. The
+   policy can specify what external calls are allowed or just say `fetch` to
+   allow all external commands for this datasource. The external call can only
+   be the first command that creates a data policy pair. 
 
-2. **Transformation** (policy name:`transform`) -  a command that generates derived data (e.g., transform, test, or aggregate data), take `DataPolicyPair` as an argument:
-        * Transformations - any methods that modify, filter, delete data in DataPolicyPair
-        * Test/Comparison - checks the value of data and raises an exception if comparison failed
-        * Aggregation - methods that take multiple DataPolicyPairs as an argument and combines all of them. Ancile performs policy check based on the union of policies of all supplied `DataPolicyPair`s.
-        * Comparison - performs comparison of data values and returns a result of it to the program. This operation is used to allow both policy and program branching.
+2. **Transformation** (policy name:`transform`) -  a command that generates
+        derived data (e.g., transform, test, or aggregate data), take
+        `DataPolicyPair` as an argument: * Transformations - any methods that
+        modify, filter, delete data in DataPolicyPair * Test/Comparison -
+        checks the value of data and raises an exception if comparison failed *
+        Aggregation - methods that take multiple DataPolicyPairs as an argument
+        and combines all of them. Ancile performs policy check based on the
+        union of policies of all supplied `DataPolicyPair`s. * Comparison -
+        performs comparison of data values and returns a result of it to the
+        program. This operation is used to allow both policy and program
+        branching.
 
-2. **Use/Returns** (policy name: `return`)- has two calls that allow returning data once policy of DataPolicyPair object has finished:
+2. **Use/Returns** (policy name: `return`)- has two calls that allow returning
+   data once policy of DataPolicyPair object has finished:
     * `return_to_the_program` - returns data to the program
-    * `append_to_result` - adds data to the result that will be sent to the application
+    * `append_to_result` - adds data to the result that will be sent to the
+      application
 
-Isolation: Each transformation command doesn’t return any data back to the program, but only modifies the DataPolicyPair object that can’t be modified or viewed by the program. Similarly user_ctx object can’t be modified and only exposes a method get_empty_dp. This trick allows us to not expose any data to the program without the explicit calling of Use method. Commands that return data have to be `uses`.
+Isolation: Each transformation command doesn’t return any data back to the
+program, but only modifies the DataPolicyPair object that can’t be modified or
+viewed by the program. Similarly user_ctx object can’t be modified and only
+exposes a method get_empty_dp. This trick allows us to not expose any data to
+the program without the explicit calling of Use method. Commands that return
+data have to be `uses`.
 
-Ancile exposes commands that are organized into Python modules, i.e. (indoor location, machine learning, etc) and the policy can just specify that it allows all methods from this module. Additionally, the policy can simply say transform or return to allow any methods tagged as transform or return. 
+Ancile exposes commands that are organized into Python modules, i.e. (indoor
+location, machine learning, etc) and the policy can just specify that it allows
+all methods from this module. Additionally, the policy can simply say transform
+or return to allow any methods tagged as transform or return. 
 
 ## Room Booking
 
@@ -67,12 +109,15 @@ Prevent leakage of detailed location data (data source: **Indoor Location**):
 
 ### Functions
 * type: fetch: 
-    * `indoor.fetch_recent_location()` - calls data service and populates data with location coordinates for the user.
+    * `indoor.fetch_recent_location()` - calls data service and populates data
+      with location coordinates for the user.
     * `azure.book_room(room)` - books a room
 * type: transform: 
-    * `general.drop_keys(key_list)` - goes through the data object and drops all keys in key_list.
+    * `general.drop_keys(key_list)` - goes through the data object and drops
+      all keys in key_list.
 * type: return: 
-    * `result.append_dp_data_to_result(data)` - Appends data to the object that will be returned to the application.
+    * `result.append_dp_data_to_result(data)` - Appends data to the object that
+      will be returned to the application.
 
 
 
@@ -82,7 +127,8 @@ commands:
 * `ANYF*` - allows all functions
 * `return` - allows all return functions
  
-This policy allows fetching data but requires to drop sensitive keys and allows any other transformations afterwards.
+This policy allows fetching data but requires to drop sensitive keys and allows
+any other transformations afterwards.
 ```python
 p1 = fetch_recent_location
         .drop_keys(['lat', 'long', 'netID'])
@@ -91,15 +137,14 @@ p1 = fetch_recent_location
 ```
 ### Program
 ```python
-dp_1 = indoor.fetch_recent_location(user_ctx=user_ctx['user'],           
-            data_source='campus_data_service')
+dp_1 = indoor.fetch_recent_location(user=user('user'))
 general.drop_keys(data=dp_1, ['lat', 'long', 'netID'])
 result.append_dp_data_to_result(data=dp_1)
 ```
 
 
 ### Example
-```python    
+```python
 # original data
 v= {'netID': 'user', 'lat': 0, 'long': 0, 
             'floor': 'Third Floor', 'building': 'Bloomberg'}
@@ -107,93 +152,145 @@ v= {'netID': 'user', 'lat': 0, 'long': 0,
 v= {'floor': 'Third Floor', 'building': 'Bloomberg'}
 ```
 
-Allow only booking rooms or checking available rooms for data source **Outlook** :
-Policy:
-`p2 = (book_room+available_room).ANYF*.return`
+#### Version A:
+The program can query a list of nearby rooms and separately attempt to book
+them.
+
+Policy on **Location**:
+```
+get_last_location.nearby_rooms
+                 .keep_keys(keys=['nearby_rooms'])
+                 .return
+```
+
+Policy on **Outlook**:
+```
+(room_available + book_room).return
+```
+
+Application can then get a list of rooms:
+```
+dp_1 = cds.get_last_location(user=user('user'))
+cds.nearby_rooms(data=dp_1)
+general.keep_keys(keys=['nearby_rooms'], data=dp_1)
+result.append_data(data=dp_1)
+```
+
+and after selecting a room to book
+
+```
+book_dp = azure.book_room(user=user('user'),
+                          room_email='email')
+result.append_dp(data=book_dp)
+```
+
+#### Version B
+The list of rooms is used within the same program.
+
+Policy on **Location**:
+```
+get_last_location.nearby_rooms
+                 .keep_keys(keys=['nearby_rooms'])
+                 .return
+```
+
+Policy on **Outlook**:
+```
+book_first_available.return
+```
+
 Program:
-```python
-dp_list = azure.book_room(user_ctx=user_ctx['user'], 
-        data_source='outlook', room=’room_email’)
-result = use_type.return_to_the_program(data=dp_list)
-if result['available'] == True:
-    dp_2 = azure.book_room(user_ctx=user_ctx['user'], 
-            data_source='outlook', room=’room_email’)
-result.append_dp_data_to_result(data=dp_1)
+```
+dp_1 = campus_data_services.get_last_location(user=user('user'))
+campus_data_services.nearby_rooms(data=dp_1)
+general.keep_keys(keys=['nearby_rooms'], data=dp_1)
+room_list = general.return_to_program(data=dp_1)
+rooms = room_list.get('nearby_rooms')
+
+book_dp = azure.book_first_available(user=user('user'), 
+                                     room_list=room_list)
+result.append_dp(data=book_dp)
 ```
 
 ## Office Hours
 
-Idea: Allow the application to see whether the professor is on campus during office hours
-Sensitive data: Access to calendar, location data
-This example demonstrates aggregation of data - calendar event, location geofence. And testing values of data.
+Idea: Allow the application to see whether the professor is on campus during
+office hours Sensitive data: Access to calendar, location data This example
+demonstrates aggregation of data - calendar event, location geofence. And
+testing values of data.
 
 ### Functions
 
 * fetch
-    * `google.get_calendar_events()` - retrieves all current calendar events from the Google Calendar server. 
-    * `location.get_recent_location_data()`
-    * `location.get_in_geofence(x, y, radius)` - calls Vassar server to retrieve if the user is within the geofence.
+    * `google.get_calendar_events()` - retrieves all current calendar events
+      from the Google Calendar server.
+    * `location.get_last_location()`
+    * `location.get_in_geofence(lat, long, radius)` - calls Vassar server to
+      retrieve if the user is within the geofence.
 * transform
-    * `general.aggregate()` - aggregates together all data sources and policies. Authorized aggregation transformation produces data-policy pairs comprised of combined data paired with the intersection of the derivative policies. The result is stored inside `user_ctx['aggregate']`.
-    * `location.in_geofence(x, y, radius)` - creates a new boolean field `in_geo` with the result of testing the coordinates to be within the geofence.
-    * `google.event_occurring(event_title)` - checks whether the event with the name `event_title` is happening
-    * `general.test_true(key, op='eq', value=True)` - if `op(key, value)` returns `True` the call succeeds, otherwise an exception is raised and execution stopped
-    * `general.test_false(key,  op='eq', value=True)` - if `op(key, value)` returns `False` the call succeeds, otherwise an exception is raised and execution stopped
-    * `general.keep_keys(key_list)` - goes through the data object and drops all keys in key_list.
-    * `comparison(key, value, op)` - returns the result of comparing the `key` in data with `value` using operation `op`
+    * `location.in_geofence(lat, long, radius)` - creates a new boolean field
+      `in_geo` with the result of testing the coordinates to be within the
+      geofence.
+    * `google.event_occurring(event_title)` - checks whether the event with the
+      name `event_title` is happening
+    * `general.keep_keys(key_list)` - goes through the data object and drops
+      all keys in key_list.
+    * `comparison(key, value, op)` - returns the result of comparing the `key`
+      in data with `value` using operation `op` and advances the policy based
+      on the result
 
 ### Policy
 
-Policy for datasource **Google** only allows to check if the event `event_name` is happening now:
-```python
-p_google = get_calendar_events()
-.event_occurring(event_title='event_name')
-.comparison(key='occurring', value=True, op='eq')
-.(
-    test_true(key='occurring').keep_keys(keys=['occurring']).aggregate().return 
-    + test_false(key='occurring').0 
+For **Google**:
+```
+get_calendar_events.event_occurring.
+                   .dependent_condition(username='user',
+                                         datasource='cds',
+                                         key='event_occurring',
+                                         value=True,
+                                         op='eq')
+```
+
+For **CDS**:
+```
+get_last_location
+.in_geofences
+.condition(key='event_occurring', value=True,
+            op='eq', username='user',
+            datasource='google'
+            )
+.(_enforce_true.s
+  .keep_keys(keys=['in_geofences'])
+  .return
+  +
+  _enforce_false
 )
 ```
-We are using a trick to allow the program to check the value of the data value before enforcing it. The program can run first `comparison` and based on the returned result execute either `test_true` or `test_false`. It allows to have a workflow that is more smooth and doesn't raise unnecessary exceptions. Additionally, we can make a `comparison` function to be more powerful and advance the policy by calling either `test_true` or `test_false`.
 
-For datasource **Vassar CDS** there are two fetch functions: `get_recent_location_data` and `get_in_geofence`. Therefore we can create two policies that check if the user is currently within the geofence:
+Program:
+```
+gdp = get_calendar_events(user=user('user'))
+event_occurring(data=gdp, event_name='Office Hours')
 
-1. Policy that uses `get_recent_location_data`
-    ```python
-    p1 = get_recent_location_data.
-    in_geofence(x=0, y=0, radius=10)
-    .comparison(key='in_geo', value=True, op='eq')
-    .(
-        test_true(key='in_geo').keep_keys(keys=['in_geo']).aggregate.return 
-        + test_false(key='in_geo').0 
-    )
-    ```
-2. Policy that uses `get_in_geofence`:
-    ```python
-    p2 = get_in_geofence(x=0, y=0, radius=10)
-    .comparison(key='in_geo', value=True, op='eq')
-    .(
-        test_true(key='in_geo').keep_keys(keys=['in_geo']).aggregate.return 
-        + test_false(key='in_geo').0 
-    )
-    ```
+loc_dp = get_last_location(user=user('user'))
+location.in_geofences(data=loc_dp, geofences=GEOFENCES)
 
-Therefore a user for data source **Vassar CDS** can have a combined policy: `p1 + p2` or if simplified: 
-```python
-p_vassar = 
-    (
-        get_recent_location_data.in_geofence(x=0, y=0, radius=10) \
-        + get_in_geofence(x=0, y=0, radius=10)
-    )
-    .comparison(key='in_geo', value=True, op='eq')
-    .(
-        test_true(key='in_geo').keep_keys(keys=['in_geo']).aggregate.return 
-        + test_false(key='in_geo').0 
-    )
+if general.condition(data=loc_dp, key='event_occurring',
+                     value=True, op='eq',
+                     dependent_dp=gdp
+                    ):
+    result.append_data(data=loc_dp)
 ```
 
+We are using a trick to allow the program to check the value of the data value
+before enforcing it. The program can run first `comparison` and based on the
+returned result execute either `test_true` or `test_false`. It allows to have a
+workflow that is more smooth and doesn't raise unnecessary exceptions.
+Additionally, we can make a `comparison` function to be more powerful and
+advance the policy by calling either `test_true` or `test_false`.
+
 ---
-### Nate's examples :
+<!-- ### Nate's examples :
 Example #1
 `v = { NetID = “jnf27”, lat = 0.0, long = 0.0 }`
 Intended policy does two things:
@@ -220,9 +317,9 @@ Execution:
 * Program executes several functions like in_geofence
 * And finally attempts a use
 
----
+--- -->
 
-### Program
+<!-- ### Program
 ```python
 
 dp_v = location.get_recent_location_data(
@@ -264,7 +361,7 @@ dp_google._data = {'occurring': True}
 # resulting data
 dp_aggregate._data = {'in_geo', True, 'occurring': True}
 
-```    
+```     -->
 
 
 ## Study Group
@@ -274,42 +371,54 @@ Sensitive data: Individual user locations
 Group Events: All users are inside the geofence
 This example demonstrates aggregation of data sources across multiple users.
 
-### Functions
-
-Same as before, except:
-* transform
-    * `aggregate_enforce_participants(participants, key, data_source)` - aggregates data from participants and checks that DataPolicyPairs supplied match `participants` and were created for `data_source`. During aggregation the method checks that each data object has `key` that equals  `True`. Similarly, `aggregate_enforce_partial(n, key)` can enforce when at least `n` participants have `key` equals `True`.
-
 
 ### Policy
 
 The policy enforces release of the data, when all of the participants are on campus. Released data is a flag that both users are on campus. 
 ```python
-in_geofence(data=dp_v, x=0.0, y=0.0, radius=10).
-keep_keys(keys=['in_geo']).
-.aggregate_enforce_participants(participants=['user1', 'user2'],
-                                key='in_geo', data_source='location')
-.return
+get_last_location
+.in_geofence(lat=LAT, long=LONG, radius=100)
+.add_to_collection*
+.enforce_collection(users=['user1', 'user2',
+                           'user3', 'user4'],
+                    size=4)
+.(_test_true.collection_and(key='in_geofence')
+            .keep_keys(keys=['in_geofence'])
+            .return
+  +
+  _test_false
+)
 ```
 
 ### Program
 
 ```python
-dp_1 = location.in_geofence(user_ctx=user_ctx['user1'], 
-        data_source='location',
-        data=dp_v, x=0.0, y=0.0, radius=10)
-general.keep_keys(data=dp_1, keys=['in_geo'])        
+col = new_collection()
 
-dp_2 = location.in_geofence(user_ctx=user_ctx['user2'], 
-        data_source='location',
-        data=dp_v, x=0.0, y=0.0, radius=10)
-general.keep_keys(data=dp_2, keys=['in_geo'])        
+dp_1 = location.get_last_location(user=user('user1'))
+location.in_geofence(data=dp_1, lat=0, long=0, radius=10)
 
-dp_aggr = general.aggregate_enforce_participants(data=[dp_1, dp_2], 
-                                participants=['user1', 'user2'],
-                                key='in_geo', data_source='location')
+dp_2 = location.get_last_location(user=user('user2'))
+location.in_geofence(data=dp_2, lat=0, long=0, radius=10)
 
-result.append_dp_data_to_result(data=dp_aggregate)
+dp_3 = location.get_last_location(user=user('user3'))
+location.in_geofence(data=dp_3, lat=0, long=0, radius=10)
+
+dp_4 = location.get_last_location(user=user('user4'))
+location.in_geofence(data=dp_4, lat=0, long=0, radius=10)
+
+col.add_to_collection(data=dp_1)
+col.add_to_collection(data=dp_2)
+col.add_to_collection(data=dp_3)
+col.add_to_collection(data=dp_4)
+
+if enforce_collection(data=col,
+                      users=['user1', 'user2',
+                             'user3', 'user4'],
+                      size=4):
+    res = general.collection_and(data=col, key='in_geofence')
+    general.keep_keys(data=res, keys=['collection_and'])
+    result.append_data(data=res)
 ```
 
 

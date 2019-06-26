@@ -2,11 +2,15 @@ from ancile_core.decorators import use_type_decorator
 import logging
 logger = logging.getLogger(__name__)
 
+
 class Result:
 
     def __init__(self):
         self._dp_pair_data = list()
         self._stored_keys = dict()
+
+    def __repr__(self):
+        return f"<Result obj>"
 
     @use_type_decorator
     def append_dp_data_to_result(self, data, encryption_keys, decrypt_field_list=None):

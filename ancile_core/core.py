@@ -148,9 +148,9 @@ def retrieve_compiled(program):
             raise AncileException(compile_results.errors)
         if ENABLE_CACHE:
             r.set(program, dill.dumps(compile_results.code), ex=600)
-
+            logger.debug("Cache miss on submitted program")
         return compile_results.code
-    print("USED CACHED PROGRAM")
+    logger.debug("Used cached program")
     return dill.loads(redis_response)
 
 

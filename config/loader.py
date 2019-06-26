@@ -32,7 +32,10 @@ def configure_app(app):
         if not os.path.isdir('logs'):
             os.mkdir('logs')
 
+
+        # logging.basicConfig(level=logging.DEBUG)
         root = logging.getLogger()
+        root.setLevel(logging.DEBUG)
 
         formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
@@ -42,15 +45,8 @@ def configure_app(app):
         stream = logging.StreamHandler(stream=sys.stdout)
         stream.setLevel(logging.DEBUG)
         file_log.setFormatter(formatter)
+        stream.setFormatter(formatter)
 
         root.addHandler(file_log)
         root.addHandler(stream)
 
-        flask_logger = logging.getLogger('werkzeug')
-        flask_file = handlers.RotatingFileHandler('logs/access.log',
-                                                maxBytes=2**22,
-                                                backupCount=3)
-        flask_file.setLevel(logging.DEBUG)
-
-        flask_logger.addHandler(flask_file)
-        flask_logger.propagate = False
