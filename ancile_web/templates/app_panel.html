@@ -14,7 +14,10 @@
 
 <ul class="nav nav-tabs">
   <li class="nav-item">
-    <a class="nav-link active" data-toggle="tab" href="#jwt">JWT</a>
+    <a class="nav-link active" data-toggle="tab" href="#overview">Account Overview</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" data-toggle="tab" href="#jwt">JWT</a>
   </li>
   <li class="nav-item">
     <a class="nav-link" data-toggle="tab" href="#policies">Policies</a>
@@ -22,7 +25,10 @@
 </ul>
 
 <div id="myTabContent" class="tab-content">
-  <div class="tab-pane fade active show" id="jwt">
+  <div class="tab-pane fade active show" id="overview">
+    {% include "overview_pane.html" %}
+  </div>
+  <div class="tab-pane fade" id="jwt">
     {% include "app_jwt_pane.html" %}
   </div>
   <div class="tab-pane fade" id="policies">

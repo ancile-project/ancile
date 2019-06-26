@@ -9,6 +9,7 @@ with open('./config/oauth.yaml', 'r') as f:
 REDIS_CONFIG = configs['redis']
 ENABLE_CACHE = configs['operational']['CACHE']
 ENABLE_LOGGING = configs['operational']['LOGGING']
+PROVIDERS = configs['providers']
 
 
 def _postgres_url(POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_HOST,

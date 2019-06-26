@@ -1,9 +1,10 @@
 from ancile_web.app import app
 from flask import redirect
 from authlib.flask.client import OAuth
-from loginpass import create_flask_blueprint, GitHub, Google
-from ancile_web.oauth.cds import CDS
+from loginpass import create_flask_blueprint
 from ancile_web.models import OAuth2Token
+from ancile_web.oauth.providers import *
+from config.loader import PROVIDERS
 
 oauth = OAuth(app)
 # app.config.from_pyfile('config/oauth_config.py')
@@ -16,10 +17,24 @@ def handle_authorize(remote, token, user_info):
     else:
       raise Exception("No token supplied.")
 
-# list backends
-OAUTH_BACKENDS = [CDS, GitHub, Google]
+import pkgutil
+import importlib
+
+# load local providers
+backend_path = "ancile_web/oauth/providers/"
+backend_names = [mod_name for _, mod_name, _ in pkgutil.iter_modules([backend_path])]
+OAUTH_BACKENDS = [getattr(importlib.import_module("ancile_web.oauth.providers." + name), name.capitalize()) for name in backend_names]
+
+# load loginpass providers
+loginpass = importlib.import_module("loginpass")
+for provider in PROVIDERS:
+    OAUTH_BACKENDS.append(getattr(loginpass, provider))
+
+def register_backend(backend):
+    bp = create_flask_blueprint(backend, oauth, handle_authorize)
+    app.register_blueprint(bp, url_prefix='/{}'.format(backend.OAUTH_NAME))
 
 # register backends
 for backend in OAUTH_BACKENDS:
-    bp = create_flask_blueprint(backend, oauth, handle_authorize)
-    app.register_blueprint(bp, url_prefix='/{}'.format(backend.OAUTH_NAME))
+    register_backend(backend)
+

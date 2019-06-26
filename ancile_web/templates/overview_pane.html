@@ -1,0 +1,14 @@
+<table style="width:300px; margin:auto; text-align: left;">
+  <tr>
+    <th>Email:</th>
+    <td>{{ current_user.email }}</td>
+  </tr>
+  <tr>
+    <th>Password:</th>
+    <td><a href={{ url_for("security.change_password") }}>Change</a></td>
+  </tr>
+  <tr>
+    <th>Role:</th>
+    <td>{{ current_user.roles[0].name }}</td>
+  </tr>
+</table>

@@ -15,8 +15,10 @@ import logging
 import jwt
 from config.loader import REDIS_CONFIG, ENABLE_CACHE
 from ancile_web.models import *
-from ancile_web.oauth.oauth import oauth, OAUTH_BACKENDS
-
+from ancile_web.oauth.oauth import oauth, OAUTH_BACKENDS, register_backend
+from ancile_web.errors import AncileException
+import signal
+from ancile_web.utils import reload_server
 
 logger = logging.getLogger(__name__)
 r = redis.Redis(**REDIS_CONFIG)
@@ -120,12 +122,129 @@ def send_to_panel():
 @login_required
 @admin_permission.require(http_exception=403)
 def admin_panel():
+    providers=OAUTH_BACKENDS
+    ids = [key.replace("_CLIENT_ID", "") for key in app.config.keys() if "CLIENT_ID" in key]
+    secrets = [key.replace("_CLIENT_SECRET", "") for key in app.config.keys() if "CLIENT_SECRET" in key]
+
+    providers_missing_info = [provider for provider in providers if
+                               ((provider.OAUTH_NAME.upper() not in ids) or 
+                                (provider.OAUTH_NAME.upper() not in secrets))]
+
     return render_template('admin_panel.html',
                            users=Account.get_users(),
                            apps=Account.get_apps(),
                            tokens=OAuth2Token.query.all(),
                            policies=Policy.query.all(),
-                           providers=OAUTH_BACKENDS)
+                           providers=providers,
+                           providers_missing_info=providers_missing_info)
+
+@app.route("/admin/edit_provider/<name>")
+@login_required
+@admin_permission.require(http_exception=403)
+def admin_edit_provider(name):
+    provider = None
+
+    for backend in OAUTH_BACKENDS:
+        if backend.OAUTH_NAME.lower() == name.lower():
+            provider = backend
+
+    if provider == None:
+        return redirect("/admin")
+
+    return render_template("admin_edit_provider.html", provider=provider)
+
+@app.route("/admin/handle_edit_provider/<name>", methods=["POST"])
+@login_required
+@admin_permission.require(http_exception=403)
+def admin_handle_edit_provider(name):
+
+    id_key = name.upper() + "_CLIENT_ID"
+    secret_key = name.upper() + "_CLIENT_SECRET"
+
+    cl_id = request.form.get("idTextarea")
+    cl_secret = request.form.get("secretTextarea")
+        
+    new_entry = {   id_key     : cl_id,
+                    secret_key : cl_secret }
+
+    # update environment
+    app.config.update(new_entry)
+
+    # update config
+    with open("config/oauth.yaml", "r+") as config_stream:
+        config = yaml.safe_load(config_stream)
+        
+        config['secrets'].update(new_entry)
+
+        config_stream.seek(0)
+        config_stream.truncate(0)
+
+        yaml.dump(config, config_stream)
+
+    reload_server()
+
+    return redirect("/admin#providers")
+
+@app.route("/admin/add_provider", methods=["POST"])
+@login_required
+@admin_permission.require(http_exception=403)
+def admin_add_provider():
+    name = request.form.get("nameInput")
+    baseURL = request.form.get("baseURLInput")
+    accessURL = request.form.get("accessURLInput")
+    authURL = request.form.get("authURLInput")
+
+    provider_class = (
+        f"from loginpass._core import UserInfo, OAuthBackend\n"
+        f"class {name.capitalize()}(OAuthBackend):\n"
+        f"      OAUTH_TYPE = '2.0'\n"
+        f"      OAUTH_NAME = '{name.lower()}'\n"
+        f"      OAUTH_CONFIG = {{\n"
+        f"          'api_base_url': '{baseURL}',\n"
+        f"          'access_token_url': '{accessURL}',\n"
+        f"          'authorize_url': '{authURL}',\n"
+        f"          'client_kwargs': {{'scope': 'profile'}},\n"
+        f"          }}\n"
+        f"      def profile(self, **kwargs):\n"
+        f"          return 'success'"
+        )
+    
+
+    with open("ancile_web/oauth/providers/" + name.lower() + ".py", "w") as class_stream:
+        class_stream.write(provider_class) 
+
+    reload_server()
+    
+    return redirect("/admin")
+
+@app.route("/admin/delete_provider/<name>")
+@login_required
+@admin_permission.require(http_exception=403)
+def admin_delete_provider(name):
+
+    # wipe client id and secret from configs
+
+    id_key = name.upper() + "_CLIENT_ID"
+    secret_key = name.upper() + "_CLIENT_SECRET"
+    
+    app.config.pop(id_key)
+    app.config.pop(secret_key)
+
+    # update config
+    with open("config/oauth.yaml", "r+") as config_stream:
+        config = yaml.safe_load(config_stream)
+        
+        config_stream.seek(0)
+        config_stream.truncate(0)
+
+        config['secrets'].pop(id_key)
+        config['secrets'].pop(secret_key)
+
+        yaml.dump(config, config_stream)
+
+    reload_server()
+
+    return redirect("/admin#providers")
 
 @app.route("/admin/add_policy", methods=["POST"])
 @login_required
