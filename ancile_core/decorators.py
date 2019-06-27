@@ -6,6 +6,7 @@ import inspect
 from functools import wraps
 from ancile_core.user_specific import UserSpecific
 import logging
+from ancile_core.collection import Collection
 logger = logging.getLogger(__name__)
 
 def check_args(args):
@@ -59,7 +60,7 @@ def external_request_decorator(f):
         user_specific = kwargs.pop('user', False)
         data_source = inspect.getmodule(f).name
         name = kwargs.pop('name', False)
-        sample_policy = kwargs.pop('sample_policy', 'ANYF*.return')
+        sample_policy = kwargs.pop('sample_policy', '(ANYF*).return')
 
         if isinstance(user_specific, UserSpecific):
             logger.info(f'function: {f.__name__} args: {args}, kwargs: {kwargs}, app: {user_specific}')
@@ -169,3 +170,25 @@ def aggregate_decorator(reduce=False):
             return new_dp
         return wrapper
     return decorator
+
+
+def filter_decorator(f):
+    """
+    Still under development and not used yet.
+
+    :param f:
+    :return:
+    """
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        collection = kwargs.get("collection")
+        new_collection = Collection()
+        for data_point in collection._data_points:
+            value = f(data_point)
+            if value:
+                data_point._advance_policy('filter_keep')
+                new_collection._data_points.append(data_point)
+            else:
+                data_point._advance_policy('filter_remove')
+
+    return wrapper

@@ -72,72 +72,6 @@ def assemble_locals(result, user_specific, collection_info):
     lcls['new_collection'] = new_collection
     return lcls
 
-# We check if policies finished and otherwise save them.
-# def save_dps(users_specific):
-#     active_dps = dict()
-#     encryption_keys = dict()
-#     encrypted_data = dict()
-#     redis_persist = False
-
-#     for username, user_specific in users_specific.items():
-#         dps_to_save = user_specific._active_dps
-#         if active_dps.get(username, False) is False:
-#             active_dps[username] = dict()
-#             encryption_keys[username] = dict()
-#             encrypted_data[username] = dict()
-
-#         for name, dp in dps_to_save.items():
-
-#             # nothing left to execute:
-#             # print(f'name: {name}, policy: {dp._policy}')
-#             if dp._policy.e_step() == 1:
-#                 if dp._encryption_keys:
-#                     encryption_keys[username][name] = dp._encryption_keys
-#             else:
-#                 redis_persist = True
-#                 if config.get('encrypt', False):
-#                     # print(f'There is a policy not finished: {dp._policy}. Encrypting fields.')
-#                     keys_dict, enc_dp = encrypt(dp._data)
-#                     # print(keys_dict)
-#                     # print(enc_dp)
-#                     dp._encryption_keys.update(keys_dict)
-#                     dp._data = {'output': []}
-#                     active_dps[username][name] = dp
-#                     encrypted_data[username][name] = enc_dp
-#                 else:
-#                     # print(f'There is a policy not finished: {dp._policy}. Saving data.')
-#                     active_dps[username][name] = dp
-
-#     # print(f'active dps {active_dps.keys()}')
-#     iid = None
-#     if redis_persist:
-#         iid = str(uuid.uuid1())
-#         pickled_dps = pickle.dumps(active_dps)
-#         r.set(iid, pickled_dps, ex=3600)
-
-#     return iid, encrypted_data, encryption_keys
-
-
-# def retrieve_dps(persisted_dp_uuid, users_specific, app_id):
-#     # print("Retrieving previously used Data Policy Pairs")
-#     dp_pairs = r.get(persisted_dp_uuid)
-#     if dp_pairs:
-#         active_dps = pickle.loads(dp_pairs)
-#         for username in active_dps.keys():
-#             if active_dps.get(username, False) is False:
-#                 raise AncileException(f"active_dps don't have a user: {username}. Available names: "
-#                                       f"{list(active_dps.keys())}.")
-#             if users_specific.get(username, False) is False:
-#                 new_us = UserSpecific(policies=None, tokens=None, 
-#                                       private_data=None, username=username,
-#                                       app_id=app_id)
-#                 users_specific[username] = new_us
-#             users_specific[username]._active_dps = active_dps[username]
-
-#     else:
-#         raise AncileException("Your UUID is invalid. Supply correct UUID or "
-#                               "leave the field empty.")
-
 def retrieve_compiled(program):
     import dill
     redis_response = r.get(program) if ENABLE_CACHE else None
@@ -186,7 +120,7 @@ def execute(user_info, program, persisted_dp_uuid=None, app_id=None,
         if persisted_dp_uuid:
             r.delete(persisted_dp_uuid)
     except:
-        # print(traceback.format_exc())
+        print(traceback.format_exc())
         json_output = {'result': 'error', 'traceback': traceback.format_exc()}
         if persisted_dp_uuid:
             json_output[persisted_dp_uuid] = persisted_dp_uuid

@@ -1,4 +1,4 @@
-from ancile_core.decorators import transform_decorator, aggregate_decorator, comparison_decorator
+from ancile_core.decorators import transform_decorator, aggregate_decorator, comparison_decorator, filter_decorator
 from ancile_web.errors import AncileException
 from ancile_core.collection import reduction_fn
 
@@ -133,3 +133,10 @@ def collection_sum(data: list, results: dict, value_key: str=None):
         raise ValueError("'value_key' must have a value.")
 
     results['collection_sum'] = sum((item[value_key] for item in data))
+
+
+@filter_decorator
+def no_filter(collection=None):
+    print('no_filter')
+
+    return True
