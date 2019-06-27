@@ -173,6 +173,12 @@ def aggregate_decorator(reduce=False):
 
 
 def filter_decorator(f):
+    """
+    Still under development and not used yet.
+
+    :param f:
+    :return:
+    """
     @wraps(f)
     def wrapper(*args, **kwargs):
         collection = kwargs.get("collection")
@@ -180,9 +186,9 @@ def filter_decorator(f):
         for data_point in collection._data_points:
             value = f(data_point)
             if value:
-                data_point._policy.check_allowed('filter_keep')
+                data_point._advance_policy('filter_keep')
                 new_collection._data_points.append(data_point)
             else:
-                data_point._policy.check_allowed('filter_remove')
+                data_point._advance_policy('filter_remove')
 
     return wrapper
