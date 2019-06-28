@@ -126,9 +126,9 @@ class Policy(object):
                     return Policy._simplify(policy[2])
                 elif policy[2] == 0:
                     return Policy._simplify(policy[1])
-                elif policy[1] == 1:
+                elif policy[1] == Policy._simplify(policy[2]):
                     return 1
-                elif policy[2] == 1:
+                elif policy[2] == Policy._simplify(policy[2]):
                     return 1
 
             elif operator in ['intersect', 'union']:
