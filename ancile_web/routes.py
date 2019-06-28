@@ -8,7 +8,6 @@ from flask_migrate import Migrate
 from flask_mail import Mail
 import redis
 from ancile_core.core import execute, UserInfoBundle
-from ancile_core.policy_sly import PolicyParser
 import yaml
 import traceback
 import pickle
@@ -33,7 +32,7 @@ def get_user(user, app_id, purpose):
         user_id = Account.get_id_by_email(user)
         policies = Policy.get_by_user_app_purpose(app_id, user_id, purpose)
         tokens, private_data = OAuth2Token.get_tokens_by_user(user_id)
-        bundle = UserInfoBundle(policies=PolicyParser.parse_policies(policies),
+        bundle = UserInfoBundle(policies=policies,
                                 tokens=tokens,
                                 username=user,
                                 private_data=private_data)
