@@ -34,8 +34,28 @@ class FunctionTests(unittest.TestCase):
         program = "test(data=dp0);test(data=dp0);ret(data=dp0)"
         self.assertFalse(run_test(program, policy))
 
+    def test_intersect_star_fail(self):
+        policy = '1&test*'
+        program = "test(data=dp0)"
+        self.assertFalse(run_test(program, policy))
+
+    def test_intersect_1_1_pass(self):
+        policy = 'ret.(1&1)'
+        program = "ret(data=dp0)"
+        self.assertTrue(run_test(program, policy))
+
+    def test_intersect_1_0_fail(self):
+        policy = 'ret.(1&0)'
+        program = "ret(data=dp0)"
+        self.assertFalse(run_test(program, policy))
+
+    def test_union_star(self):
+        policy = '1+test*'
+        program = "test(data=dp0)"
+        self.assertTrue(run_test(program, policy))
 
 class ParamEqualityTests(unittest.TestCase):
+
     def test_no_policy_params(self):
         policy = 'test'
         program = "test(data=dp0, a=4, b=5)"
