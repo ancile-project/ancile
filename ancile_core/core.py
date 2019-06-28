@@ -95,8 +95,7 @@ def execute(user_info, program, persisted_dp_uuid=None, app_id=None,
     result = Result()
     users_specific = dict()
     for user in user_info:
-        parsed_policies = PolicyParser.parse_policies(user.policies)
-        user_specific = UserSpecific(parsed_policies, user.tokens,
+        user_specific = UserSpecific(user.policies, user.tokens,
                                      user.private_data,
                                      username=user.username,
                                      app_id=app_id)
