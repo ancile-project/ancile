@@ -3,7 +3,7 @@ from ancile_core.policy_sly import PolicyParser
 from ancile_web.errors import AncileException
 from ancile_core.user_specific import UserSpecific
 from ancile_core.result import Result
-from ancile_core.storage import store as _store, load, del_key
+from ancile_core.storage import store as _store, load as _load, del_key, gen_key
 from ancile_core.policy import Policy
 from RestrictedPython import compile_restricted_exec, safe_globals, limited_builtins, safe_builtins
 from ancile_core.collection import Collection
@@ -41,14 +41,16 @@ def gen_module_namespace():
             if not is_pac and mod_name not in exclude}
 
 
-def assemble_locals(result, user_specific, collection_info):
+def assemble_locals(result, user_specific, collection_info, app_id):
     lcls = gen_module_namespace()
 
     def user(name: str) -> UserSpecific:
         return user_specific[name]
 
     def store(obj, name):
-        result._stored_keys[name] = _store(obj)
+        key = gen_key()
+        _store(obj, f'{app_id}:{key}')
+        result._stored_keys[name] = key
         if isinstance(obj, DataPolicyPair) and obj._was_loaded:
             del_key(obj._load_key)
 
@@ -63,6 +65,9 @@ def assemble_locals(result, user_specific, collection_info):
                 break
 
         return Collection(policy)
+
+    def load(key):
+        return _load(f'{app_id}:{key}')
 
     lcls['result'] = result
     lcls['store'] = store
@@ -106,8 +111,10 @@ def execute(user_info, program, persisted_dp_uuid=None, app_id=None,
     #     retrieve_dps(persisted_dp_uuid, users_specific, app_id)
 
     glbls = {'__builtins__': safe_builtins}
-    lcls = assemble_locals(result=result, user_specific=users_specific,
-                           collection_info=collection_info)
+    lcls = assemble_locals(result=result,
+                           user_specific=users_specific,
+                           collection_info=collection_info,
+                           app_id=app_id)
     try:
         c_program = retrieve_compiled(program)
         exec(c_program, glbls, lcls)
