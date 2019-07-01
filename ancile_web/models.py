@@ -45,8 +45,8 @@ class OAuth2Token(Base):
     name = db.Column(db.String(20), nullable=False)
 
     token_type = db.Column(db.String(20))
-    access_token = db.Column(db.String(256), nullable=False)
-    refresh_token = db.Column(db.String(256))
+    access_token = db.Column(db.String(3000), nullable=False)
+    refresh_token = db.Column(db.String(3000))
     expires_at = db.Column(db.Integer, default=0)
 
     private_data = db.Column(JSONB(astext_type=db.Text()))
