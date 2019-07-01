@@ -3,7 +3,7 @@ from ancile_core.policy_sly import PolicyParser
 from ancile_web.errors import AncileException
 from ancile_core.user_specific import UserSpecific
 from ancile_core.result import Result
-from ancile_core.storage import store as _store, load as _load, del_key, gen_key
+from ancile_core.storage import store as _store, load as _load, del_key, gen_key, store_encrypted as _encrypt
 from ancile_core.policy import Policy
 from RestrictedPython import compile_restricted_exec, safe_globals, limited_builtins, safe_builtins
 from ancile_core.collection import Collection
@@ -54,6 +54,12 @@ def assemble_locals(result, user_specific, collection_info, app_id):
         if isinstance(obj, DataPolicyPair) and obj._was_loaded:
             del_key(obj._load_key)
 
+    def encrypt(obj, name):
+        key = gen_key()
+        encrypted_data = _encrypt(obj, f'{app_id}:{key}')
+        result._stored_keys[name] = key
+        result._encrypted_data.update(**encrypted_data)
+
     def new_collection():
         return Collection()
 
@@ -75,6 +81,7 @@ def assemble_locals(result, user_specific, collection_info, app_id):
     lcls['private'] = PrivateData
     lcls['user'] = user
     lcls['new_collection'] = new_collection
+    lcls['encrypt'] = encrypt
     return lcls
 
 def retrieve_compiled(program):
@@ -105,10 +112,7 @@ def execute(user_info, program, persisted_dp_uuid=None, app_id=None,
                                      username=user.username,
                                      app_id=app_id)
         users_specific[user.username] = user_specific
-        # print(user_specific._active_dps)
 
-    # if persisted_dp_uuid:
-    #     retrieve_dps(persisted_dp_uuid, users_specific, app_id)
 
     glbls = {'__builtins__': safe_builtins}
     lcls = assemble_locals(result=result,
@@ -118,10 +122,6 @@ def execute(user_info, program, persisted_dp_uuid=None, app_id=None,
     try:
         c_program = retrieve_compiled(program)
         exec(c_program, glbls, lcls)
-        # json_output['persisted_dp_uuid'], encrypted_data, encryption_keys = save_dps(users_specific)
-        # if config.get('encrypt', False):
-        #     json_output['encrypted_data'] = encrypted_data
-        #     json_output['encryption_keys'] = encryption_keys
 
         if persisted_dp_uuid:
             r.delete(persisted_dp_uuid)
@@ -132,6 +132,7 @@ def execute(user_info, program, persisted_dp_uuid=None, app_id=None,
             json_output[persisted_dp_uuid] = persisted_dp_uuid
         return json_output
     json_output['stored_items'] = result._stored_keys
+    json_output['encrypted_data'] = result._encrypted_data
     json_output['data'] = result._dp_pair_data
     json_output['result'] = 'ok'
 

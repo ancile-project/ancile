@@ -5,6 +5,7 @@ import redis
 import pickle
 from uuid import uuid4
 from config.loader import REDIS_CONFIG
+from ancile_core.utils import encrypt
 import logging
 logger = logging.getLogger(__name__)
 
@@ -14,6 +15,19 @@ r = redis.Redis(**REDIS_CONFIG)
 
 def gen_key():
     return uuid4()
+
+def store_encrypted(obj, key):
+    if not isinstance(obj, DataPolicyPair):
+        raise AncileException('Encrypted storage only applies to DataPolicyPairs')
+
+    keys, crypt = encrypt(obj._data)
+    obj._data.clear()
+    obj._encryption_keys.update(**keys)
+
+    r.set(key, pickle.dumps(obj))
+    logger.info(f'Stored encrypted object {obj} under id \'{key}\'')
+    return crypt
+
 
 def store(obj, key):
     if not isinstance(obj, DataPolicyPair) and not isinstance(obj, Collection):
