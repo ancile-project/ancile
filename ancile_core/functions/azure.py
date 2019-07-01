@@ -49,8 +49,7 @@ def book_room(data, room, token=None):
         data['output'].append(result.text)
         return True
 
-    print(result.json())
-    data['booking_result'] = result.json()
+    data['booking_result'] = 'success'
     return  True
 
 
