@@ -41,7 +41,7 @@ def gen_module_namespace():
             if not is_pac and mod_name not in exclude}
 
 
-def assemble_locals(result, user_specific, collection_info, app_id):
+def assemble_locals(result, user_specific, app_id):
     lcls = gen_module_namespace()
 
     def user(name: str) -> UserSpecific:
@@ -62,15 +62,6 @@ def assemble_locals(result, user_specific, collection_info, app_id):
 
     def new_collection():
         return Collection()
-
-    def get_dataset(*users):
-        policy = '0'
-        for collection in collection_info:
-            if all(usr in collection.user_ids for usr in users):
-                policy = collection.policy
-                break
-
-        return Collection(policy)
 
     def load(key):
         return _load(f'{app_id}:{key}')
@@ -100,8 +91,7 @@ def retrieve_compiled(program):
     return dill.loads(redis_response)
 
 
-def execute(user_info, program, persisted_dp_uuid=None, app_id=None,
-            purpose=None, collection_info=None):
+def execute(user_info, program, app_id=None, purpose=None):
     json_output = dict()
     # object to interact with the program
     result = Result()
@@ -117,23 +107,17 @@ def execute(user_info, program, persisted_dp_uuid=None, app_id=None,
     glbls = {'__builtins__': safe_builtins}
     lcls = assemble_locals(result=result,
                            user_specific=users_specific,
-                           collection_info=collection_info,
                            app_id=app_id)
     try:
         c_program = retrieve_compiled(program)
         exec(c_program, glbls, lcls)
-
-        if persisted_dp_uuid:
-            r.delete(persisted_dp_uuid)
     except:
         print(traceback.format_exc())
         json_output = {'result': 'error', 'traceback': traceback.format_exc()}
-        if persisted_dp_uuid:
-            json_output[persisted_dp_uuid] = persisted_dp_uuid
         return json_output
+
     json_output['stored_items'] = result._stored_keys
     json_output['encrypted_data'] = result._encrypted_data
     json_output['data'] = result._dp_pair_data
     json_output['result'] = 'ok'
-
     return json_output
