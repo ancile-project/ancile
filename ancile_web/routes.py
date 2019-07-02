@@ -19,7 +19,7 @@ from ancile_web.oauth.oauth import oauth, OAUTH_BACKENDS, register_backend
 from ancile_web.errors import AncileException
 import signal
 from ancile_web.utils import reload_server
-from json import loads
+from json import loads, dumps
 
 logger = logging.getLogger(__name__)
 r = redis.Redis(**REDIS_CONFIG)
@@ -459,6 +459,33 @@ def user_handle_edit_token(name):
     token.private_data = data
     token.update()
     return redirect("/user")
+
+@app.route("/user/add_data/<name>", methods=["POST"])
+@login_required
+@user_permission.require(http_exception=403)
+def user_add_data(name):
+    key = request.form.get("keyInput")
+    value = request.form.get("valueInput")
+    
+    token = OAuth2Token.query.filter_by(name=name).first()
+    data = loads(token.private_data)
+    data.update({key:value})
+    token.private_data = dumps(data)
+    token.update()
+    
+    return redirect(url_for("user_view_token", name=name))
+
+@app.route("/user/remove_data/<name>/<key>")
+@login_required
+@user_permission.require(http_exception=403)
+def user_remove_data(name, key):
+    token = OAuth2Token.query.filter_by(name=name).first()
+    data = loads(token.private_data)
+    print(data)
+    data.pop(key)
+    token.private_data = dumps(data)
+    token.update()
+    return redirect(url_for("user_view_token", name=name))
 
 # user delete token
 @app.route("/<name>/delete")
