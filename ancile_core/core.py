@@ -58,7 +58,7 @@ def assemble_locals(result, user_specific, app_id):
         key = gen_key()
         encrypted_data = _encrypt(obj, f'{app_id}:{key}')
         result._stored_keys[name] = key
-        result._encrypted_data.update(**encrypted_data)
+        result._encrypted_data[name] = encrypted_data
 
     def new_collection():
         return Collection()
