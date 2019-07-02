@@ -19,6 +19,7 @@ from ancile_web.oauth.oauth import oauth, OAUTH_BACKENDS, register_backend
 from ancile_web.errors import AncileException
 import signal
 from ancile_web.utils import reload_server
+from json import loads
 
 logger = logging.getLogger(__name__)
 r = redis.Redis(**REDIS_CONFIG)
@@ -328,7 +329,7 @@ def admin_delete_policy(id):
 @admin_permission.require(http_exception=403)
 def admin_view_token(user_id, name):
     token = OAuth2Token.query.filter_by(name=name, user_id=user_id).first()
-    return render_template("admin_view_token.html", token=token)
+    return render_template("admin_view_token.html", token=token, loads=loads)
 
 @app.route("/admin/delete_token/<user_id>/<name>")
 @login_required
@@ -437,7 +438,7 @@ def user_delete_policy(id):
 def user_view_token(name):
     token = OAuth2Token.query.filter_by(name=name,
                                         user_id=current_user.id).first()
-    return render_template("user_view_token.html", token=token)
+    return render_template("user_view_token.html", token=token, loads=loads)
 
 @app.route("/user/edit_token/<name>")
 @login_required

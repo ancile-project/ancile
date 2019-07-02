@@ -29,7 +29,7 @@
 
 Data:
 <form action={{ url_for("user_handle_edit_token", name=token.name) }} method="POST" id="editDataForm" style="width: 50%; margin: auto;">
-  <textarea class="form-control" id="dataTextarea" name="dataTextarea" rows="3">{% if token.data is ne None %}{{token.data}}{% endif %}</textarea>
+  <textarea class="form-control" id="dataTextarea" name="dataTextarea" rows="3">{% if token.data is ne None %}{{token.private_data}}{% endif %}</textarea>
   <br>
   <input type="submit" class="btn btn-primary" value="Edit data" form="editDataForm">
 </form>
