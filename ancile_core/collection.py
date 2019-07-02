@@ -38,12 +38,9 @@ class Collection(object):
         return f"<Collection size:{len(self)}. The policy: {self.get_collection_policy()}"
 
     def get_collection_policy(self):
-        rolling_policy = None
+        rolling_policy = 'ANYF*'
         for dpp in self._data_points:
-            if rolling_policy:
-                rolling_policy = Policy._simplify(['intersection', rolling_policy, dpp._policy._policy])
-            else:
-                rolling_policy = dpp._policy._policy
+            rolling_policy = Policy._simplify(['intersect', rolling_policy, dpp._policy._policy])
 
         return Policy(rolling_policy)
 
@@ -78,7 +75,6 @@ class Collection(object):
             raise AncileException(f"Collection does not allow the command: {command}")
 
 
-    @collection_decorator
     def add_to_collection(self, data: DataPolicyPair):
         """
         Add to collection updates both collection policy and individual policy
@@ -86,20 +82,17 @@ class Collection(object):
         :param data:
         :return:
         """
-        data._advance_policy_error(self.add_to_collection)
-        self._advance_collection_policy(self.add_to_collection)
+        command = 'add_to_collection'
+        data._advance_policy_error(command)
+        self._advance_collection_policy(command)
         self._data_points.append(data)
 
-    @collection_decorator
     def remove_from_collection(self, data):
 
         for index, dpp in enumerate(self._data_points):
-            dpp._policy._policy = ['concat', 'add_to_collection', dpp._policy._policy]
+            dpp._policy._policy = Policy._simplify(['concat', ['exec', 'add_to_collection', {}], dpp._policy._policy])
             if dpp == data:
                 self._data_points.pop(index)
-
-
-
 
 
     def _delete_expired(self):
