@@ -1,5 +1,8 @@
 from loginpass._core import UserInfo, OAuthBackend
 
+# Currently set up with localhost (i.e. RDL running locally).
+# Remember that if Ancile and RDL run on localhost there is danger of them overwriting each other's cookies
+# To resolve, set one host to localhost and the other to 127.0.0.1 or modify SESSION_COOKIE_NAME
 
 class Rdl(OAuthBackend):
     OAUTH_TYPE = '2.0'
