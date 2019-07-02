@@ -25,14 +25,47 @@
     <th>Expires:</th>
     <td>{{ token.expiry_date() }}</td>
   </tr>
-  <tr>
-    <th>Data:</th>
-    <td style="font-family: monospace;">{{ token.data }}</td>
-  </tr>
 </table>
 
+<table class="table table-hover">
+    <thead>
+    <tr>
+        <th scope="col">Name</th>
+        <th scope="col">Value</th>
+        <th scope="col">More</th>
+    </tr>
+    </thead>
+    <tbody>
+
+    {% for key in loads(token.private_data) %}
+        <tr class="table-secondary">
+            <th scope="row">{{ key }}</th>
+            <td>{{ loads(token.private_data)[key] }}</td>
+            <td><a href={{ url_for("user_remove_data", name=token.name, key=key) }}>Delete</a></td>
+        </tr>
+    {% endfor %}
+
+    <form method="POST" action={{ url_for("user_add_data", name=token.name) }} id="addDataForm">
+    <tr>
+    <th> 
+        <input type="text" class="form-control" name="keyInput" placeholder="Name">
+    </th>
+    <td> 
+        <input type="text" class="form-control" name="valueInput" placeholder="Value">
+    </td>
+    <td>
+        <input type="submit" class="btn btn-primary" form="addDataForm" style="color: white" value="Append">
+    </td>
+    </tr>
+
+    </tbody>
+</table>
+
+
+<br>
 <br>
 
+<a class="btn btn-primary btn-lg" href={{ url_for("user_edit_token", name=token.name) }}>Edit data</a>
 <a class="btn btn-secondary btn-lg" href="/panel" style="color:white;">Back</a>
 
 {% endblock %}

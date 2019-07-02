@@ -49,7 +49,7 @@ class OAuth2Token(Base):
     refresh_token = db.Column(db.String(3000))
     expires_at = db.Column(db.Integer, default=0)
 
-    private_data = db.Column(JSONB(astext_type=db.Text()))
+    private_data = db.Column(JSONB(astext_type=db.Text()), default="{}")
 
     def __init__(self, name, token_dict):
         print(name, token_dict)
