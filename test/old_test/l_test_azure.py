@@ -6,8 +6,8 @@ js = {
     "users": ["user"],
     "purpose": "research",
     "program": """
-# dp_1 = azure.get_available_rooms(user=user("user"), floor=3)
-dp_1 = azure.book_room(user=user("user"), room=375)
+dp_1 = azure.get_available_rooms(user=user("user"), floor=3)
+# dp_1 = azure.book_room(user=user("user"), room=375)
 
 result.append_dp_data_to_result(data=dp_1)
     """

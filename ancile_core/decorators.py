@@ -65,7 +65,8 @@ def external_request_decorator(f):
         if isinstance(user_specific, UserSpecific):
             logger.info(f'function: {f.__name__} args: {args}, kwargs: {kwargs}, app: {user_specific}')
             dp_pair = user_specific.get_empty_data_pair(data_source, name=name, sample_policy=sample_policy)
-            dp_pair._call_external(f, *args, **kwargs)
+            data = dp_pair._call_external(f, *args, **kwargs)
+            dp_pair._data = data
             return dp_pair
         else:
             raise ValueError("You have to provide a UserSpecific object to fetch new data.")

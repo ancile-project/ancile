@@ -145,3 +145,8 @@ def no_filter(collection=None):
     print('no_filter')
 
     return True
+
+
+def get_token(user):
+
+    return user['token']

@@ -1,11 +1,15 @@
 from ancile_core.decorators import transform_decorator, external_request_decorator
 from ancile_web.errors import AncileException
+from ancile_core.functions.general import get_token
 
 name="azure"
 
 @external_request_decorator
-def get_available_rooms(data, floor, token=None):
+def get_available_rooms(floor, user):
     import requests
+
+    data = {'output': []}
+    token = get_token(user)
 
     headers = {'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json'}
 
@@ -17,15 +21,14 @@ def get_available_rooms(data, floor, token=None):
     available_rooms = list()
     if result.status_code != 200:
         data['output'].append(result.text)
-        return True
-
     else:
         msft_resp = result.json()
         for x in msft_resp['meetingTimeSuggestions'][0]["attendeeAvailability"]:
             if x["availability"] == "free":
                 available_rooms.append(room_by_email(x["attendee"]['emailAddress']['address']))
     data['rooms'] = available_rooms
-    return  True
+
+    return data
 
 @external_request_decorator
 def book_room(data, room, token=None):

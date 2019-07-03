@@ -1,13 +1,19 @@
 from ancile_core.decorators import transform_decorator, external_request_decorator
+from ancile_core.functions.general import get_token
 from ancile_web.errors import AncileException
 
 name="location"
 
 @external_request_decorator
-def fetch_location(data, token=None, device_type=None):
+def fetch_location(user, device_type=None):
     import requests
     import datetime
     import pytz
+
+    token = get_token(user)
+    print(token)
+    data = {'output': []}
+    data['output'].append(token)
 
     eastern = pytz.timezone('US/Eastern')
     data['token'] = token
@@ -24,7 +30,7 @@ def fetch_location(data, token=None, device_type=None):
     else:
         raise AncileException("Couldn't fetch location from the server.")
 
-    return True
+    return data
 
 @external_request_decorator
 def preload_location(data, token=None, path=None):
@@ -72,3 +78,10 @@ def test_transform(data):
 
     data['test_transform_' + str(time.time())] = True
     return True
+
+@transform_decorator
+def fuzz_location(data, mean, std):
+    import numpy as np
+
+    data['sta_location_x'] = np.random.normal(mean, std)
+    data['sta_location_y'] = np.random.normal(mean, std)
