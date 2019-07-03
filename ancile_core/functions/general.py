@@ -63,6 +63,11 @@ def aggregate_or(data):
     else:
         raise AncileException("All values to \"aggregate_and()\" must be booleans")
 
+@aggregate_decorator(True)
+def quorum(data, threshold):
+    percentage = sum([int(x) for x in data['aggregated']]) / len(data['aggregated'])
+    data['quorum'] = percentage >= threshold
+
 
 @comparison_decorator
 def field_comparison(data, field_path, comparison_operator, value):

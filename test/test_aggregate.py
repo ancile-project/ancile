@@ -1,5 +1,7 @@
 import unittest
 from test.tools import run_test
+from ancile_core.datapolicypair import DataPolicyPair
+from ancile_core.functions import general
 
 class FunctionTests(unittest.TestCase):
     def test_reduction_1(self):
@@ -53,6 +55,24 @@ class FunctionTests(unittest.TestCase):
                   )
 
         self.assertTrue(run_test(program, policy0, policy1, policy2))
+
+    def test_quorum(self):
+
+        dp_1 = DataPolicyPair('quorum', None, None, None, None)
+        dp_2 = DataPolicyPair('quorum', None, None, None, None)
+        dp_3 = DataPolicyPair('quorum', None, None, None, None)
+
+        dp_1._data['a'] = True
+        dp_2._data['a'] = True
+        dp_3._data['a'] = False
+
+        agr = general.quorum(data=[dp_1, dp_2, dp_3], value_keys='a',
+                             threshold=0.66)
+        self.assertTrue(agr._data['quorum'])
+
+        agr = general.quorum(data=[dp_1, dp_2, dp_3], value_keys='a',
+                             threshold=0.75)
+        self.assertFalse(agr._data['quorum'])
 
     def test_basic_1(self):
         policy0 = 'edit.basic_aggregation.ret'
