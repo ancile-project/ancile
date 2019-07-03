@@ -46,7 +46,7 @@ def store_decorator(f):
 
     return wrapper
 
-def external_request_decorator(f):
+def external_request_decorator(f, split_to_collection=False):
     """
     Intended call:
     dp_1 = fetch_data(user_specific=user_specific['user'], data_source='name')
@@ -62,14 +62,30 @@ def external_request_decorator(f):
         name = kwargs.pop('name', False)
         sample_policy = kwargs.pop('sample_policy', '(ANYF*).return')
 
-        if isinstance(user_specific, UserSpecific):
-            logger.info(f'function: {f.__name__} args: {args}, kwargs: {kwargs}, app: {user_specific}')
-            dp_pair = user_specific.get_empty_data_pair(data_source, name=name, sample_policy=sample_policy)
-            data = dp_pair._call_external(f, *args, **kwargs)
-            dp_pair._data = data
+        if not isinstance(user_specific, UserSpecific):
+            raise ValueError("You have to provide a UserSpecific object to fetch new data.")
+
+
+        logger.info(f'function: {f.__name__} args: {args}, kwargs: {kwargs}, app: {user_specific}')
+        dp_pair = user_specific.get_empty_data_pair(data_source, name=name, sample_policy=sample_policy)
+        data = dp_pair._call_external(f, *args, **kwargs)
+        dp_pair._data = data
+        if not split_to_collection:
             return dp_pair
         else:
-            raise ValueError("You have to provide a UserSpecific object to fetch new data.")
+            # split data point into collection
+            if not isinstance(data, list):
+                raise AncileException('We can only create a collection on list of data')
+            collection = Collection()
+            for entry in data:
+                sub_dp = DataPolicyPair(policy=dp_pair._policy, token=dp_pair._token,
+                                        name=dp_pair._name, username=dp_pair._username,
+                                        private_data=dp_pair._private_data, app_id=dp_pair._app_id)
+                sub_dp._data = entry
+                collection.add_to_collection(sub_dp)
+            return collection
+
+
 
     return wrapper
 

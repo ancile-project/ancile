@@ -32,17 +32,17 @@ def fetch_location(user, device_type=None):
 
     return data
 
-@external_request_decorator
-def preload_location(data, token=None, path=None):
+@external_request_decorator(split_to_collection=True)
+def preload_location(user, path=None):
     import os
     import json
+
+    data = {'output': []}
 
     with open(path, 'r') as f:
         data['location'] = json.load(f)
 
-
-
-    return True
+    return data
 
 
 @external_request_decorator
