@@ -481,7 +481,6 @@ def user_add_data(name):
 def user_remove_data(name, key):
     token = OAuth2Token.query.filter_by(name=name).first()
     data = loads(token.private_data)
-    print(data)
     data.pop(key)
     token.private_data = dumps(data)
     token.update()
