@@ -97,15 +97,16 @@ class OAuth2Token(Base):
 
         provider = getattr(importlib.import_module("ancile_web.oauth.providers." + name), name.capitalize())
         url = provider.OAUTH_CONFIG['access_token_url']
+        auth_method = provider.OAUTH_CONFIG['client_kwargs'].get('token_endpoint_auth_method', 'client_secret_basic')
 
         client_id = app.config[name.upper() + "_CLIENT_ID"]
         client_secret = app.config[name.upper() + "_CLIENT_SECRET"]
 
         headers = {}
 
-        # just for CDS
+        # Basic Auth (default)
         from base64 import b64encode as encode
-        if name == "cds":
+        if auth_method == 'client_secret_basic':
             headers = {"Authorization": "basic " + str(encode(bytes(client_id + ":" + client_secret,'utf8')), 'utf-8')} 
 
 
@@ -119,7 +120,7 @@ class OAuth2Token(Base):
             for key in res.json().keys():
                 # make sure key is an attribute of token
                 if key in dir(token):
-                    setattr(token, key, res.json()[key])    
+                    setattr(token, key, res.json()[key])
             token.update()
             print('Token updated successfully.')
         else:
