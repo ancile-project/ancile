@@ -91,15 +91,12 @@ def run_api():
         except Exception:
             return json.dumps({"result": "error",
                                "traceback": traceback.format_exc()})
-    persisted_dp_uuid = js.get('persisted_dp_uuid', None)
     logger.debug(f'Passing user_info: {user_info}')
 
     res = execute(user_info=user_info,
                   program=program,
-                  persisted_dp_uuid=persisted_dp_uuid,
                   app_id=app_id,
-                  purpose=purpose,
-                  collection_info=None)
+                  purpose=purpose)
     logger.info(f'Returning: {res}')
     return json.dumps(res)
 

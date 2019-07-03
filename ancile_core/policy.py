@@ -185,5 +185,20 @@ def concat(p1: Policy, p2: Policy) -> Policy:
 def intersect(p1: Policy, p2: Policy) -> Policy:
     return Policy(['intersect', p1._policy, p2._policy])
 
+def intersect_list(policies) -> Policy:
+    """Given a list of policy objects, return the intersection of all policies"""
+    length = len(policies)
+    if length == 0:
+        return Policy(0)
+    elif length == 1:
+        return policies[0]
+    elif length == 2:
+        return intersect(policies[0], policies[1])
+    else:
+        acc_policy = ['intersect', policies[0]._policy, policies[1]._policy]
+        for policy in policies[2:]:
+            acc_policy = ['intersect', acc_policy, policy._policy]
+        return Policy(acc_policy)
+
 def union(p1: Policy, p2: Policy) -> Policy:
     return Policy(['union', p1._policy, p2._policy])

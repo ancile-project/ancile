@@ -191,10 +191,11 @@ class Policy(Base):
 
     @classmethod
     def get_by_user_app_purpose(cls, app, user, purpose):
+        from ancile_core.policy import Policy
         policies = cls.query.filter_by(app_id=app, user_id=user, purpose=purpose)
         policy_dict = dict()
         for policy in policies:
-            policy_dict[policy.provider] = policy.policy
+            policy_dict[policy.provider] = Policy(policy.policy)
         return policy_dict
 
 

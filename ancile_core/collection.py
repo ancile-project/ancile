@@ -63,7 +63,7 @@ class Collection(object):
                 self._policy = new_policy
                 if self._policy:
                     for dp in self._data_points:
-                        dp._call_transform(f, *args, **kwargs)
+                        f(*args, data=dp, **kwargs)
                 return self
             else:
                 new_col = Collection(new_policy)
