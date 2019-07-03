@@ -3,8 +3,6 @@ pyyaml
 sly
 restrictedpython==4.0b8
 redis
-torch>=1.0
-torchvision
 dill
 tzlocal
 geopy

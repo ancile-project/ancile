@@ -49,4 +49,4 @@ operational:
     LOGGING: True
 
 providers:
-    ["GitHub", "Google"]
+    ["GitHub"]
