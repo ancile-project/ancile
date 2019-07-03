@@ -1,13 +1,13 @@
 from ancile_core.policy import Policy
 from time import time
-from ancile_web.errors import PolicyError
+from ancile_web.errors import PolicyError, AncileException
 from ancile_core.datapolicypair import DataPolicyPair
 # from ancile_core.decorators import collection_decorator
 import ancile_core.policy as policy
 import ancile_core.time as ancile_web_time
 from functools import wraps
 from copy import deepcopy
-
+from ancile_core.policy import Policy
 import logging
 logger = logging.getLogger(__name__)
 
@@ -26,8 +26,7 @@ def collection_decorator(f):
 
 
 class Collection(object):
-    def __init__(self, initial_policy='ANYF*'):
-        self._policy = Policy(initial_policy)
+    def __init__(self):
         self._data_points = list()
         self._created_at = ancile_web_time.get_timestamp()
         self._previous_access = self._created_at
@@ -35,21 +34,66 @@ class Collection(object):
     def __len__(self):
         return len(self._data_points)
 
-    def _check_policy(self, f, **kwargs):
-        if not self._policy.check_allowed(f.__name__, kwargs):
-            raise PolicyError()
-
     def __repr__(self):
-        return f"<Collection size:{len(self)}"
+        return f"<Collection size:{len(self)}. The policy: {self.get_collection_policy()}"
 
-    @collection_decorator
-    def add_to_collection(self, data):
-        now = ancile_web_time.get_timestamp()
-        elapsed_time = ancile_web_time.seconds_elapsed(self._previous_access, now)
+    def get_collection_policy(self):
+        rolling_policy = 'ANYF*'
+        for dpp in self._data_points:
+            rolling_policy = Policy._simplify(['intersect', rolling_policy, dpp._policy._policy])
 
-        self._check_policy(self.add_to_collection, elapsed=elapsed_time)
+        return Policy(rolling_policy)
+
+
+    def _check_collection_policy(self, command):
+        """
+        Check that intersection policy allows the command
+
+        :param command:
+        :return:
+        """
+        collection_policy = self.get_collection_policy()
+        if collection_policy.check_allowed(command):
+            return True
+        else:
+            return False
+
+
+    def _advance_collection_policy(self, command):
+        """
+        Update the policy only if the collection policy allows the update.
+        We implement it by computing a collection policy on provided DPPs, and
+        advance each DPP only if the collection permits it.
+
+        :param command:
+        :return:
+        """
+        if self._check_collection_policy(command):
+            for dpp in self._data_points:
+                dpp._advance_policy_error(command)
+        else:
+            raise AncileException(f"Collection does not allow the command: {command}")
+
+
+    def add_to_collection(self, data: DataPolicyPair):
+        """
+        Add to collection updates both collection policy and individual policy
+
+        :param data:
+        :return:
+        """
+        command = 'add_to_collection'
+        data._advance_policy_error(command)
+        self._advance_collection_policy(command)
         self._data_points.append(data)
-        self._previous_access = now
+
+    def remove_from_collection(self, data):
+
+        for index, dpp in enumerate(self._data_points):
+            dpp._policy._policy = Policy._simplify(['concat', ['exec', 'add_to_collection', {}], dpp._policy._policy])
+            if dpp == data:
+                self._data_points.pop(index)
+
 
     def _delete_expired(self):
         self._data_points = [dp for dp in self._data_points
@@ -78,35 +122,18 @@ class Collection(object):
 def reduction_fn(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
-        collection = kwargs.get('data', False)
-        filter_flag = kwargs.pop('filter', True)
-
+        collection = kwargs.get('data', None)
         if isinstance(collection, Collection):
-            data_items = []
-            rolling_policy = collection._policy.d_step({'command': f.__name__,
+            return AncileException('Please provide a Collection object as `data` argument.')
+        collection._advance_collection_policy({'command': f.__name__,
                                                         'kwargs': kwargs})
-            if not rolling_policy:
-                raise PolicyError()
-
-            for item in collection._data_points:
-                pol = item._policy.d_step({'command': f.__name__,
-                                           'kwargs': kwargs})
-                if pol:
-                    rolling_policy = policy.intersect(rolling_policy, pol)
-                    data_items.append(item._data)
-                elif not filter_flag:
-                    raise PolicyError
-
-            kwargs['data'] = data_items
-            dp = DataPolicyPair(rolling_policy, None, 'reduce', None, None)
-
-            kwargs['results'] = dp._data
-            f(*args, **kwargs)
-
-        else:
-            raise ValueError("'data' must be a collection object")
-
+        policy = collection.get_collection_policy()
+        kwargs['data'] = [x._data for x in collection._data_points]
         logger.info(f'function: {f.__name__} args: {args}, kwargs: {kwargs}')
+        f(*args, **kwargs)
+        dp = DataPolicyPair(policy, None, 'reduce', None, None)
+        dp._data = kwargs['data']
+
         return dp
 
     return wrapper
