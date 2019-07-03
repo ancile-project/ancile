@@ -1,5 +1,7 @@
 from ancile_core.policy import Policy
 from time import time
+
+from ancile_core.policy_sly import PolicyParser
 from ancile_web.errors import PolicyError, AncileException
 from ancile_core.datapolicypair import DataPolicyPair
 # from ancile_core.decorators import collection_decorator
@@ -26,8 +28,8 @@ def collection_decorator(f):
 
 
 class Collection(object):
-    def __init__(self):
-        self._data_points = list()
+    def __init__(self, data_points=None):
+        self._data_points = data_points if data_points else list()
         self._created_at = ancile_web_time.get_timestamp()
         self._previous_access = self._created_at
 
@@ -38,7 +40,7 @@ class Collection(object):
         return f"<Collection size:{len(self)}. The policy: {self.get_collection_policy()}"
 
     def get_collection_policy(self):
-        rolling_policy = 'ANYF*'
+        rolling_policy = PolicyParser.parse_it("ANYF*")
         for dpp in self._data_points:
             rolling_policy = Policy._simplify(['intersect', rolling_policy, dpp._policy._policy])
 
@@ -118,21 +120,38 @@ class Collection(object):
         else:
             raise PolicyError()
 
+    def filter(self, lambda_function):
+
+        new_data_points = list()
+
+        for dpp in self._data_points:
+            if lambda_function(dpp._data):
+                logger.info('')
+                dpp._advance_policy_error(['exec', 'filter_keep'])
+                new_data_points.append(dpp)
+            else:
+                dpp._advance_policy_error(['exec', 'filter_remove'])
+        new_collection = Collection(new_data_points)
+        print(f"Reduced size of collection from {len(self._data_points)} to {len(new_data_points)}")
+
+        return new_collection
+
+
 
 def reduction_fn(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
-        collection = kwargs.get('data', None)
-        if isinstance(collection, Collection):
+        collection = kwargs.get('collection', None)
+        if not isinstance(collection, Collection):
             return AncileException('Please provide a Collection object as `data` argument.')
         collection._advance_collection_policy({'command': f.__name__,
                                                         'kwargs': kwargs})
         policy = collection.get_collection_policy()
-        kwargs['data'] = [x._data for x in collection._data_points]
+        kwargs['collection'] = [x._data for x in collection._data_points]
         logger.info(f'function: {f.__name__} args: {args}, kwargs: {kwargs}')
-        f(*args, **kwargs)
+        data = f(*args, **kwargs)
         dp = DataPolicyPair(policy, None, 'reduce', None, None)
-        dp._data = kwargs['data']
+        dp._data = data
 
         return dp
 

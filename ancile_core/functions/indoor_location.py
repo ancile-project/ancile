@@ -37,10 +37,10 @@ def preload_location(user, path=None):
     import os
     import json
 
-    data = {'output': []}
+    data = list()
 
     with open(path, 'r') as f:
-        data['location'] = json.load(f)
+        data.extend(json.load(f))
 
     return data
 

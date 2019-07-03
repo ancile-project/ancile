@@ -46,48 +46,54 @@ def store_decorator(f):
 
     return wrapper
 
-def external_request_decorator(f, split_to_collection=False):
+def external_request_decorator(split_to_collection=False):
     """
     Intended call:
     dp_1 = fetch_data(user_specific=user_specific['user'], data_source='name')
     :param f:
     :return:
     """
-    @wraps(f)
-    def wrapper(*args, **kwargs):
-        check_args(args)
 
-        user_specific = kwargs.pop('user', False)
-        data_source = inspect.getmodule(f).name
-        name = kwargs.pop('name', False)
-        sample_policy = kwargs.pop('sample_policy', '(ANYF*).return')
+    def actual_decorator(f):
+        @wraps(f)
+        def wrapper(*args, **kwargs):
+            check_args(args)
 
-        if not isinstance(user_specific, UserSpecific):
-            raise ValueError("You have to provide a UserSpecific object to fetch new data.")
+            user_specific = kwargs.pop('user', False)
+            data_source = inspect.getmodule(f).name
+            name = kwargs.pop('name', False)
+            sample_policy = kwargs.pop('sample_policy', '(ANYF*).return')
 
-
-        logger.info(f'function: {f.__name__} args: {args}, kwargs: {kwargs}, app: {user_specific}')
-        dp_pair = user_specific.get_empty_data_pair(data_source, name=name, sample_policy=sample_policy)
-        data = dp_pair._call_external(f, *args, **kwargs)
-        dp_pair._data = data
-        if not split_to_collection:
-            return dp_pair
-        else:
-            # split data point into collection
-            if not isinstance(data, list):
-                raise AncileException('We can only create a collection on list of data')
-            collection = Collection()
-            for entry in data:
-                sub_dp = DataPolicyPair(policy=dp_pair._policy, token=dp_pair._token,
-                                        name=dp_pair._name, username=dp_pair._username,
-                                        private_data=dp_pair._private_data, app_id=dp_pair._app_id)
-                sub_dp._data = entry
-                collection.add_to_collection(sub_dp)
-            return collection
+            if not isinstance(user_specific, UserSpecific):
+                raise ValueError("You have to provide a UserSpecific object to fetch new data.")
 
 
+            logger.info(f'function: {f.__name__} args: {args}, kwargs: {kwargs}, app: {user_specific}')
+            dp_pair = user_specific.get_empty_data_pair(data_source, name=name, sample_policy=sample_policy)
+            data = dp_pair._call_external(f, *args, **kwargs)
+            dp_pair._data = data
+            if not split_to_collection:
+                return dp_pair
+            else:
+                # split data point into collection
+                if not isinstance(data, list):
+                    raise AncileException('We can only create a collection on list of data')
+                data_points = list()
+                for entry in data:
+                    sub_dp = DataPolicyPair(policy=dp_pair._policy, token=dp_pair._token,
+                                            name=dp_pair._name, username=dp_pair._username,
+                                            private_data=dp_pair._private_data, app_id=dp_pair._app_id)
+                    sub_dp._data = entry
+                    sub_dp._advance_policy_error(['exec', 'add_to_collection'])
+                    data_points.append(sub_dp)
+                logger.info("CREATED A COLLECTION")
+                collection = Collection(data_points)
+                return collection
 
-    return wrapper
+
+
+        return wrapper
+    return actual_decorator
 
 
 def use_type_decorator(f):

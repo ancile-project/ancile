@@ -60,6 +60,7 @@ class DataPolicyPair:
             return self._policy.check_allowed(command, kwargs)
 
     def _advance_policy(self, command, update=True, **kwargs):
+        logger.info(f'Advancing policy: {self._policy} with command {command}')
         if update:
             self._policy = Policy.d_step(self._policy, {'command': command,
                                                         'kwargs': kwargs})

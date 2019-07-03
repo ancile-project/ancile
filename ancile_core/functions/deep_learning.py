@@ -1,3 +1,4 @@
+from ancile_core.collection import reduction_fn
 from ancile_core.decorators import transform_decorator, aggregate_decorator, \
     external_request_decorator
 from ancile_web.errors import AncileException
@@ -201,17 +202,19 @@ def prepare_for_json(data):
     data['json_model'] = js
 
 
-@transform_decorator
-def make_dataset(data, batch_size=20):
+@reduction_fn
+def make_dataset(collection, batch_size=20):
     from ancile_core.functions.dl.corpus import Corpus
     from ancile_core.functions.dl.helpers import batchify
     import datetime
+
+    data = {'output': []}
 
     from collections import defaultdict
     locations = defaultdict(int)
     dates = defaultdict(list)
     count = 0
-    for x in data['location']:
+    for x in collection:
         if x['device_type'] == 'iPhone':
             count += 1
             name = f"x_{x['sta_location_x']}_y_{x['sta_location_y']}_floor_{x['floor_name']}"
@@ -226,6 +229,8 @@ def make_dataset(data, batch_size=20):
     data['train_data'] = train_data
     data['test_data'] = test_data
     data['output'].append(f'loaded dataset. Total entries: {count}. ')
+
+    return data
 
 
 @transform_decorator
