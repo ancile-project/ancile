@@ -19,32 +19,16 @@ from ancile_web.oauth.oauth import oauth, OAUTH_BACKENDS, register_backend
 from ancile_web.errors import AncileException
 import signal
 from ancile_web.utils import reload_server
-from ancile_core.policy import PolicyParser
+from ancile_web.visualizer import parse_policy
 
 logger = logging.getLogger(__name__)
 r = redis.Redis(**REDIS_CONFIG)
 
 @app.route("/api/parse_policy", methods=["POST"])
-def parse_policy():
+def parse_policy_view():
     policy = request.form.get("policy")
 
-    if not policy:
-        return jsonify({
-            "status": "error",
-            "traceback": "No policy provided."
-        })
-    
-    try:
-        return jsonify({
-            "status": "ok",
-            "parsed_policy": PolicyParser.parse_it(policy)
-        })
-        
-    except Exception:
-        return jsonify({
-            "status": "error",
-            "traceback": traceback.format_exc()
-        })
+    return jsonify(parse_policy(policy))
 
 def get_user(user, app_id, purpose):
     key_string = user + str(app_id) + str(purpose)
