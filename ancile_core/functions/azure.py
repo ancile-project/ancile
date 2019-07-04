@@ -31,9 +31,12 @@ def get_available_rooms(floor, user):
     return data
 
 @external_request_decorator
-def book_room(data, room, token=None):
+def book_room(room, user):
     import requests
     import json
+
+    data = {'output': []}
+    token = get_token(user)
 
     headers = {'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json'}
 
@@ -53,7 +56,7 @@ def book_room(data, room, token=None):
         return True
 
     data['booking_result'] = 'success'
-    return  True
+    return  data
 
 
 def get_available_by_floor(floor, time_start, time_end):
