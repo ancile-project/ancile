@@ -130,6 +130,8 @@ class Policy(object):
                     return 1
                 elif policy[2] == 1 and type(policy[1])==list and policy[1][0]=='star':
                     return 1
+                elif policy[1] == policy[2]:
+                    return policy[1]
 
             elif operator == 'union':
                 if policy[1] == 0:
@@ -140,6 +142,8 @@ class Policy(object):
                     return Policy._simplify(policy[2])
                 elif policy[2] == 1 and type(policy[1])==list  and policy[1][0]=='star':
                     return Policy._simplify(policy[1])
+                elif policy[1] == policy[2]:
+                    return policy[1]
 
             elif operator in ['intersect', 'union']:
                 if policy[1][0] == policy[2][0] and                           \
