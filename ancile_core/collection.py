@@ -89,13 +89,24 @@ class Collection(object):
         self._advance_collection_policy(command)
         self._data_points.append(data)
 
-    def remove_from_collection(self, data):
+    def remove_from_collection(self, index, reverse_add=False):
+        """
 
-        for index, dpp in enumerate(self._data_points):
-            dpp._policy._policy = Policy._simplify(['concat', ['exec', 'add_to_collection', {}], dpp._policy._policy])
-            if dpp == data:
-                self._data_points.pop(index)
+        :param index: position of the object in the collection
+        :param reverse_add: if reverse, then recover the policy
+            otherwise, just perform a stem on remove_from_collection
+        :return:
+        """
 
+
+        dpp = self._data_points.pop(index)
+        if reverse_add:
+            dpp._policy = Policy._simplify(['concat', ['exec', 'add_to_collection', {}], dpp._policy._policy])
+        else:
+            command = 'remove_from_collection'
+            dpp._advance_policy_error(command)
+
+        return dpp
 
     def _delete_expired(self):
         self._data_points = [dp for dp in self._data_points
