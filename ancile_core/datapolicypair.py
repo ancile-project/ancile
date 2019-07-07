@@ -84,7 +84,7 @@ class DataPolicyPair:
             self._resolve_private_data_values(kwargs)
 
             if scope in {'transform', 'aggregate'}:
-                kwargs['data'] = self._data
+                kwargs['data'] = self._data.copy()
             if scope == 'external':
                 kwargs['user'] = {'token': self._token}
 
