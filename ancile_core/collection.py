@@ -147,6 +147,22 @@ class Collection(object):
 
         return new_collection
 
+    def filter_by_next_command(self, command):
+        new_data_points = list()
+
+        for dpp in self._data_points:
+            peek_next_policy = dpp._policy.d_step('filter_keep')
+            if peek_next_policy.d_step(command):
+                dpp._advance_policy_error(['exec', 'filter_keep'])
+                new_data_points.append(dpp)
+            else:
+                dpp._advance_policy_error(['exec', 'filter_remove'])
+        new_collection = Collection(new_data_points)
+        print(f"Reduced size of collection from {len(self._data_points)} to {len(new_data_points)}")
+
+        return new_collection
+
+
 
 
 def reduction_fn(f):
