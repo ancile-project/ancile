@@ -86,6 +86,32 @@ class ActualProgramTests(unittest.TestCase):
         print(result._data)
 
 
+    def test_collection_for_each(self):
+        from ancile_core.functions.general import double
+        from ancile_core.functions.general import collection_average, collection_sum
+        from copy import deepcopy
+        col = Collection()
+        dpp_1 = DataPolicyPair('(collection_average + (double.collection_average)).ret', None, None, None, None,
+                                app_id=None)
+        dpp_1._data['b'] = 4
 
+        col._data_points = [dpp_1, deepcopy(dpp_1), deepcopy(dpp_1)]
+
+        # print(dpp_1._policy)
+        # print(col)
+        # print([data._data for data in col._data_points])
+        res = collection_average(collection=col, value_key='b')
+        self.assertEqual(res._data['collection_average'], 4)
+        # print(res._data)
+        # print(col)
+        # print(dpp_1._policy)
+        # print([data._data for data in col._data_points])
+
+        col2 = col.for_each(double, key='b')
+        # print([data._data for data in col2._data_points])
+        # print(col2)
+        res2 = collection_average(collection=col2, value_key='b')
+        self.assertEqual(res2._data['collection_average'], 8)
+        # print(res2._data)
 
 
