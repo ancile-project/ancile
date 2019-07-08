@@ -16,8 +16,8 @@ class CollectionTests(unittest.TestCase):
         self.assertTrue(run_test(program, policy))
 
     def test_simple3(self):
-        policy0 = 'test.add_to_collection'
-        policy1 = 'add_to_collection'
+        policy0 = 'test.add_to_collection*'
+        policy1 = 'add_to_collection*'
         policy2 = 'test(a=14).add_to_collection'
         program = ("test(data=dp0);col=Collection()\n"
                    "col.add_to_collection(data=dp0)\n"
@@ -26,6 +26,7 @@ class CollectionTests(unittest.TestCase):
                    "col.add_to_collection(data=dp2)\n")
         self.assertTrue(run_test(program, policy0, policy1, policy2))
 
+    @unittest.skip("no collection policy")
     def test_collection_policy(self):
         policy0 = 'test.add_to_collection'
         policy1 = 'add_to_collection'
@@ -37,6 +38,7 @@ class CollectionTests(unittest.TestCase):
                    "col.add_to_collection(data=dp2)\n")
         self.assertTrue(run_test(program, policy0, policy1, policy2))
 
+    @unittest.skip("no collection policy")
     def test_collection_policy2(self):
         policy0 = 'test.add_to_collection'
         policy1 = 'add_to_collection'
@@ -48,6 +50,7 @@ class CollectionTests(unittest.TestCase):
                    "col.add_to_collection(data=dp2)\n")
         self.assertFalse(run_test(program, policy0, policy1, policy2))
 
+    @unittest.skip("no collection policy")
     def test_collection_policy3(self):
         policy0 = 'edit.add_to_collection.collection_sum(value_key="a")'
         policy1 = 'edit.add_to_collection.collection_sum(value_key="a")'
@@ -63,6 +66,7 @@ class CollectionTests(unittest.TestCase):
                   )
         self.assertFalse(run_test(program, policy0, policy1, policy2))
 
+    @unittest.skip("no collection policy")
     def test_collection_policy4(self):
         policy0 = 'edit.add_to_collection.collection_sum(value_key="a")'
         policy1 = 'edit.add_to_collection.collection_sum(value_key="a")'
@@ -78,6 +82,8 @@ class CollectionTests(unittest.TestCase):
                   )
         self.assertTrue(run_test(program, policy0, policy1, policy2))
 
+
+    @unittest.skip("no collection policy")
     def test_collection_policy5(self):
         policy0 = 'edit.add_to_collection.collection_sum(value_key="a")'
         policy1 = 'edit.add_to_collection.collection_sum(value_key="a")'
@@ -94,6 +100,7 @@ class CollectionTests(unittest.TestCase):
         with self.assertRaises(ZeroDivisionError):
             run_test(program, policy0, policy1, policy2)
 
+    @unittest.skip("no collection policy")
     def test_collection_policy5A(self):
         policy0 = 'edit.add_to_collection.collection_sum(value_key="a")'
         policy1 = 'edit.add_to_collection.collection_sum(value_key="a")'
@@ -109,6 +116,7 @@ class CollectionTests(unittest.TestCase):
                   )
         self.assertFalse(run_test(program, policy0, policy1, policy2))
 
+    @unittest.skip("no collection policy")
     def test_collection_policy6(self):
         policy0 = 'edit.add_to_collection.collection_average(value_key="a")'
         policy1 = 'edit.add_to_collection.collection_average(value_key="a")'
@@ -125,6 +133,7 @@ class CollectionTests(unittest.TestCase):
 
         self.assertFalse(run_test(program, policy0, policy1, policy2))
 
+    @unittest.skip("no collection policy")
     def test_collection_policy7(self):
         policy0 = 'edit.add_to_collection.collection_average(value_key="a").ret'
         policy1 = 'edit.add_to_collection.collection_average(value_key="a").ret'
@@ -141,6 +150,7 @@ class CollectionTests(unittest.TestCase):
 
         self.assertTrue(run_test(program, policy0, policy1, policy2))
 
+    @unittest.skip("no collection policy")
     def test_collection_policy8(self):
         policy0 = 'edit.add_to_collection.collection_average(value_key="a").ret'
         policy1 = 'edit.add_to_collection.collection_average(value_key="a").ret'
@@ -158,6 +168,7 @@ class CollectionTests(unittest.TestCase):
 
         self.assertFalse(run_test(program, policy0, policy1, policy2))
 
+    @unittest.skip("no collection policy")
     def test_collection_policy9(self):
         policy0 = 'edit.add_to_collection.collection_average(value_key="a").ret'
         policy1 = 'edit.add_to_collection.collection_average(value_key="a").ret'
@@ -175,6 +186,7 @@ class CollectionTests(unittest.TestCase):
 
         self.assertTrue(run_test(program, policy0, policy1, policy2))
 
+    @unittest.skip("no collection policy")
     def test_collection_policy10(self):
         policy0 = 'edit.add_to_collection.collection_average(value_key="a").ret'
         policy1 = 'edit.add_to_collection.collection_average(value_key="a").ret'
@@ -192,6 +204,7 @@ class CollectionTests(unittest.TestCase):
 
         self.assertFalse(run_test(program, policy0, policy1, policy2))
 
+    @unittest.skip("no collection policy")
     def test_collection_policy11(self):
         policy0 = 'edit.add_to_collection.(collection_average + (double.collection_average)).ret'
         policy1 = 'edit.add_to_collection.(collection_average + (double.collection_average)).ret'
@@ -212,6 +225,7 @@ class CollectionTests(unittest.TestCase):
 
         self.assertTrue(run_test(program, policy0, policy1, policy2))
 
+    @unittest.skip("no collection policy")
     def test_collection_policy12(self):
         policy0 = 'edit.add_to_collection.(collection_average + (double.collection_sum)).ret'
         policy1 = 'edit.add_to_collection.(collection_average + (double.collection_sum)).ret'
@@ -232,6 +246,7 @@ class CollectionTests(unittest.TestCase):
 
         self.assertFalse(run_test(program, policy0, policy1, policy2))
 
+    @unittest.skip("no collection policy")
     def test_collection_policy13(self):
         policy0 = 'edit.add_to_collection.(collection_average + (double.collection_sum)).ret'
         policy1 = 'edit.add_to_collection.(collection_average + (double.collection_sum)).ret'

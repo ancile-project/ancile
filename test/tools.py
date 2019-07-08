@@ -26,9 +26,13 @@ def ret(**kwargs):
 def edit(data, key, value):
     data[key] = value
 
+    return data
+
 @transform_decorator
 def double(data, key):
     data[key] *= 2
+
+    return data
 
 def display(data):
     print(data._data)

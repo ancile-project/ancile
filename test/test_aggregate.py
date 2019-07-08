@@ -8,9 +8,9 @@ class FunctionTests(unittest.TestCase):
         policy0 = 'edit.aggregate_and.ret'
         policy1 = 'edit.aggregate_and.ret'
         policy2 = 'edit.aggregate_and.ret'
-        program = ("edit(data=dp0, key='a', value=True)\n"
-                   "edit(data=dp1, key='a', value=True)\n"
-                   "edit(data=dp2, key='a', value=True)\n"
+        program = ("dp0 = edit(data=dp0, key='a', value=True)\n"
+                   "dp1 = edit(data=dp1, key='a', value=True)\n"
+                   "dp2 = edit(data=dp2, key='a', value=True)\n"
                    "res = general.aggregate_and(data=[dp0,dp1,dp2], value_keys='a')\n"
                    "ret(data=res)\n"
                   )
