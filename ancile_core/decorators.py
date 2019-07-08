@@ -31,7 +31,7 @@ def transform_decorator(f):
         dp_pair = decorator_preamble(args, kwargs)
         new_dp_pair = copy.copy(dp_pair)
         logger.info(f'function: {f.__name__} args: {args}, kwargs: {kwargs}, app: {new_dp_pair._app_id}')
-        new_dp_pair._data = new_dp_pair._call_transform(f, *args, **kwargs)
+        new_dp_pair._call_transform(f, *args, **kwargs)
 
         return new_dp_pair
 
