@@ -6,12 +6,12 @@ from ancile_web.errors import ParseError
 class FunctionTests(unittest.TestCase):
     def test_simple(self):
         policy = 'test.ret'
-        program = "test(data=dp0);ret(data=dp0)"
+        program = "dp0=test(data=dp0);ret(data=dp0)"
         self.assertTrue(run_test(program, policy))
 
     def test_simple_two(self):
         policy = 'test.filter.view.ret'
-        program = "test(data=dp0);filter(data=dp0);view(data=dp0);ret(data=dp0)"
+        program = "dp0=test(data=dp0);dp0=filter(data=dp0);dp0=view(data=dp0);ret(data=dp0)"
         self.assertTrue(run_test(program, policy))
 
     def test_simple_error(self):
@@ -21,22 +21,22 @@ class FunctionTests(unittest.TestCase):
 
     def test_simple_error_two(self):
         policy = 'test.test.ret'
-        program = "test(data=dp0);ret(data=dp0)"
+        program = "dp0=test(data=dp0);ret(data=dp0)"
         self.assertFalse(run_test(program, policy))
 
     def test_simple_error_three(self):
         policy = 'test'
-        program = "test(data=dp0);ret(data=dp0)"
+        program = "dp0=test(data=dp0);ret(data=dp0)"
         self.assertFalse(run_test(program, policy))
 
     def test_simple_error_four(self):
         policy = 'test'
-        program = "test(data=dp0);test(data=dp0);ret(data=dp0)"
+        program = "dp0=test(data=dp0);dp0=test(data=dp0);ret(data=dp0)"
         self.assertFalse(run_test(program, policy))
 
     def test_intersect_star_fail(self):
         policy = '1&test*'
-        program = "test(data=dp0)"
+        program = "dp0=test(data=dp0)"
         self.assertFalse(run_test(program, policy))
 
     def test_intersect_1_1_pass(self):
@@ -51,79 +51,79 @@ class FunctionTests(unittest.TestCase):
 
     def test_union_star(self):
         policy = '1+test*'
-        program = "test(data=dp0)"
+        program = "dp0=test(data=dp0)"
         self.assertTrue(run_test(program, policy))
 
 class ParamEqualityTests(unittest.TestCase):
 
     def test_no_policy_params(self):
         policy = 'test'
-        program = "test(data=dp0, a=4, b=5)"
+        program = "dp0=test(data=dp0, a=4, b=5)"
         self.assertTrue(run_test(program, policy))
 
     def test_simple_params(self):
         policy = 'test(a=4)'
-        program = "test(data=dp0, a=4, b=5)"
+        program = "dp0=test(data=dp0, a=4, b=5)"
         self.assertTrue(run_test(program, policy))
 
     def test_simple_params_two(self):
         policy = 'test(a=4, b=5.0)'
-        program = "test(data=dp0, a=4, b=5)"
+        program = "dp0=test(data=dp0, a=4, b=5)"
         self.assertTrue(run_test(program, policy))
 
     def test_simple_params_three(self):
         policy = 'test(a=4, b=5.0)'
-        program = "test(data=dp0, a=4, b=\"q\")"
+        program = "dp0=test(data=dp0, a=4, b=\"q\")"
         self.assertFalse(run_test(program, policy))
 
     def test_not_eq(self):
         policy = 'test(a!=4, b=5.0)'
-        program = "test(data=dp0, a=4, b=5)"
+        program = "dp0=test(data=dp0, a=4, b=5)"
         self.assertFalse(run_test(program, policy))
 
     def test_not_eq_two(self):
         policy = 'test(a!=4, b=5.0)'
-        program = "test(data=dp0, a=6, b=5)"
+        program = "dp0=test(data=dp0, a=6, b=5)"
         self.assertTrue(run_test(program, policy))
 
     def test_int_eq(self):
         policy = 'test(a=147, b=-5)'
-        program = "test(data=dp0, a=147, b=-5)"
+        program = "dp0=test(data=dp0, a=147, b=-5)"
         self.assertTrue(run_test(program, policy))
 
     def test_int_neq(self):
         policy = 'test(a!=147, b!=-5)'
-        program = "test(data=dp0, a=148, b=5)"
+        program = "dp0=test(data=dp0, a=148, b=5)"
         self.assertTrue(run_test(program, policy))
 
     def test_float_eq(self):
         policy = 'test(a=0.45, b=-5.0)'
-        program = "test(data=dp0, a=0.45, b=-5.0)"
+        program = "dp0=test(data=dp0, a=0.45, b=-5.0)"
         self.assertTrue(run_test(program, policy))
 
     def test_float_neq(self):
         policy = 'test(a!=0.45, b!=-5.0)'
-        program = "test(data=dp0, a=0.46, b=-0.02)"
+        program = "dp0=test(data=dp0, a=0.46, b=-0.02)"
         self.assertTrue(run_test(program, policy))
 
     def test_string_eq(self):
         policy = 'test(a="string", b="strong")'
-        program = "test(data=dp0, a='string', b='strong')"
+        program = "dp0=test(data=dp0, a='string', b='strong')"
         self.assertTrue(run_test(program, policy))
 
     def test_string_neq(self):
         policy = 'test(a!="string", b!="strong")'
-        program = "test(data=dp0, a='stringy', b='strongy')"
+        program = "dp0=test(data=dp0, a='stringy', b='strongy')"
         self.assertTrue(run_test(program, policy))
 
     def test_string_neq_2(self):
         policy = 'test(a!="string", b!="strong")'
-        program = "test(data=dp0, a='string', b='strong')"
+        program = "dp0=test(data=dp0, a='string', b='strong')"
         self.assertFalse(run_test(program, policy))
 
     def test_list_eq(self):
         policy = 'test(a=[1,2,3], b=["strong"])'
-        program = "test(data=dp0, a=[1,2,3], b=['strong'])"
+        program = "dp0=test(data=dp0, a=[1,2,3], b=['strong'])"
         self.assertTrue(run_test(program, policy))
 
     def test_list_eq2(self):

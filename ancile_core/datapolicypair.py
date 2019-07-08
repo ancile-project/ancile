@@ -23,6 +23,9 @@ class DataPolicyPair:
         self._was_loaded = False
         self._load_key = ''
 
+        # FWIW, keep a link to the last DPP
+        self._previous_dpp = None
+
         if isinstance(private_data, dict) and private_data.get(self._name, False):
             self._private_data = private_data[self._name]
         else:
@@ -33,6 +36,25 @@ class DataPolicyPair:
         return {'name': self._name,
                 'username': self._username}
 
+    def __copy__(self):
+        """
+        Create a new copy of the object with new field _created_app and set
+        the _previous_dpp to recover the previous objects
+        :return:
+        """
+        dpp = DataPolicyPair(policy=self._policy, token=self._token,
+                             name=self._name, username=self._username,
+                             private_data=self._private_data, app_id=self._app_id)
+        if self._data is not None:
+            dpp._data = self._data.copy()
+        else:
+            dpp._data = None
+        dpp._expires_at = self._expires_at
+        dpp._previous_dpp = self
+        dpp._was_loaded = self._was_loaded
+        dpp._load_key = self._load_key
+
+        return dpp
 
     @property
     def is_expired(self):
@@ -84,7 +106,7 @@ class DataPolicyPair:
             self._resolve_private_data_values(kwargs)
 
             if scope in {'transform', 'aggregate'}:
-                kwargs['data'] = self._data.copy()
+                kwargs['data'] = self._data
             if scope == 'external':
                 kwargs['user'] = {'token': self._token}
 

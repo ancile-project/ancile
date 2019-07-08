@@ -11,7 +11,7 @@ class CollectionTests(unittest.TestCase):
 
     def test_simple2(self):
         policy = 'test.add_to_collection'
-        program = ("test(data=dp0);col=Collection()\n"
+        program = ("dp0 = test(data=dp0);col=Collection()\n"
                    "col.add_to_collection(data=dp0)")
         self.assertTrue(run_test(program, policy))
 
@@ -19,10 +19,10 @@ class CollectionTests(unittest.TestCase):
         policy0 = 'test.add_to_collection*'
         policy1 = 'add_to_collection*'
         policy2 = 'test(a=14).add_to_collection'
-        program = ("test(data=dp0);col=Collection()\n"
+        program = ("dp0= test(data=dp0);col=Collection()\n"
                    "col.add_to_collection(data=dp0)\n"
                    "col.add_to_collection(data=dp1)\n"
-                   "test(data=dp2, a=14)\n"
+                   "dp2 = test(data=dp2, a=14)\n"
                    "col.add_to_collection(data=dp2)\n")
         self.assertTrue(run_test(program, policy0, policy1, policy2))
 

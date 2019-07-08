@@ -8,6 +8,7 @@ from ancile_core.user_specific import UserSpecific
 import logging
 from ancile_core.collection import Collection
 logger = logging.getLogger(__name__)
+import copy
 
 def check_args(args):
     if args:
@@ -28,11 +29,11 @@ def transform_decorator(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
         dp_pair = decorator_preamble(args, kwargs)
+        new_dp_pair = copy.copy(dp_pair)
+        logger.info(f'function: {f.__name__} args: {args}, kwargs: {kwargs}, app: {new_dp_pair._app_id}')
+        new_dp_pair._data = new_dp_pair._call_transform(f, *args, **kwargs)
 
-        logger.info(f'function: {f.__name__} args: {args}, kwargs: {kwargs}, app: {dp_pair._app_id}')
-        data = dp_pair._call_transform(f, *args, **kwargs)
-
-        return dp_pair
+        return new_dp_pair
 
     return wrapper
 
