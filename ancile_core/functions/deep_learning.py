@@ -201,8 +201,10 @@ def prepare_for_json(data):
         js[name] = value.tolist()
     data['json_model'] = js
 
+    return data
 
-@reduction_fn
+
+
 def make_dataset(collection, batch_size=20):
     from ancile_core.functions.dl.corpus import Corpus
     from ancile_core.functions.dl.helpers import batchify
@@ -233,34 +235,37 @@ def make_dataset(collection, batch_size=20):
     return data
 
 
-@transform_decorator
-def train(data, epochs, batch_size, bptt, lr, log_interval, clip):
-    from ancile_core.functions.dl.helpers import train, test, batchify
+@reduction_fn
+def train(collection, epochs, batch_size, bptt, lr, log_interval, clip):
+    from ancile_core.functions.dl.helpers import train_helper, test, batchify
     from ancile_core.functions.dl.model import RNNModel
     import torch.nn as nn
+
+    data = make_dataset(collection, batch_size=batch_size)
 
     criterion = nn.CrossEntropyLoss()
     ntokens = len(data['corpus'].dictionary)
     corpus = data['corpus']
     train_data = batchify(corpus.train, batch_size)
     test_data = batchify(corpus.test, batch_size)
-
+    data = {'output': []}
     model = RNNModel("LSTM", ntokens, 50, 50, 2, 0.1, True)
     for epoch in range(epochs):
-        train(model, train_data, ntokens, batch_size, bptt, criterion, epoch, lr, log_interval, clip)
+        train_helper(model, train_data, ntokens, batch_size, bptt, criterion, epoch, lr, log_interval, clip)
         acc = test(model, test_data,  ntokens, batch_size, bptt, criterion, epoch)
         data['output'].append(acc)
 
     data['model'] = model
 
+    return data
+
 
 @transform_decorator
 def train_dp(data, epochs, batch_size, bptt, lr, log_interval, sigma, S):
-    from ancile_core.functions.dl.helpers import train_dp, test, batchify
+    from ancile_core.functions.dl.helpers import train_dp_helper, test, batchify
     from ancile_core.functions.dl.model import RNNModel
     from ancile_core.functions.dl.compute_dp_sgd_privacy import apply_dp_sgd_analysis
     import torch.nn as nn
-
 
     criterion = nn.CrossEntropyLoss()
     criterion_dp = nn.CrossEntropyLoss(reduction='none')
@@ -271,14 +276,31 @@ def train_dp(data, epochs, batch_size, bptt, lr, log_interval, sigma, S):
 
     N = train_data.shape[0]
     eps = apply_dp_sgd_analysis(N=N, batch_size=batch_size, noise_multiplier=sigma*S, epochs=epochs)
+    data = {'output': []}
+
     data['output'].append(f"Epsilon: {eps}")
 
     model = RNNModel("LSTM", ntokens, 50, 50, 2, 0.1, True)
 
     for epoch in range(epochs):
-        train_dp(model, train_data, ntokens, batch_size, bptt, criterion_dp, epoch, lr, log_interval, S, sigma)
+        train_dp_helper(model, train_data, ntokens, batch_size, bptt, criterion_dp, epoch, lr, log_interval, S, sigma)
         acc = test(model, test_data,  ntokens, batch_size, bptt, criterion, epoch)
         data['output'].append(acc)
 
     data['model'] = model
 
+    return data
+
+
+@aggregate_decorator(reduce=True)
+def serve_model(data, bptt, batch_size):
+    from ancile_core.functions.dl.helpers import serve_helper
+    dataset, model = data['aggregated']
+    processed_dataset = make_dataset(dataset)
+    ntokens = len(processed_dataset['corpus'].dictionary)
+    predictions = serve_helper(model, processed_dataset['test_data'],  ntokens=ntokens,
+                               eval_batch_size=batch_size, bptt=bptt)
+
+    data = {'output': [], 'predictions:': predictions}
+
+    return data

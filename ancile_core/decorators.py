@@ -30,8 +30,9 @@ def transform_decorator(f):
         dp_pair = decorator_preamble(args, kwargs)
 
         logger.info(f'function: {f.__name__} args: {args}, kwargs: {kwargs}, app: {dp_pair._app_id}')
-        dp_pair._call_transform(f, *args, **kwargs)
-        return True
+        data = dp_pair._call_transform(f, *args, **kwargs)
+
+        return dp_pair
 
     return wrapper
 
@@ -160,8 +161,18 @@ def aggregate_decorator(reduce=False):
                     raise AncileException("value_keys must either be a single value or a list of the same length as data")
 
             for index, dp_pair in enumerate(dp_pairs):
-                if not isinstance(dp_pair, DataPolicyPair):
+                if not (isinstance(dp_pair, DataPolicyPair) or isinstance(dp_pair, Collection)):
                     raise ValueError("You need to provide a Data object. Use get_data to get it.")
+                if isinstance(dp_pair, Collection):
+                    collection_data = list()
+                    for dps in dp_pair._data_points:
+                        collection_data.append(dps._data)
+                    if reduce:
+                        new_data.append(collection_data)
+                    else:
+                        new_data['collection'] = collection_data
+                    continue
+
 
                 app_id = dp_pair._app_id if app_id is None else app_id
 
@@ -189,7 +200,7 @@ def aggregate_decorator(reduce=False):
                 user_specific_dict['aggregated'] = new_us
 
             logger.info(f'aggregate function: {f.__name__}. args: {args}, kwargs: {kwargs}, app: {app_id}')
-            new_dp._call(f, *args, scope='aggregate', **kwargs)
+            new_dp._data = new_dp._call(f, *args, scope='aggregate', **kwargs)
             return new_dp
         return wrapper
     return decorator

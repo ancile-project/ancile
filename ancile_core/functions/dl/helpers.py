@@ -82,7 +82,23 @@ def test(model, data_source, ntokens, eval_batch_size, bptt, criterion, epoch):
     return acc.item()
 
 
-def train(model, train_data, ntokens, batch_size, bptt, criterion, epoch, lr, log_interval, clip):
+def serve_helper(model, data_source, eval_batch_size, bptt, ntokens):
+    model.eval()
+    total_loss = 0.
+    hidden = model.init_hidden(eval_batch_size)
+    correct = 0.
+    total_test_words = 0.
+    # get the last batch:
+    i = data_source.size(0) - 2
+    with torch.no_grad():
+        data, targets = get_batch(data_source, i, bptt)
+        output, hidden = model(data, hidden)
+        output_flat = output.view(-1, ntokens)
+        pred = output_flat.data.max(1)[1]
+    return pred
+
+
+def train_helper(model, train_data, ntokens, batch_size, bptt, criterion, epoch, lr, log_interval, clip):
 
     model.train()
     total_loss = 0.
@@ -115,7 +131,7 @@ def train(model, train_data, ntokens, batch_size, bptt, criterion, epoch, lr, lo
             total_loss = 0
             start_time = time.time()
 
-def train_dp(model, train_data, ntokens, batch_size, bptt, criterion, epoch, lr, log_interval, S, sigma):
+def train_dp_helper(model, train_data, ntokens, batch_size, bptt, criterion, epoch, lr, log_interval, S, sigma):
 
     model.train()
     num_microbatches = 20

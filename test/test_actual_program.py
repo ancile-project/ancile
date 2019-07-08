@@ -15,7 +15,7 @@ class ActualProgramTests(unittest.TestCase):
         :return:
         """
 
-        dpp = DataPolicyPair('add_to_collection', None, None, None, None,
+        dpp = DataPolicyPair('add_to_collection.remove_from_collection', None, None, None, None,
                  app_id=None)
 
         policy = dpp._policy._policy
@@ -31,11 +31,11 @@ class ActualProgramTests(unittest.TestCase):
         self.assertNotEqual(policy, dpp._policy._policy)
 
         print('remove from collection')
-        collection.remove_from_collection(data=dpp)
+        collection.remove_from_collection(index=0)
         print('Collection policy: ', collection.get_collection_policy())
         print('DPP policy: ',dpp._policy._policy)
 
-        self.assertEqual(policy, dpp._policy._policy)
+        self.assertEqual(1, dpp._policy._policy)
 
         return True
 
@@ -69,7 +69,7 @@ class ActualProgramTests(unittest.TestCase):
 
     def test_user(self):
         from ancile_core.functions.indoor_location import preload_location
-        from ancile_core.functions.deep_learning import make_dataset, train
+        from ancile_core.functions.deep_learning import make_dataset, train, serve_model
         path = '/Users/ebagdasaryan/Documents/development/ancile/location_dump.json'
 
         user = UserSpecific({'location': 'ANYF*'}, {'location': {'access_token': ''}}, None, username=None, app_id=None)
@@ -79,10 +79,13 @@ class ActualProgramTests(unittest.TestCase):
         lambda_filter = lambda x: x['device_type'] == 'iPhone'
         new_collection = collection.filter(lambda_filter)
 
-        dp_1 = make_dataset(collection=new_collection, batch_size=20)
-        print(dp_1)
-        result = train(data=dp_1, epochs=1, batch_size=20, bptt=20, lr=2, log_interval=5, clip=0.25)
+        # dp_1 = make_dataset(collection=new_collection, batch_size=20)
+        # print(dp_1)
+        model = train(collection=new_collection, epochs=1, batch_size=20, bptt=20, lr=2, log_interval=5, clip=0.25)
+        result = serve_model( data=[new_collection, model], bptt=20, batch_size=20, value_keys='model')
+        print(result._data)
 
-        print(collection)
+
+
 
 

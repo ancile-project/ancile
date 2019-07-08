@@ -14,9 +14,9 @@ lambda_filter = lambda x: x.get('device_type') == 'iPhone'
 new_collection = collection.filter(lambda_filter)
 
 dp_1 = deep_learning.make_dataset(collection)
-deep_learning.train(data=dp_1, epochs=1, batch_size=20, bptt=20, lr=2, log_interval=5, clip=0.25)
+deep_learning.train_helper(data=dp_1, epochs=1, batch_size=20, bptt=20, lr=2, log_interval=5, clip=0.25)
 
-#deep_learning.train_dp(data=dp_1, epochs=10, batch_size=20, bptt=20, lr=0.2, log_interval=5, sigma=0.8, S=1)
+#deep_learning.train_dp_helper(data=dp_1, epochs=10, batch_size=20, bptt=20, lr=0.2, log_interval=5, sigma=0.8, S=1)
 #deep_learning.prepare_for_json(data=dp_1)
 #general.keep_keys(data=dp_1, keys=['output'])
 

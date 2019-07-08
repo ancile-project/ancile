@@ -56,6 +56,8 @@ def aggregate_and(data):
     else:
         raise AncileException("All values to \"aggregate_and()\" must be booleans")
 
+    return data
+
 @aggregate_decorator(True)
 def aggregate_or(data):
     if all(list(map(lambda x: isinstance(x, bool), data['aggregated']))):
@@ -63,10 +65,14 @@ def aggregate_or(data):
     else:
         raise AncileException("All values to \"aggregate_and()\" must be booleans")
 
+    return data
+
 @aggregate_decorator(True)
 def quorum(data, threshold):
     percentage = sum([int(x) for x in data['aggregated']]) / len(data['aggregated'])
     data['quorum'] = percentage >= threshold
+
+    return data
 
 
 @comparison_decorator
@@ -102,6 +108,8 @@ def counter(data: dict):
     if data.get('counter', False):
         data['counter'] = 0
     data['counter'] += 1
+
+    return data
 
 @reduction_fn
 def collection_average(data: list, results: dict, value_key: str=None):
