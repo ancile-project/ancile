@@ -74,12 +74,12 @@ class DataPolicyPair:
     def __repr__(self):
         return f'<DataPolicy. User: {self._username} Datasource: {self._name}>'
 
-    def check_command_allowed(self, command, kwargs=None):
+    def check_command_allowed(self, command, **kwargs):
         if self.is_expired:
             return False
         else:
         #print(f'Checking {command} against policy: {self._policy}')
-            return self._policy.check_allowed(command, kwargs)
+            return self._policy.check_allowed(command, **kwargs)
 
     def _advance_policy(self, command, update=True, **kwargs):
         if update:

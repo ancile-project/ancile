@@ -25,7 +25,7 @@ class Policy(object):
     def __bool__(self):
         return self._policy != 0
 
-    def check_allowed(self, command, kwargs=None):
+    def check_allowed(self, command, **kwargs):
         return bool(self.d_step({'command': command, 'kwargs': kwargs}))
 
     def __repr__(self):
