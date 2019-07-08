@@ -1,17 +1,24 @@
 from ancile_core.decorators import transform_decorator, external_request_decorator
+from ancile_core.functions.general import get_token
 from ancile_web.errors import AncileException
 import requests
 
 name = 'rdl'
 
 @external_request_decorator
-def test_fetch(data, token=None, **kwargs):
+def test_fetch(user=None, **kwargs):
+    data = {'output': []}
+    token = get_token(user)
     data['token'] = token
     data['test_fetch'] = True
-    return True
+
+    return data
 
 @external_request_decorator
-def rdl_fetch(data, token=None, **kwargs):
+def rdl_fetch(user=None, **kwargs):
+    data = {'output': []}
+    token = get_token(user)
+
     r = requests.get('https://localhost:9980/test/api/usage',
                      headers={'Authorization': f'Bearer {token}'})
 
@@ -21,6 +28,8 @@ def rdl_fetch(data, token=None, **kwargs):
         print(data)
     else:
         raise AncileException(f"Request error: {r.json()}")
+
+    return data
 
 @transform_decorator
 def test_transform(data):

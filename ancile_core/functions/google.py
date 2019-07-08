@@ -1,4 +1,5 @@
 from ancile_core.decorators import transform_decorator, external_request_decorator
+from ancile_core.functions.general import get_token
 from ancile_web.errors import AncileException
 
 name = 'google'
@@ -22,15 +23,22 @@ def _get_primary_metadata(token):
     return primary[0]
 
 @external_request_decorator
-def get_primary_calendar_metadata(data, token=None, **kwargs):
+def get_primary_calendar_metadata(user=None, **kwargs):
+
+    data = {'output': []}
+    token = get_token(user)
+
     data['calendar'] = _get_primary_metadata(token)
-    return True
+    return data
 
 @external_request_decorator
-def get_calendar_events_in_relative_window(data, token=None, min_time=0, 
+def get_calendar_events_in_relative_window(user=None, min_time=0,
                                            max_time=1, **kwargs):
     from datetime import datetime, timedelta, timezone
     import requests
+
+    data = {'output': []}
+    token = get_token(user)
 
     def format_time(unformatted):
         return unformatted.isoformat()
@@ -52,7 +60,7 @@ def get_calendar_events_in_relative_window(data, token=None, min_time=0,
         raise AncileException("Request Error")
 
     data['events'] = r.json()['items']
-    return True
+    return data
 
 @transform_decorator
 def event_occurring(data, event_title=None):

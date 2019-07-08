@@ -9,7 +9,7 @@ class ComparisonTests(unittest.TestCase):
                   '.((_enforce_comparison(result=True).ret) + '
                   '(_enforce_comparison(result=False).test.ret))'
                  )
-        program = ("edit(data=dp0, key='a', value=4)\n"
+        program = ("dp0 = edit(data=dp0, key='a', value=4)\n"
                    "general.field_comparison(data=dp0, field_path='a', comparison_operator='eq',"
                    " value=4)\n"
                    "ret(data=dp0)\n"
@@ -21,7 +21,7 @@ class ComparisonTests(unittest.TestCase):
                   '.((_enforce_comparison(result=True).ret) + '
                   '(_enforce_comparison(result=False).test.ret))'
                  )
-        program = ("edit(data=dp0, key='a', value=3)\n"
+        program = ("dp0=edit(data=dp0, key='a', value=3)\n"
                    "general.field_comparison(data=dp0, field_path='a', comparison_operator='eq',"
                    " value=4)\n"
                    "ret(data=dp0)\n"
@@ -33,12 +33,12 @@ class ComparisonTests(unittest.TestCase):
                   '.((_enforce_comparison(result=True).ret) + '
                   '(_enforce_comparison(result=False).test.ret))'
                  )
-        program = ("edit(data=dp0, key='a', value=3)\n"
+        program = ("dp0=edit(data=dp0, key='a', value=3)\n"
                    "if general.field_comparison(data=dp0, field_path='a', comparison_operator='eq',"
                    " value=4):\n"
                    "    ret(data=dp0)\n"
                    "else:\n"
-                   "    test(data=dp0);ret(data=dp0)\n"
+                   "    dp0=test(data=dp0);ret(data=dp0)\n"
                   )
         self.assertTrue(run_test(program, policy))
 
@@ -47,12 +47,12 @@ class ComparisonTests(unittest.TestCase):
                   '.((_enforce_comparison(result=True).ret) + '
                   '(_enforce_comparison(result=False).test.ret))'
                  )
-        program = ("edit(data=dp0, key='a', value=4)\n"
+        program = ("dp0=edit(data=dp0, key='a', value=4)\n"
                    "if general.field_comparison(data=dp0, field_path='a', comparison_operator='eq',"
                    " value=4):\n"
                    "    ret(data=dp0)\n"
                    "else:\n"
-                   "    test(data=dp0);ret(data=dp0)\n"
+                   "    dp0=test(data=dp0);ret(data=dp0)\n"
                   )
         self.assertTrue(run_test(program, policy))
 
@@ -65,13 +65,13 @@ class ComparisonTests(unittest.TestCase):
         policy1 = ('edit.dependent_comparison(field_path="a", '
                    'comparison_operator="eq", value=4, username="0", name="0")'
                   )
-        program = ("edit(data=dp0, key='b', value=3)\n"
-                   "edit(data=dp1, key='a', value=4)\n"
+        program = ("dp0=edit(data=dp0, key='b', value=3)\n"
+                   "dp1=edit(data=dp1, key='a', value=4)\n"
                    "if general.field_comparison(data=dp0, field_path='a', comparison_operator='eq',"
                    " value=4, dependent_dp=dp1):\n"
                    "    ret(data=dp0)\n"
                    "else:\n"
-                   "    test(data=dp0);ret(data=dp0)\n"
+                   "    dp0=test(data=dp0);ret(data=dp0)\n"
                   )
         self.assertTrue(run_test(program, policy0, policy1))
 
@@ -84,13 +84,13 @@ class ComparisonTests(unittest.TestCase):
         policy1 = ('edit.dependent_comparison(field_path="a", '
                    'comparison_operator="eq", value=4, username="0", name="0")'
                   )
-        program = ("edit(data=dp0, key='b', value=3)\n"
-                   "edit(data=dp1, key='a', value=4)\n"
+        program = ("dp0=edit(data=dp0, key='b', value=3)\n"
+                   "dp1=edit(data=dp1, key='a', value=4)\n"
                    "if general.field_comparison(data=dp0, field_path='a', comparison_operator='eq',"
                    " value=4, dependent_dp=dp1):\n"
                    "    ret(data=dp0)\n"
                    "else:\n"
-                   "    test(data=dp0);ret(data=dp0)\n"
+                   "    dp0=test(data=dp0);ret(data=dp0)\n"
                    "ret(data=dp1)"
                   )
         self.assertFalse(run_test(program, policy0, policy1))
@@ -105,13 +105,13 @@ class ComparisonTests(unittest.TestCase):
                    'comparison_operator="eq", value=4, username="0", name="0")'
                    '.ret'
                   )
-        program = ("edit(data=dp0, key='b', value=3)\n"
-                   "edit(data=dp1, key='a', value=4)\n"
+        program = ("dp0=edit(data=dp0, key='b', value=3)\n"
+                   "dp1=edit(data=dp1, key='a', value=4)\n"
                    "if general.field_comparison(data=dp0, field_path='a', comparison_operator='eq',"
                    " value=4, dependent_dp=dp1):\n"
                    "    ret(data=dp0)\n"
                    "else:\n"
-                   "    test(data=dp0);ret(data=dp0)\n"
+                   "    dp0=test(data=dp0);ret(data=dp0)\n"
                    "ret(data=dp1)"
                   )
         self.assertTrue(run_test(program, policy0, policy1))
@@ -125,8 +125,8 @@ class ComparisonTests(unittest.TestCase):
         policy1 = ('edit.dependent_comparison(field_path="a", '
                    'comparison_operator="eq", value=4, username="0", name="0")'
                   )
-        program = ("edit(data=dp0, key='b', value=3)\n"
-                   "edit(data=dp1, key='a', value=3)\n"
+        program = ("dp0=edit(data=dp0, key='b', value=3)\n"
+                   "dp1=edit(data=dp1, key='a', value=3)\n"
                    "general.field_comparison(data=dp0, field_path='a', comparison_operator='eq',"
                    " value=4, dependent_dp=dp1)\n"
                    "ret(data=dp0)\n"
@@ -142,8 +142,8 @@ class ComparisonTests(unittest.TestCase):
         policy1 = ('edit.dependent_comparison(field_path="a", '
                    'comparison_operator="eq", value=4, username="0", name="0")'
                   )
-        program = ("edit(data=dp0, key='b', value=3)\n"
-                   "edit(data=dp1, key='a', value=4)\n"
+        program = ("dp0=edit(data=dp0, key='b', value=3)\n"
+                   "dp1=edit(data=dp1, key='a', value=4)\n"
                    "general.field_comparison(data=dp0, field_path='a', comparison_operator='eq',"
                    " value=4, dependent_dp=dp1)\n"
                    "ret(data=dp0)\n"
@@ -159,11 +159,11 @@ class ComparisonTests(unittest.TestCase):
         policy1 = ('edit.dependent_comparison(field_path="a", '
                    'comparison_operator="eq", value=4, username="0", name="0")'
                   )
-        program = ("edit(data=dp0, key='b', value=3)\n"
-                   "edit(data=dp1, key='a', value=3)\n"
+        program = ("dp0=edit(data=dp0, key='b', value=3)\n"
+                   "dp1=edit(data=dp1, key='a', value=3)\n"
                    "general.field_comparison(data=dp0, field_path='a', comparison_operator='eq',"
                    " value=4, dependent_dp=dp1)\n"
-                   "test(data=dp0);ret(data=dp0)\n"
+                   "dp0=test(data=dp0);ret(data=dp0)\n"
                   )
         self.assertTrue(run_test(program, policy0, policy1))
 
@@ -172,12 +172,12 @@ class ComparisonTests(unittest.TestCase):
                   '.((_enforce_comparison(result=True).ret) + '
                   '(_enforce_comparison(result=False).test.ret))'
                  )
-        program = ("edit(data=dp0, key='a', value=4)\n"
+        program = ("dp0=edit(data=dp0, key='a', value=4)\n"
                    "if time.in_time_window(data=dp0, lower_str='11:30', upper_str='12:30'"
                    "):\n"
                    "    ret(data=dp0)\n"
                    "else:\n"
-                   "    test(data=dp0);ret(data=dp0)\n"
+                   "    dp0=test(data=dp0);ret(data=dp0)\n"
                   )
         self.assertTrue(run_test(program, policy))
 
@@ -187,13 +187,13 @@ class ComparisonTests(unittest.TestCase):
                   '.((_enforce_comparison(result=True).double(key="a").ret) + '
                   '(_enforce_comparison(result=False).test.ret))'
                  )
-        program = ("edit(data=dp0, key='a', value=4)\n"
+        program = ("dp0=edit(data=dp0, key='a', value=4)\n"
                    "if time.in_time_window(data=dp0, lower_str='00:00', upper_str='23:30',"
                    "weekday_list=['mon','tue','wed','thur','fri']):\n"
-                   "    double(data=dp0, key='a')\n"
+                   "    dp0=double(data=dp0, key='a')\n"
                    "    ret(data=dp0)\n"
                    "else:\n"
-                   "    test(data=dp0);ret(data=dp0)\n"
+                   "    dp0=test(data=dp0);ret(data=dp0)\n"
                   )
         self.assertTrue(run_test(program, policy))
 
@@ -202,11 +202,11 @@ class ComparisonTests(unittest.TestCase):
                   '.((_enforce_comparison(result=True).ret) + '
                   '(_enforce_comparison(result=False).test.ret))'
                  )
-        program = ("edit(data=dp0, key='a', value=4)\n"
+        program = ("dp0=edit(data=dp0, key='a', value=4)\n"
                    "if time.in_time_window(data=dp0, lower_str='11:30', upper_str='11:30'"
                    "):\n"
                    "    ret(data=dp0)\n"
                    "else:\n"
-                   "    test(data=dp0);ret(data=dp0)\n"
+                   "    dp0=test(data=dp0);ret(data=dp0)\n"
                   )
         self.assertTrue(run_test(program, policy))

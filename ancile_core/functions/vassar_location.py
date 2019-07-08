@@ -1,5 +1,6 @@
 from ancile_core.decorators import transform_decorator, external_request_decorator
 from ancile_core.functions import location
+from ancile_core.functions.general import get_token
 from ancile_web.errors import AncileException
 import requests
 
@@ -7,13 +8,17 @@ name = 'cds'
 
 
 @external_request_decorator
-def get_last_location(data, token=None):
+def get_last_location(user):
+    token = get_token(user)
+    data = {'output': []}
     r = requests.get('https://campusdataservices.cs.vassar.edu/api/last_known',
                      headers={'Authorization': f'Bearer {token}'})
     if r.status_code == 200:
         data.update(r.json())
     else:
         raise AncileException(f"Request error: {r.json()}")
+
+    return data
 
 @transform_decorator
 def in_geofence(geofence, radius, data=None):

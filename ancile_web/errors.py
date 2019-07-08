@@ -36,9 +36,9 @@ class ConfigError(BaseError):
 
 
 class PolicyError(BaseError):
-    def __init__(self):
-        logger.info("Policy Error")
-        pass
+    def __init__(self, message='Policy prevented this execution.'):
+        logger.info(f"Policy Error: {message}")
+        self.message = message
 
     def __str__(self) -> str:
-        return(f'PolicyError: The policy has prevented this execution.')
+        return(f'PolicyError: {self.message}')
