@@ -6,7 +6,7 @@ from ancile_web.models import OAuth2Token
 from ancile_web.oauth.providers import *
 from config.loader import PROVIDERS
 
-oauth = OAuth(app)
+oauth = OAuth(app, update_token=OAuth2Token.update_token)
 # app.config.from_pyfile('config/oauth_config.py')
 
 # how to handle the authorization callback
