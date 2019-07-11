@@ -3,7 +3,7 @@ from ancile_core.functions.general import get_token
 from ancile_web.errors import AncileException
 
 
-@external_request_decorator
+@external_request_decorator()
 def fetch_test_data(target_url=None, user=None):
     data = {'output': []}
     token = get_token(user)
@@ -11,7 +11,7 @@ def fetch_test_data(target_url=None, user=None):
     data['fetch_test_data'] = True
     return data
 
-@external_request_decorator
+@external_request_decorator()
 def get_data(target_url=None, user=None):
     import requests
 
@@ -28,7 +28,7 @@ def get_data(target_url=None, user=None):
 
     return data
 
-@external_request_decorator
+@external_request_decorator()
 def full_api(user, body=None, target_url=None):
 
     data = {'output': []}

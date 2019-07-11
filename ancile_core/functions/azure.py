@@ -4,7 +4,7 @@ from ancile_core.functions.general import get_token
 
 name="azure"
 
-@external_request_decorator
+@external_request_decorator()
 def get_available_rooms(floor, user):
     import requests
 
@@ -30,7 +30,7 @@ def get_available_rooms(floor, user):
 
     return data
 
-@external_request_decorator
+@external_request_decorator()
 def book_room(room, user):
     import requests
     import json

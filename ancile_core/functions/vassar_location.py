@@ -7,7 +7,7 @@ import requests
 name = 'cds'
 
 
-@external_request_decorator
+@external_request_decorator()
 def get_last_location(user):
     token = get_token(user)
     data = {'output': []}

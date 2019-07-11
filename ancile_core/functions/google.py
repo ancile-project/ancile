@@ -22,7 +22,7 @@ def _get_primary_metadata(token):
 
     return primary[0]
 
-@external_request_decorator
+@external_request_decorator()
 def get_primary_calendar_metadata(user=None, **kwargs):
 
     data = {'output': []}
@@ -31,7 +31,7 @@ def get_primary_calendar_metadata(user=None, **kwargs):
     data['calendar'] = _get_primary_metadata(token)
     return data
 
-@external_request_decorator
+@external_request_decorator()
 def get_calendar_events_in_relative_window(user=None, min_time=0,
                                            max_time=1, **kwargs):
     from datetime import datetime, timedelta, timezone

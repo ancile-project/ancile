@@ -1,7 +1,7 @@
 from ancile_core.decorators import transform_decorator, external_request_decorator
 from ancile_web.errors import AncileException
 
-@external_request_decorator
+@external_request_decorator()
 def test_fetch(data, token=None, **kwargs):
     data['token'] = token
     data['test_fetch'] = True
