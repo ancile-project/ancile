@@ -1,4 +1,4 @@
-from ancile_core.decorators import transform_decorator, aggregate_decorator, comparison_decorator
+from ancile_core.decorators import transform_decorator, aggregate_decorator, comparison_decorator, filter_decorator
 from ancile_web.errors import AncileException
 from ancile_core.collection import reduction_fn
 
@@ -45,6 +45,11 @@ def flat_dict(d):
             out[key] = val
     return out
 
+@transform_decorator
+def double(data, key):
+    data[key] *= 2
+    return True
+
 @aggregate_decorator()
 def basic_aggregation(data):
     return True
@@ -56,12 +61,23 @@ def aggregate_and(data):
     else:
         raise AncileException("All values to \"aggregate_and()\" must be booleans")
 
+    return data
+
 @aggregate_decorator(True)
 def aggregate_or(data):
     if all(list(map(lambda x: isinstance(x, bool), data['aggregated']))):
         data['aggregate_or'] = any(data.pop('aggregated'))
     else:
         raise AncileException("All values to \"aggregate_and()\" must be booleans")
+
+    return data
+
+@aggregate_decorator(True)
+def quorum(data, threshold):
+    percentage = sum([int(x) for x in data['aggregated']]) / len(data['aggregated'])
+    data['quorum'] = percentage >= threshold
+
+    return data
 
 
 @comparison_decorator
@@ -98,38 +114,49 @@ def counter(data: dict):
         data['counter'] = 0
     data['counter'] += 1
 
+    return data
+
 @reduction_fn
-def collection_average(data: list, results: dict, value_key: str=None):
+def collection_average(collection: list, value_key: str=None):
     if value_key is None:
         raise ValueError("'value_key' must have a value.")
 
     rolling_value = 0
-    for item in data:
+    for item in collection:
         rolling_value += item[value_key]
 
-    results['collection_average'] = rolling_value / len(data)
+    return {'collection_average': rolling_value / len(collection)}
 
 @reduction_fn
-def collection_and(data: list, results: dict, value_key: str=None):
+def collection_and(collection: list, value_key: str=None):
     if value_key is None:
         raise ValueError("'value_key' must have a value.")
-    if not all((isinstance(item[value_key], bool) for item in data)):
+    if not all((isinstance(item[value_key], bool) for item in collection)):
         raise ValueError("'value_key' must point to a boolean value.")
 
-    results['collection_and'] = all((item[value_key] for item in data))
+    return {'collection_and':all((item[value_key] for item in collection))}
 
 @reduction_fn
-def collection_or(data: list, results: dict, value_key: str=None):
+def collection_or(collection: list, value_key: str=None):
     if value_key is None:
         raise ValueError("'value_key' must have a value.")
-    if not all((isinstance(item[value_key], bool) for item in data)):
+    if not all((isinstance(item[value_key], bool) for item in collection)):
         raise ValueError("'value_key' must point to a boolean value.")
 
-    results['collection_or'] = any((item[value_key] for item in data))
+    return {'collection_or': any((item[value_key] for item in collection))}
 
 @reduction_fn
-def collection_sum(data: list, results: dict, value_key: str=None):
+def collection_sum(collection: list, value_key: str=None):
     if value_key is None:
         raise ValueError("'value_key' must have a value.")
 
-    results['collection_sum'] = sum((item[value_key] for item in data))
+    return {'collection_sum': sum((item[value_key] for item in collection))}
+
+@filter_decorator
+def no_filter(collection=None):
+    print('no_filter')
+
+    return True
+
+def get_token(user):
+    return user['token']

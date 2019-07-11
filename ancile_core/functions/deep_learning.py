@@ -1,10 +1,12 @@
+from ancile_core.collection import reduction_fn
 from ancile_core.decorators import transform_decorator, aggregate_decorator, \
     external_request_decorator
 from ancile_web.errors import AncileException
 
+name = 'test'
 
 @external_request_decorator
-def get_split_train_mnist(data, part, split, token=None):
+def get_split_train_mnist( data, part, split, token=None, user=None, name=None):
     import torchvision
     from torchvision.transforms import transforms
     import torch
@@ -28,7 +30,7 @@ def get_split_train_mnist(data, part, split, token=None):
 
 
 @aggregate_decorator()
-def aggregate_train_dataset(data, user_specific=None):
+def aggregate_train_dataset(data):
     import torch
 
     ds_list = list()
@@ -193,7 +195,112 @@ def pickle_model(data):
 
 
 @transform_decorator
-def obfuscate_prediction(data):
+def prepare_for_json(data):
+    js = dict()
+    for name, value in  data['model'].state_dict().items():
+        js[name] = value.tolist()
+    data['json_model'] = js
+
+    return data
 
 
-    return True
+
+def make_dataset(collection, batch_size=20):
+    from ancile_core.functions.dl.corpus import Corpus
+    from ancile_core.functions.dl.helpers import batchify
+    import datetime
+
+    data = {'output': []}
+
+    from collections import defaultdict
+    locations = defaultdict(int)
+    dates = defaultdict(list)
+    count = 0
+    for x in collection:
+        if x['device_type'] == 'iPhone':
+            count += 1
+            name = f"x_{x['sta_location_x']}_y_{x['sta_location_y']}_floor_{x['floor_name']}"
+            ft = datetime.datetime.fromtimestamp(x['aruba_system_checked_at'])
+            dates[(ft.month, ft.day, ft.hour, ft.weekday())].append(name)
+            locations[name] += 1
+
+    corpus = Corpus(dates)
+    train_data = batchify(corpus.train, batch_size)
+    test_data = batchify(corpus.test, batch_size)
+    data['corpus'] = corpus
+    data['train_data'] = train_data
+    data['test_data'] = test_data
+    data['output'].append(f'loaded dataset. Total entries: {count}. ')
+
+    return data
+
+
+@reduction_fn
+def train(collection, epochs, batch_size, bptt, lr, log_interval, clip):
+    from ancile_core.functions.dl.helpers import train_helper, test, batchify
+    from ancile_core.functions.dl.model import RNNModel
+    import torch.nn as nn
+
+    data = make_dataset(collection, batch_size=batch_size)
+
+    criterion = nn.CrossEntropyLoss()
+    ntokens = len(data['corpus'].dictionary)
+    corpus = data['corpus']
+    train_data = batchify(corpus.train, batch_size)
+    test_data = batchify(corpus.test, batch_size)
+    data = {'output': []}
+    model = RNNModel("LSTM", ntokens, 50, 50, 2, 0.1, True)
+    for epoch in range(epochs):
+        train_helper(model, train_data, ntokens, batch_size, bptt, criterion, epoch, lr, log_interval, clip)
+        acc = test(model, test_data,  ntokens, batch_size, bptt, criterion, epoch)
+        data['output'].append(acc)
+
+    data['model'] = model
+
+    return data
+
+
+@transform_decorator
+def train_dp(data, epochs, batch_size, bptt, lr, log_interval, sigma, S):
+    from ancile_core.functions.dl.helpers import train_dp_helper, test, batchify
+    from ancile_core.functions.dl.model import RNNModel
+    from ancile_core.functions.dl.compute_dp_sgd_privacy import apply_dp_sgd_analysis
+    import torch.nn as nn
+
+    criterion = nn.CrossEntropyLoss()
+    criterion_dp = nn.CrossEntropyLoss(reduction='none')
+    ntokens = len(data['corpus'].dictionary)
+    corpus = data['corpus']
+    train_data = batchify(corpus.train, batch_size)
+    test_data = batchify(corpus.test, batch_size)
+
+    N = train_data.shape[0]
+    eps = apply_dp_sgd_analysis(N=N, batch_size=batch_size, noise_multiplier=sigma*S, epochs=epochs)
+    data = {'output': []}
+
+    data['output'].append(f"Epsilon: {eps}")
+
+    model = RNNModel("LSTM", ntokens, 50, 50, 2, 0.1, True)
+
+    for epoch in range(epochs):
+        train_dp_helper(model, train_data, ntokens, batch_size, bptt, criterion_dp, epoch, lr, log_interval, S, sigma)
+        acc = test(model, test_data,  ntokens, batch_size, bptt, criterion, epoch)
+        data['output'].append(acc)
+
+    data['model'] = model
+
+    return data
+
+
+@aggregate_decorator(reduce=True)
+def serve_model(data, bptt, batch_size):
+    from ancile_core.functions.dl.helpers import serve_helper
+    dataset, model = data['aggregated']
+    processed_dataset = make_dataset(dataset)
+    ntokens = len(processed_dataset['corpus'].dictionary)
+    predictions = serve_helper(model, processed_dataset['test_data'],  ntokens=ntokens,
+                               eval_batch_size=batch_size, bptt=bptt)
+
+    data = {'output': [], 'predictions:': predictions}
+
+    return data

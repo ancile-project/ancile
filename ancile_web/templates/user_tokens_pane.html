@@ -13,7 +13,6 @@
       <td>{{ item.expiry_date() }}</td>
       <td>
         <a href= {{ url_for("user_view_token", name=item.name) }} >View</a>
-        <a href= {{ url_for("user_edit_token", name=item.name) }} >Edit</a>
         <a href= {{ url_for("user_delete_token", name=item.name) }} >Delete</a>
       </td>
     </tr>

@@ -2,35 +2,25 @@ import requests
 import json
 
 js = {
-    "token": "SFMyNTY.g3QAAAACZAAEZGF0YWEBZAAGc2lnbmVkbgYArMeRtWkB.3v5L3WHsMFfgsmxnyHyYSZiFhb7T5pdT8iDNrgh0DrI",
-    "users": ["user1@abcd.com", "user2@abcd.com"],
+    "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzYWx0IjoiXFx4MjQzMjYyMjQzMTMyMjQ0ODMwNDk0NDM5NzY2ZDcxNDQ2MzRkMmY2ZjM3NzU3YTYyNzgyZTc3NjgyZSJ9.vxTjpAIX-GwvnLS5n1j2owa-LcZWcxAtN_yWCDu2X8I",
+    "users": ["user"],
     "purpose": "research",
     "program": """
-dp_1 = user_specific["user1@abcd.com"].get_empty_data_pair(data_source='test')
-dp_2 = user_specific["user2@abcd.com"].get_empty_data_pair(data_source='test')
+path = '/Users/ebagdasaryan/Documents/development/ancile/location_dump.json'
+collection = indoor_location.preload_location(user=user("user"), path=path)
+#dp_1 = indoor_location.fetch_history_location(user=user("user"), fr=1520073308, to=1561559648)
 
-deep_learning.get_split_train_mnist(data=dp_1, split=2, part=0)
-deep_learning.get_split_train_mnist(data=dp_2, split=2, part=1) 
+lambda_filter = lambda x: x.get('device_type') == 'iPhone'
+new_collection = collection.filter(lambda_filter)
 
-aggr_dp = deep_learning.aggregate_train_dataset(data=[dp_1, dp_2], user_specific=user_specific)
+dp_1 = deep_learning.make_dataset(collection)
+deep_learning.train_helper(data=dp_1, epochs=1, batch_size=20, bptt=20, lr=2, log_interval=5, clip=0.25)
 
-deep_learning.get_test_mnist(data=aggr_dp)
+#deep_learning.train_dp_helper(data=dp_1, epochs=10, batch_size=20, bptt=20, lr=0.2, log_interval=5, sigma=0.8, S=1)
+#deep_learning.prepare_for_json(data=dp_1)
+#general.keep_keys(data=dp_1, keys=['output'])
 
-deep_learning.get_loader(data=aggr_dp, dataset_name='train', batch_size=64)
-deep_learning.get_loader(data=aggr_dp, dataset_name='test', batch_size=100)
-
-deep_learning.create_model(data=aggr_dp)
-deep_learning.sgd_optimizer(data=aggr_dp, lr=0.1, momentum=0.9)
-deep_learning.nll_loss(data=aggr_dp)
- 
-deep_learning.pickle_model(data=aggr_dp)
-#for epoch in range(1):
-#    deep_learning.train_one_epoch(data=aggr_dp, epoch=epoch, log_interval=200)
-#    deep_learning.test(data=aggr_dp, epoch=epoch)
-
-#general.keep_keys(data=aggr_dp, keys=['output'])
-#result.append_dp_data_to_result(data=aggr_dp)
-
+#result.append_dp_data_to_result(data=dp_1)
     """
 }
 

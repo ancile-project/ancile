@@ -18,6 +18,7 @@ class AncileException(BaseError):
 class ParseError(BaseError):
     def __init__(self, message):
         self.message = message
+        logger.error(message)
 
     def __str__(self):
         return f'ParseError: {self.message}'
@@ -35,8 +36,9 @@ class ConfigError(BaseError):
 
 
 class PolicyError(BaseError):
-    def __init__(self):
-        pass
+    def __init__(self, message='Policy prevented this execution.'):
+        logger.info(f"Policy Error: {message}")
+        self.message = message
 
     def __str__(self) -> str:
-        return(f'PolicyError: The policy has prevented this execution.')
+        return(f'PolicyError: {self.message}')

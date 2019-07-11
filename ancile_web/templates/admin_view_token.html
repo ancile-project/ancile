@@ -29,10 +29,25 @@
     <th>Expires:</th>
     <td>{{ token.expiry_date() }}</td>
   </tr>
-  <tr>
-    <th>Data:</th>
-    <td style="font-family: monospace;">{{ token.data }}</td>
-  </tr>
+</table>
+
+<table class="table table-hover">
+    <thead>
+    <tr>
+      <th scope="col">Name</th>
+      <th scope="col">Value</th>
+    </tr>
+    </thead>
+    <tbody>
+
+    {% for key in loads(token.private_data) %}
+        <tr class="table-secondary">
+          <th scope="row">{{ key }}</th>
+          <td>{{ loads(token.private_data)[key] }}</td>
+        </tr>
+    {% endfor %}
+
+    </tbody>
 </table>
 
 <br>

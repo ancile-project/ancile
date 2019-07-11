@@ -6,6 +6,7 @@
 <form action="{{ url_for_security('register') }}" method="POST" name="register_user_form">
   {{ register_user_form.hidden_tag() }}
   <hr class="my-4">  
+  {% include "security/_messages.html" %}
   {{ render_field_with_errors(register_user_form.email, class="form-control", style="width: 200px; margin-left: auto; margin-right: auto;") }}
   {{ render_field_with_errors(register_user_form.password, class="form-control", style="width: 200px; margin-left: auto; margin-right: auto;") }}
   {% if register_user_form.password_confirm %}

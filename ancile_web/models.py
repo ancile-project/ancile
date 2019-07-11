@@ -1,5 +1,5 @@
 # coding: utf-8
-from ancile_web.app import db
+from ancile_web.app import db,app
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm.attributes import flag_modified
 from flask_security import UserMixin,RoleMixin
@@ -45,11 +45,11 @@ class OAuth2Token(Base):
     name = db.Column(db.String(20), nullable=False)
 
     token_type = db.Column(db.String(20))
-    access_token = db.Column(db.String(256), nullable=False)
-    refresh_token = db.Column(db.String(256))
+    access_token = db.Column(db.String(3000), nullable=False)
+    refresh_token = db.Column(db.String(3000))
     expires_at = db.Column(db.Integer, default=0)
 
-    private_data = db.Column(JSONB(astext_type=db.Text()))
+    private_data = db.Column(JSONB(astext_type=db.Text()), default="{}")
 
     def __init__(self, name, token_dict):
         print(name, token_dict)
@@ -90,6 +90,41 @@ class OAuth2Token(Base):
             data_dict[token.name] = token.private_data
 
         return token_dict, data_dict
+
+    @staticmethod
+    def update_token(name, token):
+        import importlib, requests
+
+        provider = getattr(importlib.import_module("ancile_web.oauth.providers." + name), name.capitalize())
+        url = provider.OAUTH_CONFIG['access_token_url']
+        auth_method = provider.OAUTH_CONFIG['client_kwargs'].get('token_endpoint_auth_method', 'client_secret_basic')
+
+        client_id = app.config[name.upper() + "_CLIENT_ID"]
+        client_secret = app.config[name.upper() + "_CLIENT_SECRET"]
+
+        headers = {}
+
+        # Basic Auth (default)
+        from base64 import b64encode as encode
+        if auth_method == 'client_secret_basic':
+            headers = {"Authorization": "basic " + str(encode(bytes(client_id + ":" + client_secret,'utf8')), 'utf-8')} 
+
+
+        data = {'refresh_token': token.refresh_token,
+                'grant_type': 'refresh_token',
+                'client_id': client_id,
+                'client_secret': client_secret}
+
+        res = requests.post(url, data=data, headers=headers)
+        if res.status_code == 200:
+            for key in res.json().keys():
+                # make sure key is an attribute of token
+                if key in dir(token):
+                    setattr(token, key, res.json()[key])
+            token.update()
+            print('Token updated successfully.')
+        else:
+            raise Exception(f"Couldn't update token: {res.json()}")
 
     # @classmethod
     # def get_private_data_by_user(cls, user):
@@ -191,10 +226,11 @@ class Policy(Base):
 
     @classmethod
     def get_by_user_app_purpose(cls, app, user, purpose):
+        from ancile_core.policy import Policy
         policies = cls.query.filter_by(app_id=app, user_id=user, purpose=purpose)
         policy_dict = dict()
         for policy in policies:
-            policy_dict[policy.provider] = policy.policy
+            policy_dict[policy.provider] = Policy(policy.policy)
         return policy_dict
 
 

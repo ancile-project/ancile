@@ -20,6 +20,7 @@ from ancile_web.errors import AncileException
 import signal
 from ancile_web.utils import reload_server
 from ancile_web.visualizer import parse_policy
+from json import loads, dumps
 
 logger = logging.getLogger(__name__)
 r = redis.Redis(**REDIS_CONFIG)
@@ -31,7 +32,7 @@ def parse_policy_view():
     return jsonify(parse_policy(policy))
 
 def get_user(user, app_id, purpose):
-    key_string = user + str(app_id) + str(purpose)
+    key_string = user + ":" + str(app_id) + ":" + str(purpose)
     redis_response = r.get(key_string) if ENABLE_CACHE else None
 
     if redis_response is None:
@@ -45,20 +46,25 @@ def get_user(user, app_id, purpose):
 
         if ENABLE_CACHE:
             r.set(key_string, pickle.dumps(bundle), ex=3600)
+            logger.debug(f'Cache miss for user_key: {key_string}')
         return bundle
-    print("USED CACHED USER")
-    return pickle.loads(redis_response)
+
+    info = pickle.loads(redis_response)
+    logger.debug(f"Used cached user info: {info}")
+    return info
 
 
 def get_app_id(token):
     redis_response = r.get(token) if ENABLE_CACHE else None
     if redis_response is None:
-        token = jwt.decode(token, app.config["SECRET_KEY"])['salt']
-        app_id = Account.get_id_by_token(token)
+        salt = jwt.decode(token, app.config["SECRET_KEY"])['salt']
+        app_id = Account.get_id_by_token(salt)
         if ENABLE_CACHE:
             r.set(token, pickle.dumps(app_id), ex=3600)
+            logger.debug(f'Cache miss for app token: {token}')
         return app_id
-    print('USED CACHED APP_ID')
+    app_id = pickle.loads(redis_response)
+    logger.debug(f'Used cached app id: {app_id}')
     return pickle.loads(redis_response)
 
 
@@ -71,7 +77,7 @@ app_permission = Permission(RoleNeed('app'))
 @app.route('/api/run', methods=['POST'])
 def run_api():
     js = request.json
-    #print(js)
+    logger.info(f'Request: {js}')
     token = js['token']
     users = js['users']
     purpose = js['purpose']
@@ -80,7 +86,7 @@ def run_api():
     try:
         app_id = get_app_id(token)
     except Exception:
-            return json.dumps({"result": "error", 
+            return json.dumps({"result": "error",
                                "traceback": traceback.format_exc()})
 
     user_info = []
@@ -89,20 +95,15 @@ def run_api():
         try:
             user_info.append(get_user(user, app_id, purpose))
         except Exception:
-            return json.dumps({"result": "error", 
+            return json.dumps({"result": "error",
                                "traceback": traceback.format_exc()})
-    persisted_dp_uuid = js.get('persisted_dp_uuid', None)
-    # print(f'Policies: {policies}, Tokens: {tokens}')
-    print(user_info)
+    logger.debug(f'Passing user_info: {user_info}')
 
     res = execute(user_info=user_info,
                   program=program,
-                  persisted_dp_uuid=persisted_dp_uuid,
                   app_id=app_id,
-                  purpose=purpose,
-                  collection_info=None)
-
-    # print(f'Res: {res}')
+                  purpose=purpose)
+    logger.info(f'Returning: {res}')
     return json.dumps(res)
 
 
@@ -196,6 +197,7 @@ def admin_add_provider():
     baseURL = request.form.get("baseURLInput")
     accessURL = request.form.get("accessURLInput")
     authURL = request.form.get("authURLInput")
+    scopes = request.form.get("scopeInput")
 
     provider_class = (
         f"from loginpass._core import UserInfo, OAuthBackend\n"
@@ -206,7 +208,7 @@ def admin_add_provider():
         f"          'api_base_url': '{baseURL}',\n"
         f"          'access_token_url': '{accessURL}',\n"
         f"          'authorize_url': '{authURL}',\n"
-        f"          'client_kwargs': {{'scope': 'profile'}},\n"
+        f"          'client_kwargs': {{'scope': '{scopes}'}},\n"
         f"          }}\n"
         f"      def profile(self, **kwargs):\n"
         f"          return 'success'"
@@ -330,7 +332,7 @@ def admin_delete_policy(id):
 @admin_permission.require(http_exception=403)
 def admin_view_token(user_id, name):
     token = OAuth2Token.query.filter_by(name=name, user_id=user_id).first()
-    return render_template("admin_view_token.html", token=token)
+    return render_template("admin_view_token.html", token=token, loads=loads)
 
 @app.route("/admin/delete_token/<user_id>/<name>")
 @login_required
@@ -439,7 +441,7 @@ def user_delete_policy(id):
 def user_view_token(name):
     token = OAuth2Token.query.filter_by(name=name,
                                         user_id=current_user.id).first()
-    return render_template("user_view_token.html", token=token)
+    return render_template("user_view_token.html", token=token, loads=loads)
 
 @app.route("/user/edit_token/<name>")
 @login_required
@@ -460,6 +462,32 @@ def user_handle_edit_token(name):
     token.private_data = data
     token.update()
     return redirect("/user")
+
+@app.route("/user/add_data/<name>", methods=["POST"])
+@login_required
+@user_permission.require(http_exception=403)
+def user_add_data(name):
+    key = request.form.get("keyInput")
+    value = request.form.get("valueInput")
+    
+    token = OAuth2Token.query.filter_by(name=name).first()
+    data = loads(token.private_data)
+    data.update({key:value})
+    token.private_data = dumps(data)
+    token.update()
+    
+    return redirect(url_for("user_view_token", name=name))
+
+@app.route("/user/remove_data/<name>/<key>")
+@login_required
+@user_permission.require(http_exception=403)
+def user_remove_data(name, key):
+    token = OAuth2Token.query.filter_by(name=name).first()
+    data = loads(token.private_data)
+    data.pop(key)
+    token.private_data = dumps(data)
+    token.update()
+    return redirect(url_for("user_view_token", name=name))
 
 # user delete token
 @app.route("/<name>/delete")

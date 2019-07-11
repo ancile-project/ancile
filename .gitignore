@@ -44,6 +44,9 @@ npm-debug.log
 # storage for certificates
 /priv/cert/
 
+#Pyenv config
+.python-version
+
 .idea/
 *.iml
 # ignore generated parsers
