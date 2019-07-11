@@ -77,3 +77,11 @@ def in_geofences_bool(geofences, data=None):
 
     data._data['in_geofences'] = (val not in ["Location Unknown",
                                               "Error: Overlapping Geofences"])
+
+@transform_decorator
+def fuzz_location(data, radius):
+    new_lat, new_long = location._fuzz_location(data['latitude'],
+                                                data['longitude'],
+                                                radius)
+    data['latitude'] = new_lat
+    data['longitude'] = new_long
