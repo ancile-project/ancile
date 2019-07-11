@@ -5,6 +5,7 @@ from ancile_core.user_specific import UserSpecific
 from ancile_core.result import Result
 from ancile_core.storage import store as _store, load as _load, del_key, gen_key, store_encrypted as _encrypt
 from ancile_core.policy import Policy
+from ancile_core.decorators import use_type_decorator
 from RestrictedPython import compile_restricted_exec, safe_globals, limited_builtins, safe_builtins
 from ancile_core.collection import Collection
 import traceback
@@ -66,6 +67,10 @@ def assemble_locals(result, user_specific, app_id):
     def load(key):
         return _load(f'{app_id}:{key}')
 
+    @use_type_decorator
+    def return_to_app(data, encryption_keys, decrypt_field_list):
+        result._dp_pair_data.append(data)
+
     lcls['result'] = result
     lcls['store'] = store
     lcls['load'] = load
@@ -73,6 +78,7 @@ def assemble_locals(result, user_specific, app_id):
     lcls['user'] = user
     lcls['new_collection'] = new_collection
     lcls['encrypt'] = encrypt
+    lcls['return_to_app'] = return_to_app
     return lcls
 
 def retrieve_compiled(program):
