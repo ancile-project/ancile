@@ -1,14 +1,21 @@
-const policyArea = document.getElementById("policyTextarea");
-const policyFrame = document.getElementById("graph-frame");
-
-policyArea.addEventListener("input", function(inputUpdate) {
-  updateVisualization(inputUpdate.srcElement.value)
-});
-
 const request = new XMLHttpRequest();
 request.onreadystatechange = processResponse;
 
-updateVisualization(policyArea.value);
+window.onload = () => { 
+  policyArea = document.getElementById("policyTextarea");
+  policyFrame = document.getElementById("graph-frame");
+
+  if (policyArea.value === undefined) {
+    updateVisualization(policyArea.innerHTML);
+  } else {
+    updateVisualization(policyArea.value);
+  }
+
+  policyArea.addEventListener("input", function(inputUpdate) {
+    updateVisualization(inputUpdate.srcElement.value)
+  });
+
+} ;
 
 function updateVisualization(value) {
   var formData = new FormData();

@@ -8,12 +8,7 @@
 
 <hr class="my-4">
 
-<div id="graph-frame" class="mermaid">
-  graph LR
-  A --- B
-  B-->C[fa:fa-ban forbidden]
-  B-->D(fa:fa-spinner);
-</div>
+{% include "policy_visualizer.html" %}
 <form method="POST" action={{ url_for("admin_handle_edit_policy", id=id) }} id="editPolicyForm" style="width: 50%; margin: auto;">
 
   <label for="appSelect">App</label>
@@ -55,7 +50,4 @@
 <br>
 
 <a class="btn btn-secondary btn-lg" href="/admin#policies" style="color:white;">Back</a>
-<script src="https://unpkg.com/mermaid@7.1.0/dist/mermaid.min.js"></script>
-<script>mermaid.initialize({startOnLoad:true});</script>
-<script src="/static/visualizer.js"></script>
 {% endblock %}
