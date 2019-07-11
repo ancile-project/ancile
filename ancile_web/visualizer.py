@@ -11,12 +11,130 @@ class Node:
         Simple structure to hold information on each node
         of the policy.
     """
-    def __init__(self, name, content, args):
-        self.name = name
+    def __init__(self, id_num, content, args, children=None):
+        self.id_num = id_num
         self.content = content
-        self.children = []
+        self.children = children or []
         self.visited = False
         self.args = param_cell_to_str(args)
+
+class SpecialNode():
+
+    """
+        A special node is a container node for
+        loops, it saves the top and bottom nodes of
+        the loop tree
+    """
+    def __init__(self, inner_tree, children=None):
+        self.inner_tree = inner_tree
+        self.leaves = get_bottom(inner_tree)
+        self.children = children or []
+        self.visited = False
+
+def get_bottom(tree):
+    """
+        Returns the bottom elements of a tree.
+
+        :param tree: Tree list
+        :return List of nodes
+    """
+    children = []
+    for node in tree:
+        if node.children:
+            children += get_bottom(node.children)
+        else:
+            children.append(node)
+    return children
+
+def traverse_tree(policy, count=0, children=None):
+    """
+        Traverses policy list and generates a tree.
+
+        :param policy: Parsed policy list
+        :param count: The current index of the node
+        :param children: Children of the node
+        :return List of nodes
+    """
+
+    operator, first = policy[:2]
+
+    if operator == "exec":
+        return [Node(count, first, policy[2], children)], count+1
+
+    if operator == "concat":
+
+        second_node, count = traverse_tree(policy[2], count, children)
+        return traverse_tree(first, count, second_node)
+
+    if operator == "union":
+
+        first_node, count = traverse_tree(first, count, children)
+        second_node, count = traverse_tree(policy[2], count, children)
+
+        return first_node + second_node, count
+
+    inner_tree, count = traverse_tree(first, count)
+    return [SpecialNode(inner_tree, children)], count
+
+def visualize_policies(tree):
+    """
+        Traverses a policy tree and generates
+        a mermaid-friendly graph.
+
+        :param tree: List of tree nodes
+        :return MermaidJS Tree
+    """
+    content = "graph TD\n"
+    connections = set()
+    stack = tree.copy()
+    while stack:
+        node = stack.pop()
+
+
+        if node.visited:
+            continue
+
+        node.visited = True
+
+        if isinstance(node, SpecialNode):
+            for leaf in node.leaves:
+                for parent in node.inner_tree:
+                    stack.append(parent)
+
+                    connection = f"A{leaf.id_num} --> A{parent.id_num}"
+                    connections.add(connection)
+
+                for child in node.children:
+                    stack.append(child)
+
+                    connection = f"A{leaf.id_num} --> A{child.id_num}"
+                    connections.add(connection)
+
+
+        else:
+            args = args = "<div class=args>" + "<br/>".join(node.args) + "</div>"
+            content += f"A{node.id_num}[\"{node.content} {args}\"]\n"
+            for child in node.children:
+
+                stack.append(child)
+
+                if isinstance(child, SpecialNode):
+                    for sub_child in child.children:
+
+                        connection = f"A{node.id_num} --> A{sub_child.id_num}"
+                        connections.add(connection)
+
+                    for sub_child in child.inner_tree:
+
+                        connection = f"A{node.id_num} --> A{sub_child.id_num}"
+                        connections.add(connection)
+
+                else:
+                    connection = f"A{node.id_num} --> A{child.id_num}"
+                    connections.add(connection)
+
+
+    return content + '\n'.join(connections)
 
 def parse_policy(policy):
     """
@@ -35,123 +153,13 @@ def parse_policy(policy):
             "error": traceback.format_exc()
         }
 
-    top_nodes = generate_tree(parsed_policy, "", 0)
-    mermaid_string = visualize_nodes(top_nodes)
+    top_nodes, _ = traverse_tree(parsed_policy)
+    mermaid_string = visualize_policies(top_nodes)
 
     return {
         "status": "ok",
         "parsed_policy": mermaid_string
     }
-
-def return_lowest(nodes):
-    """
-        Finds the lowest node when given a list of nodes.
-
-        :param nodes: List of nodes
-        :return List of lowest nodes in tree
-    """
-    stack = nodes.copy()
-    already_visited = set()
-    children = []
-    while stack:
-        current_node = stack.pop()
-        if current_node.name in already_visited:
-            continue
-
-        if not current_node.children or [current_node] == current_node.children:
-            children.append(current_node)
-
-        add_self = False
-
-        for child in current_node.children:
-            if child.name in already_visited:
-                add_self = True
-                if child not in children:
-                    children.append(child)
-
-        if add_self:
-            children.append(current_node)
-
-        already_visited.add(current_node.name)
-
-    return children
-
-def visualize_nodes(nodes):
-    """
-        Generates MermaidJS tree using a policy tree.
-
-        :param nodes: List of nodes.
-        :return MermaidJS-ready string.
-    """
-    stack = nodes.copy()
-    content = "graph TD\n"
-    connected = set()
-    while stack:
-        node = stack.pop()
-        if node.visited:
-            continue
-
-        params = '<br />' + '<br />'.join(node.args)
-
-        content += f"{node.name}[{node.content}{params}]\n"
-        node.visited = True
-
-        for child in node.children:
-            stack.append(child)
-
-            connection = f"{node.name} --> {child.name}\n"
-
-            if connection not in connected:
-                content += connection
-                connected.add(connection)
-
-    return content
-
-def generate_tree(policy_list, branch, node_id):
-    """
-        Generates policy tree from a policy list.
-
-        :param policy_list: Policy list given by the user.
-        :param branch: Current branch (in case of unions)
-        :param node_id: Current ID (increments as we move along the list)
-    """
-
-    operator, first = policy_list[:2]
-
-    if operator == "exec":
-        node = Node(f"{branch}{node_id}", first, policy_list[2])
-        return [node]
-
-    if operator == "concat":
-        nodes = generate_tree(first, branch, node_id)
-        children = return_lowest(nodes)
-
-        second_node = generate_tree(policy_list[2], branch, node_id+1)
-
-        for child in children:
-            child.children += second_node
-
-        if first[0] == "star":
-            return nodes + second_node
-
-        return nodes
-
-    if operator == "union":
-        nodes = generate_tree(first, branch+"A", node_id)
-        second_node = generate_tree(policy_list[2], branch+"B", node_id)
-        return nodes + second_node
-
-    if operator == "star":
-
-        nodes = generate_tree(first, branch, node_id)
-        children = return_lowest(nodes)
-
-        for child in children:
-            child.children += nodes
-
-        return nodes + children
-
-    return []
 
 def param_cell_to_str(param_cells):
     """
