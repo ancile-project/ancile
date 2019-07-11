@@ -3,3 +3,8 @@
   padding: 20px;
   border-radius: 5px;
 }
+
+.args {
+  font-family: monospace;
+  font-size: medium;
+}

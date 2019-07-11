@@ -1,5 +1,5 @@
 from ancile_web.app import app
-from flask import Flask, request, json, render_template, url_for, Response, redirect
+from flask import Flask, request, json, render_template, url_for, Response, redirect, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_security import Security, SQLAlchemyUserDatastore, login_required
 from flask_security.core import current_user
@@ -19,11 +19,17 @@ from ancile_web.oauth.oauth import oauth, OAUTH_BACKENDS, register_backend
 from ancile_web.errors import AncileException
 import signal
 from ancile_web.utils import reload_server
+from ancile_web.visualizer import parse_policy
 from json import loads, dumps
 
 logger = logging.getLogger(__name__)
 r = redis.Redis(**REDIS_CONFIG)
 
+@app.route("/api/parse_policy", methods=["POST"])
+def parse_policy_view():
+    policy = request.form.get("policy")
+
+    return jsonify(parse_policy(policy))
 
 def get_user(user, app_id, purpose):
     key_string = user + ":" + str(app_id) + ":" + str(purpose)
