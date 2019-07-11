@@ -68,7 +68,7 @@ def assemble_locals(result, user_specific, app_id):
         return _load(f'{app_id}:{key}')
 
     @use_type_decorator
-    def return_to_app(data, encryption_keys, decrypt_field_list):
+    def return_to_app(data, encryption_keys, decrypt_field_list=None):
         result._dp_pair_data.append(data)
 
     lcls['result'] = result
