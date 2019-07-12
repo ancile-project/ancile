@@ -292,3 +292,8 @@ class ParamSetTests(unittest.TestCase):
         policy = 'test(a in {4, 5.0, 6}, ! b in {"a", "b", "C"})'
         program = "test(data=dp0, a=5, b='a')"
         self.assertFalse(run_test(program, policy))
+
+    def test_scope(self):
+        policy = 'transform'
+        program = "test(data=dp0, a=5, b='a')"
+        self.assertTrue(run_test(program, policy))
