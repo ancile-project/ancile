@@ -507,8 +507,10 @@ def app_panel():
     policies = Policy.query.filter_by(app_id=current_user.id)
     jwt_token = jwt.encode({'salt': current_user.token_salt},
                            app.config["SECRET_KEY"]).decode('ascii')
+    functions = Function.query.filter_by(app_id=current_user.id)
     return render_template('app_panel.html', policies=policies,
-                           jwt_token=jwt_token)
+                           jwt_token=jwt_token,
+                           functions=functions)
 
 @app.route("/app/view_policy/<id>")
 @login_required
@@ -516,6 +518,61 @@ def app_panel():
 def app_view_policy(id):
     policy = Policy.query.filter_by(id=id).first()
     return render_template("app_view_policy.html", policy=policy)
+
+@app.route("/app/add_function", methods=["post"])
+@login_required
+@app_permission.require(http_exception=403)
+def app_add_function():
+    name = request.form.get("nameInput")
+    description = request.form.get("descriptionTextarea")
+    code = request.form.get("codeTextarea")
+
+    function = Function(app_id=current_user.id,
+                        code=code,
+                        description=description,
+                        name=name)
+
+    function.add()
+    function.update() 
+    return redirect("/app#functions")
+
+@app.route("/app/view_function/<id>")
+@login_required
+@app_permission.require(http_exception=403)
+def app_view_function(id):
+    function = Function.query.filter_by(id=id).first()
+    print(function.code)
+    return render_template("app_view_function.html", function=function)
+
+@app.route("/app/edit_function/<id>")
+@login_required
+@app_permission.require(http_exception=403)
+def app_edit_function(id):
+    function = Function.query.filter_by(id=id).first()
+    return render_template("app_edit_function.html", function=function)
+
+@app.route("/app/handle_edit_function/<id>", methods=["post"])
+@login_required
+@app_permission.require(http_exception=403)
+def app_handle_edit_function(id):
+    code = request.form.get("codeTextarea")
+    description = request.form.get("descriptionTextarea")
+
+    function = Function.query.filter_by(id=id).first()
+    function.code = code
+    function.description = description
+    function.approved = False
+    function.update()
+
+    return redirect("/app#functions")
+
+@app.route("/app/delete_function/<id>")
+@login_required
+@app_permission.require(http_exception=403)
+def app_delete_function(id):
+    function = Function.query.filter_by(app_id=current_user.id, id=id).first()
+    function.delete()
+    return redirect("/app#functions")
 
 @app.route('/logout')
 @login_required
