@@ -22,6 +22,9 @@ UserInfoBundle = namedtuple("UserInfoBundle", ['username', 'policies',
 
 r = redis.Redis(**REDIS_CONFIG)
 
+MODULE_PREFIX = """
+from ancile_core.decorators import transform_decorator
+"""
 
 def gen_module_namespace():
     import pkgutil
@@ -79,6 +82,7 @@ def assemble_locals(result, user_specific, app_id):
     lcls['new_collection'] = new_collection
     lcls['encrypt'] = encrypt
     lcls['return_to_app'] = return_to_app
+    lcls['app'] = retrieve_app_module(app_id)
     return lcls
 
 def retrieve_compiled(program):
@@ -96,6 +100,32 @@ def retrieve_compiled(program):
     logger.debug("Used cached program")
     return dill.loads(redis_response)
 
+def retrieve_app_module(app_id):
+    from ancile_web.models import Function
+    import dill
+    import types
+
+    redis_response = r.get(f'{app_id}:_module') if ENABLE_CACHE else None
+
+    if redis_response is None:
+        module = Function.get_app_module(app_id)
+        if module == '':
+            logger.debug('No app-defined module')
+            return types.ModuleType('app')
+
+        module = MODULE_PREFIX + module
+
+        compiled = compile(module, '', 'exec')
+        if ENABLE_CACHE:
+            r.set(f'{app_id}:_module', dill.dumps(compiled), ex=600)
+            logger.debug('Cache miss on compiled module code')
+    else:
+        compiled = dill.loads(redis_response)
+        logger.debug("Using cached module code")
+
+    app = types.ModuleType('app')
+    exec(compiled, app.__dict__)
+    return app
 
 def execute(user_info, program, app_id=None, purpose=None):
     json_output = dict()
