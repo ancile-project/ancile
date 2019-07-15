@@ -139,8 +139,10 @@ def admin_panel():
                            apps=Account.get_apps(),
                            tokens=OAuth2Token.query.all(),
                            policies=Policy.query.all(),
+                           functions=Function.query.all(),
                            providers=providers,
-                           providers_missing_info=providers_missing_info)
+                           providers_missing_info=providers_missing_info,
+                           lookup_account = Account.get_email_by_id)
 
 @app.route("/admin/edit_provider/<name>")
 @login_required
@@ -347,6 +349,39 @@ def admin_delete_token(user_id, name):
 def admin_delete_account(id):
     Account.query.filter_by(id=id).first().delete()
     return redirect("/admin")
+
+@app.route("/admin/view_function/<id>")
+@login_required
+@admin_permission.require(http_exception=403)
+def admin_view_function(id):
+    function = Function.query.filter_by(id=id).first()
+    return render_template("admin_view_function.html", function=function)
+
+@app.route("/admin/approve_function/<id>")
+@login_required
+@admin_permission.require(http_exception=403)
+def admin_approve_function(id):
+    function = Function.query.filter_by(id=id).first()
+    function.approved = True
+    function.update()
+    return redirect("/admin#functions")
+
+@app.route("/admin/unapprove_function/<id>")
+@login_required
+@admin_permission.require(http_exception=403)
+def admin_unapprove_function(id):
+    function = Function.query.filter_by(id=id).first()
+    function.approved = False
+    function.update()
+    return redirect("/admin#functions")
+
+@app.route("/admin/delete_function/<id>")
+@login_required
+@admin_permission.require(http_exception=403)
+def admin_delete_function(id):
+    Function.query.filter_by(id=id).first().delete()
+    return redirect("/admin#functions")
+
 
 @app.route("/user")
 @login_required
