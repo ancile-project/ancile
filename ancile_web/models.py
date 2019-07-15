@@ -6,6 +6,8 @@ from flask_security import UserMixin,RoleMixin
 from flask_security.core import current_user
 from datetime import datetime
 from bcrypt import gensalt
+from ancile_core.policy_sly import PolicyParser
+from ancile_web.errors import ParseError
 
 class Base(db.Model):
     __abstract__ = True
@@ -208,6 +210,10 @@ class Policy(Base):
 
     # to be implemented--will attempt to parse policy
     def validate(self):
+        try:
+            PolicyParser.parse_it(self.policy)
+        except ParseError:
+            return False
       return True
 
     @classmethod
