@@ -1,4 +1,4 @@
-"""empty message
+"""extend token length
 
 Revision ID: 60b3839d3384
 Revises: da042c8f9b71

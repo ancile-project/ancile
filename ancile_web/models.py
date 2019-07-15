@@ -190,6 +190,7 @@ class Policy(Base):
     purpose = db.Column(db.String(255), server_default=db.text("NULL::character varying"))
     policy = db.Column(db.Text)
     active = db.Column(db.Boolean, nullable=False, server_default=db.text('false'))
+    read_only = db.Column(db.Boolean, nullable=False, server_default=db.text('false'))
     provider = db.Column(db.Text)
     app_id = db.Column(db.ForeignKey('accounts.id'), index=True)
     user_id = db.Column(db.ForeignKey('accounts.id'), index=True)
@@ -233,4 +234,11 @@ class Policy(Base):
             policy_dict[policy.provider] = Policy(policy.policy)
         return policy_dict
 
-
+class Function(Base):
+    __tablename__ = 'functions'
+    id = db.Column(db.BigInteger, primary_key=True)
+    app_id = db.Column(db.ForeignKey('accounts.id'), index=True)
+    code = db.Column(db.Text)
+    description = db.Column(db.Text)
+    name = db.Column(db.String(128))
+    approved = db.Column(db.Boolean, nullable=False, server_default=db.text('false'))
