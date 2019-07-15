@@ -8,6 +8,7 @@ from datetime import datetime
 from bcrypt import gensalt
 from ancile_core.policy_sly import PolicyParser
 from ancile_web.errors import ParseError
+from time import time
 
 class Base(db.Model):
     __abstract__ = True
@@ -80,6 +81,9 @@ class OAuth2Token(Base):
     def user_email(self):
         return Account.query.filter_by(id=self.user_id).first().email
 
+    @property
+    def is_expired(self):
+        return time() > self.expires_at
 
     @classmethod
     def get_tokens_by_user(cls, user):
@@ -87,6 +91,11 @@ class OAuth2Token(Base):
         token_dict = dict()
         data_dict = dict()
         for token in user:
+            if token.is_expired:
+                try:
+                    OAuth2Token.update_token(token.name, token)
+                except Exception:
+                    pass
             # token.update_tokens()
             token_dict[token.name] = token.to_token()
             data_dict[token.name] = token.private_data
@@ -214,7 +223,7 @@ class Policy(Base):
             PolicyParser.parse_it(self.policy)
         except ParseError:
             return False
-      return True
+        return True
 
     @classmethod
     def insert(cls, purpose, policy, active, provider, app, user, creator):
@@ -248,3 +257,9 @@ class Function(Base):
     description = db.Column(db.Text)
     name = db.Column(db.String(128))
     approved = db.Column(db.Boolean, nullable=False, server_default=db.text('false'))
+
+    @classmethod
+    def get_app_module(cls, app_id):
+        funcs = cls.query.filter_by(app_id=app_id, approved=True).all()
+        module = '\n'.join((fn.code for fn in funcs))
+        return module
