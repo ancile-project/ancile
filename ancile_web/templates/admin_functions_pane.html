@@ -10,7 +10,7 @@
   </thead>
   <tbody>
     {% for function in functions %}
-    <tr class="table-default">
+    <tr {% if function.approved is sameas False %} class="table-danger" {% else %} class="table-default" {% endif %}>
       <td>{{ function.name }}</td>
       <td>{{ lookup_account(function.app_id) }}</td>
       <td style="word-break:break-all;">{{ function.description }}</td>

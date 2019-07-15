@@ -134,13 +134,22 @@ def admin_panel():
                                ((provider.OAUTH_NAME.upper() not in ids) or 
                                 (provider.OAUTH_NAME.upper() not in secrets))]
 
+    functions=Function.query.all()
+
+    print(functions)
+
+    # sort so that unapproved functions are at the top
+    functions.sort(key=lambda x : 1 if x.approved else 0)
+
+    print(functions)
+
     return render_template('admin_panel.html',
                            users=Account.get_users(),
                            apps=Account.get_apps(),
                            tokens=OAuth2Token.query.all(),
                            policies=Policy.query.all(),
-                           functions=Function.query.all(),
                            providers=providers,
+                           functions=functions,
                            providers_missing_info=providers_missing_info,
                            lookup_account = Account.get_email_by_id)
 
