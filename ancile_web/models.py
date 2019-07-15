@@ -9,6 +9,7 @@ from bcrypt import gensalt
 from ancile_core.policy_sly import PolicyParser
 from ancile_web.errors import ParseError
 from time import time
+from ancile_web.errors import AncileException
 
 class Base(db.Model):
     __abstract__ = True
@@ -94,7 +95,7 @@ class OAuth2Token(Base):
             if token.is_expired:
                 try:
                     OAuth2Token.update_token(token.name, token)
-                except Exception:
+                except AncileException:
                     pass
             # token.update_tokens()
             token_dict[token.name] = token.to_token()
@@ -135,7 +136,7 @@ class OAuth2Token(Base):
             token.update()
             print('Token updated successfully.')
         else:
-            raise Exception(f"Couldn't update token: {res.json()}")
+            raise AncileException(f"Couldn't update token: {res.json()}")
 
     # @classmethod
     # def get_private_data_by_user(cls, user):
