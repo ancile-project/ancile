@@ -136,12 +136,8 @@ def admin_panel():
 
     functions=Function.query.all()
 
-    print(functions)
-
     # sort so that unapproved functions are at the top
     functions.sort(key=lambda x : 1 if x.approved else 0)
-
-    print(functions)
 
     return render_template('admin_panel.html',
                            users=Account.get_users(),
