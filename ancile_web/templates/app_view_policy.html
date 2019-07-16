@@ -20,6 +20,7 @@
       <th scope="col">User</th>
       <th scope="col">Purpose</th>
       <th scope="col">Provider</th>
+      <th scope="col">Read-only?</th>
       <th scope="col">Active?</th>
     </tr>
   </thead>
@@ -27,12 +28,13 @@
     <tr class="table-default">
       <td>{{ policy.user.email }}</td>
       <td style="word-break:break-all;">{{ policy.purpose }}</td>
-      <td>{{ policy.provider  }}</td>
-      <td>{{ policy.active  }}</td>
+      <td>{{ policy.provider }}</td>
+      <td>{{ policy.read_only }}</td>
+      <td>{{ policy.active }}</td>
     </tr>
   </tbody>
 </table>
 
-<a class="btn btn-secondary btn-lg" href="/panel" style="color:white;">Back</a>
+<a class="btn btn-secondary btn-lg" href="/panel#policies" style="color:white;">Back</a>
 
 {% endblock %}

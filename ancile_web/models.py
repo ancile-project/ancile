@@ -211,14 +211,15 @@ class Policy(Base):
       return True
 
     @classmethod
-    def insert(cls, purpose, policy, active, provider, app, user, creator):
+    def insert(cls, purpose, policy, active, provider, app, user, creator, readOnly):
       policy_obj = cls(purpose=purpose,
                           policy=policy,
                           active=active,
                           provider=provider,
                           app_id=Account.get_id_by_email(app),
                           user_id=Account.get_id_by_email(user),
-                          creator_id=creator)
+                          creator_id=creator,
+                          read_only=readOnly)
       if not policy_obj.validate():
         return False
       policy_obj.add()

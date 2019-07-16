@@ -43,6 +43,11 @@
 
   <br>
 
+  <label for="readOnly">Read-only?</label>
+  <input type="checkbox" name="readOnly" {% if default_read_only is eq True %} checked {% endif %} ></input>
+
+  <br>
+
   <input type="submit" class="btn btn-primary" value="Edit policy" form="editPolicyForm">
 
 </form>

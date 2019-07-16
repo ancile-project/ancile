@@ -21,6 +21,7 @@
       <th scope="col">Application</th>
       <th scope="col">Purpose</th>
       <th scope="col">Provider</th>
+      <th scope="col">Read-only?</th>
       <th scope="col">Active?</th>
     </tr>
   </thead>
@@ -29,6 +30,7 @@
       <td>{{ policy.app.email }}</td>
       <td style="word-break:break-all;">{{ policy.purpose }}</td>
       <td>{{ policy.provider  }}</td>
+      <td>{{ policy.read_only  }}</td>
       <td>{{ policy.active  }}</td>
     </tr>
   </tbody>

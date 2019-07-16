@@ -268,8 +268,9 @@ def admin_add_policy():
     policy = request.form.get("policyTextarea")
     provider = request.form.get("providerSelect")
     active = True if request.form.get("active") == "on" else False
+    readOnly = True if request.form.get("readOnly") == "on" else False
     # validate policy
-    if Policy.insert(purpose, policy, active, provider, app, user, current_user.id):
+    if Policy.insert(purpose, policy, active, provider, app, user, current_user.id, readOnly):
         return redirect("/admin#policies")
     return redirect("/invalid_policy")
 
@@ -298,6 +299,7 @@ def admin_edit_policy(id):
                            default_policy=policy.policy,
                            default_provider=policy.provider,
                            default_active=policy.active,
+                           default_read_only=policy.read_only,
                            id=id)
 
 @app.route("/admin/handle_edit_policy/<id>", methods=["POST"])
@@ -310,6 +312,7 @@ def admin_handle_edit_policy(id):
     policy_text = request.form.get("policyTextarea")
     provider = request.form.get("providerSelect")
     active = True if request.form.get("active") == "on" else False
+    readOnly = True if request.form.get("readOnly") == "on" else False
 
     policy = Policy.query.filter_by(id=id).first()
 
@@ -319,6 +322,7 @@ def admin_handle_edit_policy(id):
     policy.policy = policy_text
     policy.provider = provider
     policy.active = active
+    policy.read_only = readOnly
 
     if not policy.validate():
         return render_template("/invalid_policy")
