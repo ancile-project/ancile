@@ -25,6 +25,10 @@ from json import loads, dumps
 logger = logging.getLogger(__name__)
 r = redis.Redis(**REDIS_CONFIG)
 
+MODULE_PREFIX = """
+from ancile_core.decorators import transform_decorator
+"""
+
 @app.route("/api/parse_policy", methods=["POST"])
 def parse_policy_view():
     policy = request.form.get("policy")
@@ -67,6 +71,33 @@ def get_app_id(token):
     logger.debug(f'Used cached app id: {app_id}')
     return pickle.loads(redis_response)
 
+def retrieve_app_module(app_id):
+    from ancile_web.models import Function
+    import dill
+    import types
+
+    redis_response = r.get(f'{app_id}:_module') if ENABLE_CACHE else None
+
+    if redis_response is None:
+        module = Function.get_app_module(app_id)
+        if module == '':
+            logger.debug('No app-defined module')
+            return types.ModuleType('app')
+
+        module = MODULE_PREFIX + module
+
+        compiled = compile(module, '', 'exec')
+        if ENABLE_CACHE:
+            r.set(f'{app_id}:_module', dill.dumps(compiled), ex=600)
+            logger.debug('Cache miss on compiled module code')
+    else:
+        compiled = dill.loads(redis_response)
+        logger.debug("Using cached module code")
+
+    app = types.ModuleType('app')
+    exec(compiled, app.__dict__)
+    return app
+
 
 # define permissions
 admin_permission = Permission(RoleNeed('admin'))
@@ -102,7 +133,8 @@ def run_api():
     res = execute(user_info=user_info,
                   program=program,
                   app_id=app_id,
-                  purpose=purpose)
+                  purpose=purpose,
+                  app_module=retrieve_app_module(app_id))
     logger.info(f'Returning: {res}')
     return json.dumps(res)
 
