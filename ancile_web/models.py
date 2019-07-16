@@ -284,5 +284,5 @@ class PredefinedPolicy(Base):
 
     group_id = db.Column(db.ForeignKey('policy_group.id'), index=True)
 
-    app = db.relationship('Account', primaryjoin='Policy.app_id == Account.id')
+    app = db.relationship('Account', primaryjoin='PredefinedPolicy.app_id == Account.id')
     group = db.relationship('PolicyGroup', primaryjoin='PredefinedPolicy.group_id == PolicyGroup.id')
