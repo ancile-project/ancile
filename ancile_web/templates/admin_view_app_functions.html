@@ -1,0 +1,51 @@
+{% extends "default.html" %}
+
+{% block title %}Admin Panel{% endblock %}
+
+{% block content %}
+
+<h1>App Functions</h1>
+
+<hr class="my-4">
+
+Custom functions for {{ app }}.
+
+<br>
+<br>
+
+<table class="table table-hover">
+    <thead>
+    <tr>
+        <th scope="col">Name</th>
+        <th scope="col">Description</th>
+        <th scope="col">Approved?</th>
+        <th scope="col">More</th>
+    </tr>
+    </thead>
+
+    <tbody>
+        {% for function in functions %}
+        {% if function.approved is sameas True %}
+            <tr class="table-default">
+        {% else %}
+            <tr class="table-danger">
+        {% endif %}
+        <td>{{ function.name }}</td>
+        <td>{{ function.description }}</td>
+        <td>{{ function.approved }}</td>
+        <td>
+            <a href={{url_for("admin_view_function", id=function.id)}}>View</a>
+          {% if function.approved is sameas True %}
+            <a href={{ url_for("admin_unapprove_function", id=function.id) }}>Unapprove</a>
+          {% else %}
+            <a href={{ url_for("admin_approve_function", id=function.id) }}>Approve</a>
+          {% endif %}
+        </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<a class="btn btn-secondary btn-lg" href="/admin#apps" style="color:white;">Back</a>
+
+{% endblock %}

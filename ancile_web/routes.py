@@ -166,13 +166,20 @@ def admin_panel():
                                ((provider.OAUTH_NAME.upper() not in ids) or 
                                 (provider.OAUTH_NAME.upper() not in secrets))]
 
+    functions=Function.query.all()
+
+    # sort so that unapproved functions are at the top
+    functions.sort(key=lambda x : 1 if x.approved else 0)
+
     return render_template('admin_panel.html',
                            users=Account.get_users(),
                            apps=Account.get_apps(),
                            tokens=OAuth2Token.query.all(),
                            policies=Policy.query.all(),
                            providers=providers,
-                           providers_missing_info=providers_missing_info)
+                           functions=functions,
+                           providers_missing_info=providers_missing_info,
+                           lookup_account = Account.get_email_by_id)
 
 @app.route("/admin/edit_provider/<name>")
 @login_required
@@ -293,8 +300,9 @@ def admin_add_policy():
     policy = request.form.get("policyTextarea")
     provider = request.form.get("providerSelect")
     active = True if request.form.get("active") == "on" else False
+    readOnly = True if request.form.get("readOnly") == "on" else False
     # validate policy
-    if Policy.insert(purpose, policy, active, provider, app, user, current_user.id):
+    if Policy.insert(purpose, policy, active, provider, app, user, current_user.id, readOnly):
         return redirect("/admin#policies")
     return redirect("/invalid_policy")
 
@@ -323,6 +331,7 @@ def admin_edit_policy(id):
                            default_policy=policy.policy,
                            default_provider=policy.provider,
                            default_active=policy.active,
+                           default_read_only=policy.read_only,
                            id=id)
 
 @app.route("/admin/handle_edit_policy/<id>", methods=["POST"])
@@ -335,6 +344,7 @@ def admin_handle_edit_policy(id):
     policy_text = request.form.get("policyTextarea")
     provider = request.form.get("providerSelect")
     active = True if request.form.get("active") == "on" else False
+    readOnly = True if request.form.get("readOnly") == "on" else False
 
     policy = Policy.query.filter_by(id=id).first()
 
@@ -344,6 +354,7 @@ def admin_handle_edit_policy(id):
     policy.policy = policy_text
     policy.provider = provider
     policy.active = active
+    policy.read_only = readOnly
 
     if not policy.validate():
         return render_template("/invalid_policy")
@@ -379,6 +390,44 @@ def admin_delete_token(user_id, name):
 def admin_delete_account(id):
     Account.query.filter_by(id=id).first().delete()
     return redirect("/admin")
+
+@app.route("/admin/view_function/<id>")
+@login_required
+@admin_permission.require(http_exception=403)
+def admin_view_function(id):
+    function = Function.query.filter_by(id=id).first()
+    return render_template("admin_view_function.html", function=function)
+
+@app.route("/admin/approve_function/<id>")
+@login_required
+@admin_permission.require(http_exception=403)
+def admin_approve_function(id):
+    function = Function.query.filter_by(id=id).first()
+    function.approved = True
+    function.update()
+    return redirect("/admin#functions")
+
+@app.route("/admin/unapprove_function/<id>")
+@login_required
+@admin_permission.require(http_exception=403)
+def admin_unapprove_function(id):
+    function = Function.query.filter_by(id=id).first()
+    function.approved = False
+    function.update()
+    return redirect("/admin#functions")
+
+@app.route("/admin/delete_function/<id>")
+@login_required
+@admin_permission.require(http_exception=403)
+def admin_delete_function(id):
+    Function.query.filter_by(id=id).first().delete()
+    return redirect("/admin#functions")
+
+@app.route("/admin/view_functions/<id>")
+@login_required
+@admin_permission.require(http_exception=403)
+def admin_view_app_functions(id):
+    return render_template("admin_view_app_functions.html", app=Account.get_email_by_id(id), functions=Function.query.filter_by(app_id=id))
 
 @app.route("/user")
 @login_required
@@ -539,8 +588,10 @@ def app_panel():
     policies = Policy.query.filter_by(app_id=current_user.id)
     jwt_token = jwt.encode({'salt': current_user.token_salt},
                            app.config["SECRET_KEY"]).decode('ascii')
+    functions = Function.query.filter_by(app_id=current_user.id)
     return render_template('app_panel.html', policies=policies,
-                           jwt_token=jwt_token)
+                           jwt_token=jwt_token,
+                           functions=functions)
 
 @app.route("/app/view_policy/<id>")
 @login_required
@@ -548,6 +599,61 @@ def app_panel():
 def app_view_policy(id):
     policy = Policy.query.filter_by(id=id).first()
     return render_template("app_view_policy.html", policy=policy)
+
+@app.route("/app/add_function", methods=["post"])
+@login_required
+@app_permission.require(http_exception=403)
+def app_add_function():
+    name = request.form.get("nameInput")
+    description = request.form.get("descriptionTextarea")
+    code = request.form.get("codeTextarea")
+
+    function = Function(app_id=current_user.id,
+                        code=code,
+                        description=description,
+                        name=name)
+
+    function.add()
+    function.update() 
+    return redirect("/app#functions")
+
+@app.route("/app/view_function/<id>")
+@login_required
+@app_permission.require(http_exception=403)
+def app_view_function(id):
+    function = Function.query.filter_by(id=id).first()
+    print(function.code)
+    return render_template("app_view_function.html", function=function)
+
+@app.route("/app/edit_function/<id>")
+@login_required
+@app_permission.require(http_exception=403)
+def app_edit_function(id):
+    function = Function.query.filter_by(id=id).first()
+    return render_template("app_edit_function.html", function=function)
+
+@app.route("/app/handle_edit_function/<id>", methods=["post"])
+@login_required
+@app_permission.require(http_exception=403)
+def app_handle_edit_function(id):
+    code = request.form.get("codeTextarea")
+    description = request.form.get("descriptionTextarea")
+
+    function = Function.query.filter_by(id=id).first()
+    function.code = code
+    function.description = description
+    function.approved = False
+    function.update()
+
+    return redirect("/app#functions")
+
+@app.route("/app/delete_function/<id>")
+@login_required
+@app_permission.require(http_exception=403)
+def app_delete_function(id):
+    function = Function.query.filter_by(app_id=current_user.id, id=id).first()
+    function.delete()
+    return redirect("/app#functions")
 
 @app.route('/logout')
 @login_required

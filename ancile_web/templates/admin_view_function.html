@@ -1,0 +1,56 @@
+{% extends "default.html" %}
+
+{% block title %}Admin Panel{% endblock %}
+
+{% block content %}
+
+<h1>Function</h1>
+
+<hr class="my-4">
+<div id="editor">{{ function.code }}</div>
+<br>
+
+<style type="text/css" media="screen">
+    #editor { 
+        width: 50%;
+        margin: auto;
+        height: 250px;
+        border-radius: 5px;
+    }
+</style>
+
+<script src={{ url_for("static", filename="ace/ace.js") }} type="text/javascript" charset="utf-8"></script>
+<script>
+    var editor = ace.edit("editor");
+    editor.setTheme("ace/theme/tomorrow");
+    editor.session.setMode("ace/mode/python");
+    editor.setReadOnly(true);
+</script>
+
+<table class="table table-hover">
+  <thead>
+    <tr>
+      <th scope="col">Name</th>
+      <th scope="col">Description</th>
+      <th scope="col">Approved?</th>
+      <th scope="col">More</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="table-default">
+      <td>{{ function.name }}</td>
+      <td style="word-break:break-all;">{{ function.description }}</td>
+      <td>{{ function.approved  }}</td>
+      {% if function.approved is sameas True %}
+        <td><a href={{ url_for("admin_unapprove_function", id=function.id) }}>Unapprove</a></td>
+      {% else %}
+        <td><a href={{ url_for("admin_approve_function", id=function.id) }}>Approve</a></td>
+      {% endif %}
+    </tr>
+  </tbody>
+</table>
+
+<a class="btn btn-secondary btn-lg" href="/admin#functions" style="color:white;">Back</a>
+
+{% endblock %}
+
