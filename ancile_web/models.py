@@ -1,5 +1,5 @@
 # coding: utf-8
-from ancile_web.app import db,app
+from ancile_web.app import db, app
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm.attributes import flag_modified
 from flask_security import UserMixin,RoleMixin
@@ -265,3 +265,24 @@ class Function(Base):
         funcs = cls.query.filter_by(app_id=app_id, approved=True).all()
         module = '\n'.join((fn.code for fn in funcs))
         return module
+
+class PolicyGroup(Base):
+    __tablename__ = 'policy_group'
+    app_id = db.Column(db.ForeignKey('accounts.id'), index=True)
+    description = db.Column(db.Text)
+    name = db.Column(db.Text)
+
+class PredefinedPolicy(Base):
+    __tablename__ = 'predefined_policies'
+
+    purpose = db.Column(db.String(255), server_default=db.text("NULL::character varying"))
+    policy = db.Column(db.Text)
+    provider = db.Column(db.Text)
+    app_id = db.Column(db.ForeignKey('accounts.id'), index=True)
+    creator_id = db.Column(db.ForeignKey('accounts.id'))
+    approved = db.Column(db.Boolean, nullable=False, server_default=db.text('false'))
+
+    group_id = db.Column(db.ForeignKey('policy_group.id'), index=True)
+
+    app = db.relationship('Account', primaryjoin='Policy.app_id == Account.id')
+    group = db.relationship('PolicyGroup', primaryjoin='PredefinedPolicy.group_id == PolicyGroup.id')
