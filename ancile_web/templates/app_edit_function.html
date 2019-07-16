@@ -37,7 +37,7 @@
 
 <form method="POST" action={{ url_for("app_handle_edit_function", id=function.id)}} id="editFunctionForm">
 
-    <textarea id="codeTextarea" name="codeTextarea" style="display: none;"></textarea>
+    <textarea id="codeTextarea" name="codeTextarea" style="display: none;">{{ function.code }}</textarea>
 
     <label for="descriptionTextarea">Description</label>
     <textarea class="form-control" id="descriptionTextarea" name="descriptionTextarea" style="width: 50%; margin: auto;"> {{ function.description }} </textarea>
