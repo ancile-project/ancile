@@ -387,6 +387,11 @@ def admin_delete_function(id):
     Function.query.filter_by(id=id).first().delete()
     return redirect("/admin#functions")
 
+@app.route("/admin/view_functions/<id>")
+@login_required
+@admin_permission.require(http_exception=403)
+def admin_view_app_functions(id):
+    return render_template("admin_view_app_functions.html", app=Account.get_email_by_id(id), functions=Function.query.filter_by(app_id=id))
 
 @app.route("/user")
 @login_required
