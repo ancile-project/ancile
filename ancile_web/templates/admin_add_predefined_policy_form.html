@@ -12,7 +12,11 @@
   <label for="groupSelect">Group</label>
   <select class="form-control" id="groupSelect" name="groupSelect">
     {% for group in groups %}
+      {% if group is none %}
+      <option value={{group}}>None</option>
+      {% else %}
       <option>{{ group.name }}</option>
+      {% endif %}
     {% endfor %}
   </select>
 

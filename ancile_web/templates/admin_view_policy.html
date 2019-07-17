@@ -38,7 +38,11 @@
       {% if predefined is sameas False %}
       <td>{{ policy.user.email  }}</td>
       {% else %}
+      {% if policy.group is none %}
+      <td>None</td>
+      {% else%}
       <td>{{ policy.group.name  }}</td>
+      {% endif %}
       {% endif %}
       <td style="word-break:break-all;">{{ policy.purpose }}</td>
       <td>{{ policy.provider  }}</td>

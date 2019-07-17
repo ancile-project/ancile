@@ -171,6 +171,8 @@ def admin_panel():
     functions.sort(key=lambda x : 1 if x.approved else 0)
 
     predefined_policies=PredefinedPolicy.query.all()
+    # sort so that policies are listed by group
+    predefined_policies.sort(key=lambda p : p.group.name if p.group else "")
 
     return render_template('admin_panel.html',
                            users=Account.get_users(),
@@ -422,6 +424,7 @@ def admin_add_predefined_policy():
     policy = request.form.get("policyTextarea")
     provider = request.form.get("providerSelect")
     approved = True if request.form.get("approved") == "on" else False
+    print(group)
     # validate policy
     if PredefinedPolicy.insert(purpose, policy, provider, app, group, current_user.id, approved):
         return redirect("/admin#prepolicies")

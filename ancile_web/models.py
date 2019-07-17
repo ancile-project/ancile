@@ -274,7 +274,10 @@ class PolicyGroup(Base):
 
     @classmethod
     def get_id_by_name(cls, name):
-        return cls.query.filter_by(name=name).first()
+        group = cls.query.filter_by(name=name).first()
+        if group == None:
+            return None
+        return group.id
 
 class PredefinedPolicy(Base):
     __tablename__ = 'predefined_policies'

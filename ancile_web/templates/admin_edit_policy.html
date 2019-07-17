@@ -29,7 +29,8 @@
   <label for="groupSelect">Group</label>
   <select class="form-control" id="groupSelect" name="groupSelect">
     {% for group in groups %}
-      <option {% if group is eq default_group %} selected=selected {% endif %}>{{ group.name }}</option>
+      
+      <option {% if group is eq default_group %} selected=selected {% endif %}>{% if group is none %} None {% else %}{{ group.name }}{% endif%}</option>
     {% endfor %}
   </select>
 

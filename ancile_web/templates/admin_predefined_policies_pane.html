@@ -15,7 +15,11 @@
       <td>{{ policy.app.email }}</td>
       <td style="word-break:break-all;">{{ policy.purpose }}</td>
       <td>{{ policy.provider  }}</td>
+      {% if policy.group is none %}
+      <td>None</td>
+      {% else %}
       <td>{{ policy.group.name  }}</td>
+      {% endif %}
       <td>{{ policy.approved  }}</td>
       <td>
       <a href={{ url_for("admin_view_policy", id=policy.id, predefined=True) }}>View</a>
