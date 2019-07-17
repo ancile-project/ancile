@@ -258,7 +258,6 @@ def admin_add_provider():
         f"          return 'success'"
         )
 
-
     with open("ancile_web/oauth/providers/" + name.lower() + ".py", "w") as class_stream:
         class_stream.write(provider_class)
 
