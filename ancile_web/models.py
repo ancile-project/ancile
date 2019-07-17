@@ -119,7 +119,7 @@ class OAuth2Token(Base):
         # Basic Auth (default)
         from base64 import b64encode as encode
         if auth_method == 'client_secret_basic':
-            headers = {"Authorization": "basic " + str(encode(bytes(client_id + ":" + client_secret,'utf8')), 'utf-8')} 
+            headers = {"Authorization": "basic " + str(encode(bytes(client_id + ":" + client_secret,'utf8')), 'utf-8')}
 
 
         data = {'refresh_token': token.refresh_token,
