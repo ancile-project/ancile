@@ -163,7 +163,7 @@ def admin_panel():
     secrets = [key.replace("_CLIENT_SECRET", "") for key in app.config.keys() if "CLIENT_SECRET" in key]
 
     providers_missing_info = [provider for provider in providers if
-                               ((provider.OAUTH_NAME.upper() not in ids) or 
+                               ((provider.OAUTH_NAME.upper() not in ids) or
                                 (provider.OAUTH_NAME.upper() not in secrets))]
 
     functions=Function.query.all()
@@ -206,7 +206,7 @@ def admin_handle_edit_provider(name):
 
     cl_id = request.form.get("idTextarea")
     cl_secret = request.form.get("secretTextarea")
-        
+
     new_entry = {   id_key     : cl_id,
                     secret_key : cl_secret }
 
@@ -216,7 +216,7 @@ def admin_handle_edit_provider(name):
     # update config
     with open("config/oauth.yaml", "r+") as config_stream:
         config = yaml.safe_load(config_stream)
-        
+
         config['secrets'].update(new_entry)
 
         config_stream.seek(0)
@@ -252,13 +252,13 @@ def admin_add_provider():
         f"      def profile(self, **kwargs):\n"
         f"          return 'success'"
         )
-    
+
 
     with open("ancile_web/oauth/providers/" + name.lower() + ".py", "w") as class_stream:
-        class_stream.write(provider_class) 
+        class_stream.write(provider_class)
 
     reload_server()
-    
+
     return redirect("/admin")
 
 @app.route("/admin/delete_provider/<name>")
@@ -270,14 +270,14 @@ def admin_delete_provider(name):
 
     id_key = name.upper() + "_CLIENT_ID"
     secret_key = name.upper() + "_CLIENT_SECRET"
-    
+
     app.config.pop(id_key)
     app.config.pop(secret_key)
 
     # update config
     with open("config/oauth.yaml", "r+") as config_stream:
         config = yaml.safe_load(config_stream)
-        
+
         config_stream.seek(0)
         config_stream.truncate(0)
 
@@ -310,7 +310,7 @@ def admin_add_policy():
 @login_required
 @admin_permission.require(http_exception=403)
 def admin_view_policy(id):
-    policy = Policy.query.filter_by(id=id).first() 
+    policy = Policy.query.filter_by(id=id).first()
     return render_template("admin_view_policy.html", policy=policy)
 
 @app.route("/admin/edit_policy/<id>")
@@ -462,7 +462,7 @@ def user_add_policy():
 @login_required
 @user_permission.require(http_exception=403)
 def user_view_policy(id):
-    policy = Policy.query.filter_by(id=id).first() 
+    policy = Policy.query.filter_by(id=id).first()
     return render_template("user_view_policy.html", policy=policy)
 
 @app.route("/user/edit_policy/<id>")
@@ -550,13 +550,13 @@ def user_handle_edit_token(name):
 def user_add_data(name):
     key = request.form.get("keyInput")
     value = request.form.get("valueInput")
-    
+
     token = OAuth2Token.query.filter_by(name=name).first()
     data = loads(token.private_data)
     data.update({key:value})
     token.private_data = dumps(data)
     token.update()
-    
+
     return redirect(url_for("user_view_token", name=name))
 
 @app.route("/user/remove_data/<name>/<key>")
@@ -577,7 +577,7 @@ def user_remove_data(name, key):
 def user_delete_token(name):
     for token in current_user.tokens:
         if token.name == name:
-            token.delete() 
+            token.delete()
             break
     return redirect("/user")
 
@@ -614,7 +614,7 @@ def app_add_function():
                         name=name)
 
     function.add()
-    function.update() 
+    function.update()
     return redirect("/app#functions")
 
 @app.route("/app/view_function/<id>")
