@@ -272,6 +272,10 @@ class PolicyGroup(Base):
     description = db.Column(db.Text)
     name = db.Column(db.Text)
 
+    @classmethod
+    def get_id_by_name(cls, name):
+        return cls.query.filter_by(name=name).first()
+
 class PredefinedPolicy(Base):
     __tablename__ = 'predefined_policies'
 
@@ -286,3 +290,26 @@ class PredefinedPolicy(Base):
 
     app = db.relationship('Account', primaryjoin='PredefinedPolicy.app_id == Account.id')
     group = db.relationship('PolicyGroup', primaryjoin='PredefinedPolicy.group_id == PolicyGroup.id')
+
+    def validate(self):
+        try:
+            PolicyParser.parse_it(self.policy)
+        except ParseError:
+            return False
+        return True
+
+    @classmethod
+    def insert(cls, purpose, policy, provider, app, group, creator, approved):
+      policy_obj = cls(purpose=purpose,
+                          policy=policy,
+                          provider=provider,
+                          app_id=Account.get_id_by_email(app),
+                          group_id=PolicyGroup.get_id_by_name(group),
+                          creator_id=creator,
+                          approved=approved)
+      if not policy_obj.validate():
+        return False
+      policy_obj.add()
+      policy_obj.update()
+      return True
+
