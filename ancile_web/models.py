@@ -286,3 +286,7 @@ class PredefinedPolicy(Base):
 
     app = db.relationship('Account', primaryjoin='PredefinedPolicy.app_id == Account.id')
     group = db.relationship('PolicyGroup', primaryjoin='PredefinedPolicy.group_id == PolicyGroup.id')
+
+    @classmethod
+    def get_policy_group(cls, group_id):
+        return cls.query.filter_by(group_id=group_id).all()
