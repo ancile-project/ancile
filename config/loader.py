@@ -11,7 +11,6 @@ ENABLE_CACHE = configs['operational']['CACHE']
 ENABLE_LOGGING = configs['operational']['LOGGING']
 PROVIDERS = configs['providers']
 
-
 def _postgres_url(POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_HOST,
                   POSTGRES_PORT, POSTGRES_DB):
     return {"SQLALCHEMY_DATABASE_URI": f'postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}'}
@@ -22,6 +21,7 @@ def configure_app(app):
     app.config.update(**configs['security'])
     app.config.update(**configs['mail'])
     app.config.update(**oauth['secrets'])
+    app.config.update(**configs['api_keys'])
 
     if ENABLE_LOGGING:
         import os

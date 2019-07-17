@@ -11,7 +11,7 @@ class Rdl(OAuthBackend):
         'api_base_url': 'https://localhost:9980',
         'access_token_url': 'https://localhost:9980/test/oauth/token',
         'authorize_url': 'https://localhost:9980/test/oauth/authorize',
-        'client_kwargs': {'scope': 'usage'},
+        'client_kwargs': {'scope': 'usage urls youtube_search youtube_watch'},
     }
 
 
