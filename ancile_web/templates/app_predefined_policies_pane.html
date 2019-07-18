@@ -10,7 +10,11 @@
   </thead>
   <tbody>
     {% for policy in predefined_policies %}
+    {% if policy.approved is sameas False%}
+    <tr class="table-danger">
+    {% else %}
     <tr class="table-default">
+    {% endif %}
       <td style="word-break:break-all;">{{ policy.purpose }}</td>
       <td>{{ policy.provider  }}</td>
       {% if policy.group is none %}
