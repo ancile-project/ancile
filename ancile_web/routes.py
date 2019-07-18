@@ -663,7 +663,7 @@ def user_delete_token(name):
 @app_permission.require(http_exception=403)
 def app_panel():
     policies = Policy.query.filter_by(app_id=current_user.id)
-    predefined_policies = list(PredefinedPolicy.query.filter_by(app_id=current_user.id))
+    predefined_policies = PredefinedPolicy.query.filter_by(app_id=current_user.id).all()
     predefined_policies.sort(key=lambda p : p.group.name if p.group else "")
 
     groups = PolicyGroup.query.all()
@@ -671,7 +671,7 @@ def app_panel():
     jwt_token = jwt.encode({'salt': current_user.token_salt},
                            app.config["SECRET_KEY"]).decode('ascii')
     functions = Function.query.filter_by(app_id=current_user.id)
-    return render_template('app_panel.html', 
+    return render_template('app_panel.html',
                            providers=OAUTH_BACKENDS,
                            policies=policies,
                            predefined_policies=predefined_policies,
@@ -697,7 +697,7 @@ def app_add_policy():
 @app_permission.require(http_exception=403)
 def app_edit_policy(id):
     policy = PredefinedPolicy.query.filter_by(id=id).first()
-    return render_template("app_edit_policy.html", 
+    return render_template("app_edit_policy.html",
                             policy=policy,
                             groups=PolicyGroup.query.all(),
                             providers=OAUTH_BACKENDS,
