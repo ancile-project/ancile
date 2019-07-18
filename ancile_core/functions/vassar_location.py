@@ -1,3 +1,7 @@
+"""
+This module defines Ancile functions to work with data coming from the Vassar
+Campus Data server at campusdataservices.cs.vassar.edu.
+"""
 from ancile_core.decorators import transform_decorator, external_request_decorator
 from ancile_core.functions import location
 from ancile_core.functions.general import get_token
@@ -89,6 +93,7 @@ def fuzz_location(data, radius):
 
     :param data: A DataPolicyPair's data field.
     :param radius: The maximal distance the location may be displaced.
+    :return: The fuzzed location point ['latitude', 'longitude']
     """
     new_lat, new_long = location._fuzz_location(data['latitude'],
                                                 data['longitude'],
