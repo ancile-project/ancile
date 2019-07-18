@@ -12,19 +12,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def collection_decorator(f):
-    @wraps(f)
-    def wrapper(*args, **kwargs):
-        dp_pair = kwargs.get('data', False)
-        if not isinstance(dp_pair, DataPolicyPair):
-            raise ValueError("You need to provide a Data object. Use get_data to get it.")
-
-        logger.info(f'function: {f.__name__} args: {args}, kwargs: {kwargs}, app: {dp_pair._app_id}')
-        return dp_pair._call_collection(f, *args, **kwargs)
-
-    return wrapper
-
-
 class Collection(object):
     def __init__(self, data_points=None):
         self._data_points = data_points if data_points else list()
