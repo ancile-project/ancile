@@ -9,6 +9,12 @@ name = 'cds'
 
 @external_request_decorator()
 def get_last_location(user):
+    """
+    Make a request to the last location API with the user's access token.
+
+    :param user: A UserSpecific data structure
+    :return: The last location information given by the server.
+    """
     token = get_token(user)
     data = {'output': []}
     r = requests.get('https://campusdataservices.cs.vassar.edu/api/last_known',
@@ -23,28 +29,31 @@ def get_last_location(user):
 @transform_decorator
 def in_geofence(geofence, radius, data=None):
     """
-    Simple circular geofence function.
-    EXPECTS: 
-        'latitude', 'longitude' keys in data
-        geofence = (lat, long) pair
-        radius - radius of circular fence in meters
+    Determine if the user is inside the given circular geofence.
+    EXPECTS:
+        'latitude', 'longitude' keys
+
+    :param geofence: (lat, long) pair marking the center of the geofence
+    :param radius: radius of circular fence in meters
+    :return: ['in_geofence'] T if the point is within the fence, F otherwise.
     """
     location_tuple = (data.get('latitude'), data.get('longitude'))
     result_bool = location._in_geofence(geofence, location_tuple, radius)
     data['in_geofence'] = result_bool
-    return True  ## REVISIT THIS PRACTICE
 
 @transform_decorator
 def in_geofences(geofences, data=None):
     """
-    Given a list of circular geofences with labels
-    returns the fence (if any) that the location is in.
-
+    Determine if the user is within any of a given list of circular geofences.
     EXPECTS:
-        'latitude' 'longitude' keys in data
+        'latitude' 'longitude' keys
 
-    geofences is a list of dictionaries that each have
-        'latitude', 'longitude', 'radius', 'label'
+
+    :param list geofences: A list of dictionaries containing the following fields,
+                          'latitude', 'longitude', 'radius', 'label'
+    :return: ['in_geofences']. The label of the geofence the user is in,
+             "Location Unknown" if they are in no fence.
+    :raises: AncileException if the user is in multiple fences.
     """
     location_tuple = (data.get('latitude'), data.get('longitude'))
     filter_lambda = lambda fence: location._in_geofence(
@@ -60,26 +69,27 @@ def in_geofences(geofences, data=None):
     elif len(label) == 1:
         result = label[0]
     else:
-        result = "Error: Overlapping Geofences"
+        raise AncileException("Specified Geofences must not overlap")
 
     data['in_geofences'] = result
-    return True
 
 def in_geofences_bool(geofences, data=None):
-    """
-    A wrapper around in_geofences that reduces the value to a boolean.
-
-    T if in one of the geofences. F if not or the geofences overlap.
-    """
+    """ A wrapper around in_geofences that reduces the value to a boolean"""
     in_geofences(geofences=geofences, data=data)
 
     val = data._data.pop('in_geofences')
-
-    data._data['in_geofences'] = (val not in ["Location Unknown",
-                                              "Error: Overlapping Geofences"])
+    data._data['in_geofences'] = val not in ["Location Unknown"]
 
 @transform_decorator
 def fuzz_location(data, radius):
+    """
+    Fuzz a location point by moving it to some random location with the specified
+    radius.
+        Expects: 'latitude', 'longitude'
+
+    :param data: A DataPolicyPair's data field.
+    :param radius: The maximal distance the location may be displaced.
+    """
     new_lat, new_long = location._fuzz_location(data['latitude'],
                                                 data['longitude'],
                                                 radius)
