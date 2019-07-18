@@ -1,14 +1,14 @@
-Integrating Ancile with RDL and Tealeaves Suite
+# Integrating Ancile with RDL and Tealeaves Suite
 
-Background
+## Background
 
 RDL (Retrospective Data Learning) is a web application that allows users to submit Google Takeout Archives and extracts data from it (e.g. URLs visited, browser history, location history). RDL exposes data via OAuth2 APIs - Ancile can consume these by adding RDL as a data provider. Finally, the Tealeaves Suite consists of 3rd Party apps (e.g. tealeaves, teacloud, memorylane) that use Ancile to fetch, transform, aggregate, and filter RDL data to create visualizations. All apps in the Tealeaves Suite have application accounts on Ancile; they also belong to policies that encompass users, RDL (as a data provider), and the apps themselves. 
 
-Adding RDL as a Data Provider to Ancile
+## Adding RDL as a Data Provider to Ancile
 
 Info in the document titled "How to Set Up RDL as a Data Provider to Ancile.pdf"
 
-Adding the Tealeaves Suite as 3rd Party Applications in Ancile
+## Adding the Tealeaves Suite as 3rd Party Applications in Ancile
 
 1. Create an app account in Ancile for each application
 
@@ -22,11 +22,11 @@ Adding the Tealeaves Suite as 3rd Party Applications in Ancile
 
     1. Instructions available here: https://developers.google.com/youtube/v3/getting-started
 
-That’s It!
+## That’s It!
 
 Make sure RDL, Ancile, and the Tealeaves Application(s) are all running, and some beautiful visualizations should appear for the user!
 
-Appendix
+## Appendix
 
 * RDL functions in Ancile Core (ancile_core/functions/rdl.py)
 
