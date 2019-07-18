@@ -381,7 +381,7 @@ def admin_handle_edit_policy(id, predefined):
 
     if predefined:
         policy = PredefinedPolicy.query.filter_by(id=id).first()
-        policy.group = PolicyGroup.get_id_by_name(group)
+        policy.group_id = PolicyGroup.get_id_by_name(group)
         policy.approved = approved
     else:
         policy = Policy.query.filter_by(id=id).first()
@@ -663,19 +663,87 @@ def user_delete_token(name):
 @app_permission.require(http_exception=403)
 def app_panel():
     policies = Policy.query.filter_by(app_id=current_user.id)
+    predefined_policies = list(PredefinedPolicy.query.filter_by(app_id=current_user.id))
+    predefined_policies.sort(key=lambda p : p.group.name if p.group else "")
+
+    groups = PolicyGroup.query.all()
+
     jwt_token = jwt.encode({'salt': current_user.token_salt},
                            app.config["SECRET_KEY"]).decode('ascii')
     functions = Function.query.filter_by(app_id=current_user.id)
-    return render_template('app_panel.html', policies=policies,
+    return render_template('app_panel.html', 
+                           providers=OAUTH_BACKENDS,
+                           policies=policies,
+                           predefined_policies=predefined_policies,
+                           groups=groups + [None],
                            jwt_token=jwt_token,
                            functions=functions)
 
-@app.route("/app/view_policy/<id>")
+@app.route("/app/add_predefined_policy", methods=["POST"])
 @login_required
 @app_permission.require(http_exception=403)
-def app_view_policy(id):
-    policy = Policy.query.filter_by(id=id).first()
-    return render_template("app_view_policy.html", policy=policy)
+def app_add_policy():
+    group = request.form.get("groupSelect")
+    purpose = request.form.get("purposeTextarea")
+    policy = request.form.get("policyTextarea")
+    provider = request.form.get("providerSelect")
+    # validate policy
+    if PredefinedPolicy.insert(purpose, policy, provider, current_user.email, group, current_user.id, False):
+        return redirect("/app#prepolicies")
+    return redirect("/invalid_policy")
+
+@app.route("/app/edit_predefined_policy/<id>")
+@login_required
+@app_permission.require(http_exception=403)
+def app_edit_policy(id):
+    policy = PredefinedPolicy.query.filter_by(id=id).first()
+    return render_template("app_edit_policy.html", 
+                            policy=policy,
+                            groups=PolicyGroup.query.all(),
+                            providers=OAUTH_BACKENDS,
+                            default_group=policy.group,
+                            default_purpose=policy.purpose,
+                            default_policy=policy.policy,
+                            default_provider=policy.provider)
+
+@app.route("/app/handle_edit_predefined_policy/<id>", methods=["POST"])
+@login_required
+@app_permission.require(http_exception=403)
+def app_handle_edit_policy(id):
+    group = request.form.get("groupSelect")
+    purpose = request.form.get("purposeTextarea")
+    policyText = request.form.get("policyTextarea")
+    provider = request.form.get("providerSelect")
+
+    policy = PredefinedPolicy.query.filter_by(id=id, app_id=current_user.id).first()
+
+    policy.group_id = PolicyGroup.get_id_by_name(group)
+    policy.purpose = purpose
+    policy.policy = policyText
+    policy.provider = provider
+    policy.approved = False
+    
+    policy.update() 
+
+    return redirect("/app#prepolicies")
+
+@app.route("/app/delete_predefined_policy/<id>")
+@login_required
+@app_permission.require(http_exception=403)
+def app_delete_policy(id):
+    PredefinedPolicy.query.filter_by(id=id).first().delete()
+    return redirect("/app#prepolicies")
+
+@app.route("/app/view_policy/<id>")
+@app.route("/app/view_policy/<id>/<predefined>")
+@login_required
+@app_permission.require(http_exception=403)
+def app_view_policy(id, predefined=False):
+    if predefined:
+        policy = PredefinedPolicy.query.filter_by(id=id).first()
+    else: 
+        policy = Policy.query.filter_by(id=id).first()
+    return render_template("app_view_policy.html", policy=policy, predefined=predefined)
 
 @app.route("/app/add_function", methods=["post"])
 @login_required
@@ -731,6 +799,22 @@ def app_delete_function(id):
     function = Function.query.filter_by(app_id=current_user.id, id=id).first()
     function.delete()
     return redirect("/app#functions")
+
+@app.route("/app/add_group", methods=["POST"])
+@login_required
+@app_permission.require(http_exception=403)
+def app_add_group():
+    app = request.form.get("appSelect")
+    name = request.form.get("nameInput")
+    description = request.form.get("descriptionTextarea")
+
+    group = PolicyGroup(app_id=current_user.id,
+                        description=description,
+                        name=name)
+    group.add()
+    group.update()
+
+    return redirect("/app#prepolicies")
 
 @app.route('/logout')
 @login_required

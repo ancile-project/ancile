@@ -1,0 +1,33 @@
+
+{% include "policy_visualizer.html" %}
+<form method="POST" action="/app/add_predefined_policy" id="addPrePolicyForm">
+
+  <label for="groupSelect">Group</label>
+  <select class="form-control" id="groupSelect" name="groupSelect">
+    {% for group in groups %}
+      {% if group is none %}
+      <option value={{group}}>None</option>
+      {% else %}
+      <option>{{ group.name }}</option>
+      {% endif %}
+    {% endfor %}
+  </select>
+
+  <label for="purposeTextarea">Purpose</label>
+  <textarea class="form-control" id="purposeTextarea" name="purposeTextarea" rows="3"></textarea>
+
+  <label for="policyTextarea">Policy</label>
+  <textarea class="form-control" id="policyTextarea" name="policyTextarea" rows="3"></textarea>
+
+  <label for="providerSelect">Provider</label>
+  <select class="form-control" id="providerSelect" name="providerSelect">
+    {% for provider in providers %}
+      <option>{{ provider.OAUTH_NAME }}</option>
+    {% endfor %}
+  </select>
+
+  <br>
+
+  <input type="submit" class="btn btn-primary" value="Add policy" form="addPrePolicyForm">
+
+</form>
