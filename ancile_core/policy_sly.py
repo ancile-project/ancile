@@ -234,7 +234,7 @@ class PolicyParser(Parser):
 
     @_('NEG policy')
     def policy(self, p):
-        return ['NEG', p.policy]
+        return ['neg', p.policy]
 
     @_('policy STAR')
     def policy(self, p):

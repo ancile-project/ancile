@@ -1,9 +1,22 @@
 """
     Utilities for visualizing policies using MermaidJS.
 """
+from enum import Enum
 import traceback
 from ancile_core.policy import PolicyParser
 from ancile_core.policy_sly import ParseError
+
+class NodeType(Enum):
+    STAR = 1
+    NEG = 2
+    INTERSECT = 3
+    UNION = 4
+
+OPERATORS = {
+    NodeType.NEG: "NOT",
+    NodeType.INTERSECT: "AND",
+    NodeType.UNION: "OR"
+}
 
 class Node:
 
@@ -18,6 +31,10 @@ class Node:
         self.visited = False
         self.args = param_cell_to_str(args)
 
+    def __repr__(self):
+        return f"Node(A{self.id_num}, {self.content}, {self.args})"
+
+
 class SpecialNode():
 
     """
@@ -25,18 +42,22 @@ class SpecialNode():
         loops, it saves the top and bottom nodes of
         the loop tree
     """
-    def __init__(self, inner_tree, children=None):
+    def __init__(self, inner_tree, children, node_type):
         self.inner_tree = inner_tree
         self.leaves = get_bottom(inner_tree)
         self.children = children or []
         self.visited = False
+        self.node_type = node_type
+    
+    def __repr__(self):
+        return str(self.inner_tree)
 
 def get_bottom(tree):
     """
         Returns the bottom elements of a tree.
 
         :param tree: Tree list
-        :return List of nodes
+        :returns List of nodes
     """
     children = []
     for node in tree:
@@ -53,7 +74,7 @@ def traverse_tree(policy, count=0, children=None):
         :param policy: Parsed policy list
         :param count: The current index of the node
         :param children: Children of the node
-        :return List of nodes
+        :returns List of nodes
     """
 
     operator, first = policy[:2]
@@ -68,23 +89,33 @@ def traverse_tree(policy, count=0, children=None):
 
     if operator == "union":
 
-        first_node, count = traverse_tree(first, count, children)
-        second_node, count = traverse_tree(policy[2], count, children)
+        first_node, count = traverse_tree(first, count)
+        second_node, count = traverse_tree(policy[2], count)
 
-        return first_node + second_node, count
+        return [SpecialNode(first_node + second_node, children, NodeType.UNION)], count
 
+    if operator == "intersect":
+        first_side, count = traverse_tree(first, count)
+        second_side, count = traverse_tree(policy[2], count)
+        inner_tree = first_side + second_side
+        return [SpecialNode(inner_tree, children, NodeType.INTERSECT)], count
+    
     inner_tree, count = traverse_tree(first, count)
-    return [SpecialNode(inner_tree, children)], count
 
-def visualize_policies(tree):
+    if operator == "star":
+        return [SpecialNode(inner_tree, children, NodeType.STAR)], count
+
+    return [SpecialNode(inner_tree, children, NodeType.NEG)], count
+
+def visualize_policies(tree, start="graph TD\n"):
     """
         Traverses a policy tree and generates
         a mermaid-friendly graph.
 
         :param tree: List of tree nodes
-        :return MermaidJS Tree
+        :returns MermaidJS Tree
     """
-    content = "graph TD\n"
+    content = start
     connections = set()
     stack = tree.copy()
     while stack:
@@ -97,19 +128,31 @@ def visualize_policies(tree):
         node.visited = True
 
         if isinstance(node, SpecialNode):
-            for leaf in node.leaves:
-                for parent in node.inner_tree:
-                    stack.append(parent)
+            if node.node_type == NodeType.STAR:
+                for leaf in node.leaves:
+                    for parent in node.inner_tree:
+                        stack.append(parent)
 
-                    connection = f"A{leaf.id_num} --> A{parent.id_num}"
-                    connections.add(connection)
+                        connection = connect_to(leaf, parent)
+                        connections.add(connection)
 
-                for child in node.children:
-                    stack.append(child)
+                    for child in node.children:
+                        stack.append(child)
 
-                    connection = f"A{leaf.id_num} --> A{child.id_num}"
-                    connections.add(connection)
+                        connection = connect_to(leaf, child)
+                        connections.add(connection)
+            else:
+                operator = OPERATORS[node.node_type]
+                connection_string = f"subgraph {operator}" + "\n"
+                connection_string += visualize_policies(node.inner_tree, start="\n")
+                connection_string += "\nend\n"
+                for leaf in node.leaves:
+                    for child in node.children:
+                        stack.append(child)
 
+                        connection = connect_to(leaf, child)
+                        connections.add(connection)
+                connections.add(connection_string)
 
         else:
             args = args = "<div class=args>" + "<br/>".join(node.args) + "</div>"
@@ -119,22 +162,52 @@ def visualize_policies(tree):
                 stack.append(child)
 
                 if isinstance(child, SpecialNode):
-                    for sub_child in child.children:
+                    if child.node_type == NodeType.STAR:
+                        for sub_child in child.children:
 
-                        connection = f"A{node.id_num} --> A{sub_child.id_num}"
-                        connections.add(connection)
+                            connection = connect_to(node, sub_child)
+                            connections.add(connection)
 
                     for sub_child in child.inner_tree:
 
-                        connection = f"A{node.id_num} --> A{sub_child.id_num}"
+                        connection = connect_to(node, sub_child)
                         connections.add(connection)
 
                 else:
-                    connection = f"A{node.id_num} --> A{child.id_num}"
+                    connection = connect_to(node, child)
                     connections.add(connection)
 
 
     return content + '\n'.join(connections)
+
+def connect_to(node, child_node):
+    """
+        Connects one node to another.
+
+        :param node: The parent Node or SpecialNode Object
+        :param node: The child Node or SpecialNode Object
+        :returns String representing node connections
+    """
+    output = ""
+    if isinstance(node, SpecialNode):
+        tree = node.leaves
+    else:
+        tree = [node]
+    
+    if isinstance(child_node, SpecialNode):
+        bottom_tree = child_node.inner_tree
+    else:
+        bottom_tree = [child_node]
+    
+    for node in tree:
+        for child in bottom_tree:
+            if isinstance(child, SpecialNode) or isinstance(node, SpecialNode):
+                output += connect_to(node, child)
+            else:
+                output += f"A{node.id_num} --> A{child.id_num}" + "\n"
+    
+    return output
+        
 
 def parse_policy(policy):
     """
@@ -143,7 +216,7 @@ def parse_policy(policy):
         graph representation.
 
         :param policy: Policy string
-        :return Dictionary with status and parsed_policy (or traceback)
+        :returns Dictionary with status and parsed_policy (or traceback)
     """
     try:
         parsed_policy = PolicyParser.parse_it(policy)
@@ -152,7 +225,6 @@ def parse_policy(policy):
             "status": "error",
             "error": traceback.format_exc()
         }
-
     top_nodes, _ = traverse_tree(parsed_policy)
     mermaid_string = visualize_policies(top_nodes)
 
@@ -166,7 +238,7 @@ def param_cell_to_str(param_cells):
         Generates a string representation of ParamCells.
 
         :param param_cells: ParamCell dictionary.
-        :return List of ParamCell string representations.
+        :returns List of ParamCell string representations.
     """
     params = []
     for param_cell in param_cells.values():

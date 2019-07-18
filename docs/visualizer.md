@@ -13,7 +13,7 @@ The policy visualizer is split into two parts:
 
 For convenience, we introduce two simple classes:
 *  ```Node```: represents a regular function in the policy
-* ```SpecialNode```: represents a loop clause with the highest and lowest nodes saved
+* ```SpecialNode```: represents a union, intersect, negate, or loop clause with the highest and lowest nodes saved
 
 These are the steps:
 
