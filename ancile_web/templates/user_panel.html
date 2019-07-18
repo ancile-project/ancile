@@ -22,6 +22,9 @@
   <li class="nav-item" data-toggle="tooltip" data-placement="top" data-original-title="View your listed data policies.">
     <a class="nav-link" data-toggle="tab" href="#policies">Policies</a>
   </li>
+  <li class="nav-item" data-toggle="tooltip" data-placement="top" data-original-title="Available apps.">
+    <a class="nav-link" data-toggle="tab" href="#apps">Apps</a>
+  </li>
 </ul>
 
 <div id="tabContent" class="tab-content">
@@ -33,6 +36,9 @@
   </div>
   <div class="tab-pane fade" id="policies">
     {% include "user_policies_pane.html" %}
+  </div>
+  <div class="tab-pane fade" id="apps">
+    {% include "user_apps_pane.html" %}
   </div>
 </div>
 

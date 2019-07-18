@@ -535,12 +535,17 @@ def user_add_policy():
         return redirect("/user#policies")
     return redirect("/invalid_policy")
 
+@app.route("/user/view_policy/<id>/<predefined>")
 @app.route("/user/view_policy/<id>")
 @login_required
 @user_permission.require(http_exception=403)
-def user_view_policy(id):
-    policy = Policy.query.filter_by(id=id).first()
-    return render_template("user_view_policy.html", policy=policy)
+def user_view_policy(id, predefined=False):
+    predefined = False if not predefined else True
+    if predefined:
+        policy = PredefinedPolicy.query.filter_by(id=id).first()
+    else:
+        policy = Policy.query.filter_by(id=id).first()
+    return render_template("user_view_policy.html", policy=policy, predefined=predefined)
 
 @app.route("/user/edit_policy/<id>")
 @login_required
@@ -657,6 +662,52 @@ def user_delete_token(name):
             token.delete()
             break
     return redirect("/user")
+
+@app.route("/user/view_app/<id>")
+@login_required
+@user_permission.require(http_exception=403)
+def user_view_app(id):
+    app = Account.query.filter_by(id=id).first()
+    groups = PolicyGroup.query.filter_by(app_id=id).all()
+    policies = [p for p in PredefinedPolicy.query.filter_by(app_id=id).all() if p.approved]
+    return render_template("user_view_app.html",
+                            app=app,
+                            groups=groups,
+                            policies=policies)
+
+@app.route("/user/use_predefined_policy/<id>")
+@login_required
+@user_permission.require(http_exception=403)
+def user_use_predefined_policy(id):
+    policy_template = PredefinedPolicy.query.filter_by(id=id).first()
+    policy = policy_template.generate_policy(current_user.id)
+    policy.add()
+    policy.update()
+    return redirect("/user#policies")
+
+@app.route("/user/view_policy_group/<name>")
+@login_required
+@user_permission.require(http_exception=403)
+def user_view_policy_group(name):
+    group = PolicyGroup.query.filter_by(name=name).first()
+    app = Account.query.filter_by(id=group.app_id).first()
+    policies = [p for p in PredefinedPolicy.query.filter_by(group_id=group.id).all() if p.approved and p.group.name==name]
+    return render_template("user_view_policy_group.html",
+                            app=app,
+                            group=group,
+                            policies=policies)
+
+@app.route("/user/use_group/<name>")
+@login_required
+@user_permission.require(http_exception=403)
+def user_use_policy_group(name):
+    group = PolicyGroup.query.filter_by(name=name).first()
+    policies = [p for p in PredefinedPolicy.query.filter_by(group_id=group.id).all() if p.approved and p.group.name==name]
+    for policy_template in policies:
+        policy = policy_template.generate_policy(current_user.id)
+        policy.add()
+        policy.update() 
+    return redirect("/user#policies")
 
 @app.route("/app")
 @login_required

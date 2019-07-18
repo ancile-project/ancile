@@ -301,6 +301,15 @@ class PredefinedPolicy(Base):
             return False
         return True
 
+    def generate_policy(self, user_id, active=True):
+        return Policy(purpose=self.purpose,
+                        policy=self.policy,
+                        provider=self.provider,
+                        app_id=self.app_id,
+                        creator_id=self.creator_id,
+                        user_id=user_id,
+                        active=active)
+
     @classmethod
     def insert(cls, purpose, policy, provider, app, group, creator, approved):
       policy_obj = cls(purpose=purpose,
