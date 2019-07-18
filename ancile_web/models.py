@@ -294,11 +294,10 @@ class PredefinedPolicy(Base):
     app = db.relationship('Account', primaryjoin='PredefinedPolicy.app_id == Account.id')
     group = db.relationship('PolicyGroup', primaryjoin='PredefinedPolicy.group_id == PolicyGroup.id')
 
-<<<<<<< HEAD
     @classmethod
     def get_policy_group(cls, group_id):
         return cls.query.filter_by(group_id=group_id).all()
-=======
+
     def validate(self):
         try:
             PolicyParser.parse_it(self.policy)
@@ -317,17 +316,15 @@ class PredefinedPolicy(Base):
 
     @classmethod
     def insert(cls, purpose, policy, provider, app, group, creator, approved):
-      policy_obj = cls(purpose=purpose,
-                          policy=policy,
-                          provider=provider,
-                          app_id=Account.get_id_by_email(app),
-                          group_id=PolicyGroup.get_id_by_name(group),
-                          creator_id=creator,
-                          approved=approved)
-      if not policy_obj.validate():
-        return False
-      policy_obj.add()
-      policy_obj.update()
-      return True
-
->>>>>>> predefined_policies_ui
+        policy_obj = cls(purpose=purpose,
+                            policy=policy,
+                            provider=provider,
+                            app_id=Account.get_id_by_email(app),
+                            group_id=PolicyGroup.get_id_by_name(group),
+                            creator_id=creator,
+                            approved=approved)
+        if not policy_obj.validate():
+            return False
+        policy_obj.add()
+        policy_obj.update()
+        return True
