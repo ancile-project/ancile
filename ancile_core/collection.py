@@ -7,7 +7,7 @@ import ancile_core.policy as policy
 import ancile_core.time as ancile_web_time
 from functools import wraps
 from copy import deepcopy
-from ancile_core.policy import Policy
+from ancile_core.policy import Policy, intersect_list
 import logging
 logger = logging.getLogger(__name__)
 
@@ -22,13 +22,18 @@ class Collection(object):
         return len(self._data_points)
 
     def __repr__(self):
-        return f"<Collection size:{len(self)}. The policy: {self.get_collection_policy()}"
+        return f"<Collection size:{len(self)}. The policy: {self.get_collection_policy()}>"
 
     def get_collection_policy(self):
-        rolling_policy = PolicyParser.parse_it("ANYF*")
-        for dpp in self._data_points:
-            rolling_policy = Policy._simplify(['intersect', rolling_policy, dpp._policy._policy])
-        return Policy(rolling_policy)
+        """
+        Return the policy resulting from the intersection of all policies in
+        the collection.
+
+        Note: If there are no points in the collection, it has the ANYF* policy
+              otherwise the policy is the intersection of the component
+        """
+        return intersect_list((dp._policy for dp in self._data_points),
+                              empty_policy='ANYF*')
 
 
     def _check_collection_policy(self, command, **kwargs):
