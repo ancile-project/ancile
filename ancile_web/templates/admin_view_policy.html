@@ -17,25 +17,49 @@
   <thead>
     <tr>
       <th scope="col">Application</th>
+      {% if predefined is sameas False %}
       <th scope="col">User</th>
+      {% else %}
+      <th scope="col">Group</th>
+      {% endif %}
       <th scope="col">Purpose</th>
       <th scope="col">Provider</th>
+      {% if predefined is sameas False %}
       <th scope="col">Read-only?</th>
       <th scope="col">Active?</th>
+      {% else %}
+      <th scope="col">Approved?</th>
+      {% endif %}
     </tr>
   </thead>
   <tbody>
     <tr class="table-default">
       <td>{{ policy.app.email }}</td>
+      {% if predefined is sameas False %}
       <td>{{ policy.user.email  }}</td>
+      {% else %}
+      {% if policy.group is none %}
+      <td>None</td>
+      {% else%}
+      <td>{{ policy.group.name  }}</td>
+      {% endif %}
+      {% endif %}
       <td style="word-break:break-all;">{{ policy.purpose }}</td>
       <td>{{ policy.provider  }}</td>
+      {% if predefined is sameas False %}
       <td>{{ policy.read_only  }}</td>
       <td>{{ policy.active  }}</td>
+      {% else %}
+      <td>{{ policy.approved  }}</td>
+      {% endif %}
     </tr>
   </tbody>
 </table>
 
+{% if predefined is sameas True %}
+<a class="btn btn-secondary btn-lg" href="/admin#prepolicies" style="color:white;">Back</a>
+{% else %}
 <a class="btn btn-secondary btn-lg" href="/admin#policies" style="color:white;">Back</a>
+{% endif %}
 
 {% endblock %}

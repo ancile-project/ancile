@@ -9,21 +9,32 @@
 <hr class="my-4">
 
 {% include "policy_visualizer.html" %}
-<form method="POST" action={{ url_for("admin_handle_edit_policy", id=id) }} id="editPolicyForm" style="width: 50%; margin: auto;">
+<form method="POST" action={{ url_for("admin_handle_edit_policy", id=id, predefined=predefined) }} id="editPolicyForm" style="width: 50%; margin: auto;">
 
   <label for="appSelect">App</label>
   <select class="form-control" id="appSelect" name="appSelect">
-    {% for app in apps %}  
+    {% for app in apps %}
       <option {% if app.email is eq default_app %} selected=selected {% endif %}>{{ app.email }}</option>
     {% endfor %}
   </select>
 
+  {% if predefined is sameas False %}
   <label for="userSelect">User</label>
   <select class="form-control" id="userSelect" name="userSelect">
-    {% for user in users %}  
+    {% for user in users %}
       <option {% if user.email is eq default_user %} selected=selected {% endif %}>{{ user.email }}</option>
     {% endfor %}
   </select>
+  {% else %}
+  <label for="groupSelect">Group</label>
+  <select class="form-control" id="groupSelect" name="groupSelect">
+    {% for group in groups %}
+      
+      <option {% if group is eq default_group %} selected=selected {% endif %}>{% if group is none %} None {% else %}{{ group.name }}{% endif%}</option>
+    {% endfor %}
+  </select>
+
+  {% endif %}
 
   <label for="purposeTextarea">Purpose</label>
   <textarea class="form-control" id="purposeTextarea" name="purposeTextarea" rows="3">{{ default_purpose }}</textarea>
@@ -33,11 +44,12 @@
 
   <label for="providerSelect">Provider</label>
   <select class="form-control" id="providerSelect" name="providerSelect">
-    {% for provider in providers %}  
+    {% for provider in providers %}
       <option {% if provider.OAUTH_NAME is eq default_provider %} selected=selected {% endif %}>{{ provider.OAUTH_NAME }}</option>
     {% endfor %}
   </select>
 
+  {% if predefined is sameas False %}
   <label for="active">Active?</label>
   <input type="checkbox" name="active" {% if default_active is eq True %} checked {% endif %} ></input>
 
@@ -45,6 +57,13 @@
 
   <label for="readOnly">Read-only?</label>
   <input type="checkbox" name="readOnly" {% if default_read_only is eq True %} checked {% endif %} ></input>
+
+  {% else %}
+
+  <label for="approved">Approved?</label>
+  <input type="checkbox" name="approved" {% if default_approved is eq True %} checked {% endif %} ></input>
+
+  {% endif %}
 
   <br>
 
@@ -54,5 +73,9 @@
 
 <br>
 
+{% if predefined is sameas False %}
 <a class="btn btn-secondary btn-lg" href="/admin#policies" style="color:white;">Back</a>
+{% else %}
+<a class="btn btn-secondary btn-lg" href="/admin#prepolicies" style="color:white;">Back</a>
+{% endif %}
 {% endblock %}

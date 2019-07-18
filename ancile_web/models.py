@@ -119,7 +119,7 @@ class OAuth2Token(Base):
         # Basic Auth (default)
         from base64 import b64encode as encode
         if auth_method == 'client_secret_basic':
-            headers = {"Authorization": "basic " + str(encode(bytes(client_id + ":" + client_secret,'utf8')), 'utf-8')} 
+            headers = {"Authorization": "basic " + str(encode(bytes(client_id + ":" + client_secret,'utf8')), 'utf-8')}
 
 
         data = {'refresh_token': token.refresh_token,
@@ -272,6 +272,13 @@ class PolicyGroup(Base):
     description = db.Column(db.Text)
     name = db.Column(db.Text)
 
+    @classmethod
+    def get_id_by_name(cls, name):
+        group = cls.query.filter_by(name=name).first()
+        if group == None:
+            return None
+        return group.id
+
 class PredefinedPolicy(Base):
     __tablename__ = 'predefined_policies'
 
@@ -287,6 +294,40 @@ class PredefinedPolicy(Base):
     app = db.relationship('Account', primaryjoin='PredefinedPolicy.app_id == Account.id')
     group = db.relationship('PolicyGroup', primaryjoin='PredefinedPolicy.group_id == PolicyGroup.id')
 
+<<<<<<< HEAD
     @classmethod
     def get_policy_group(cls, group_id):
         return cls.query.filter_by(group_id=group_id).all()
+=======
+    def validate(self):
+        try:
+            PolicyParser.parse_it(self.policy)
+        except ParseError:
+            return False
+        return True
+
+    def generate_policy(self, user_id, active=True):
+        return Policy(purpose=self.purpose,
+                        policy=self.policy,
+                        provider=self.provider,
+                        app_id=self.app_id,
+                        creator_id=self.creator_id,
+                        user_id=user_id,
+                        active=active)
+
+    @classmethod
+    def insert(cls, purpose, policy, provider, app, group, creator, approved):
+      policy_obj = cls(purpose=purpose,
+                          policy=policy,
+                          provider=provider,
+                          app_id=Account.get_id_by_email(app),
+                          group_id=PolicyGroup.get_id_by_name(group),
+                          creator_id=creator,
+                          approved=approved)
+      if not policy_obj.validate():
+        return False
+      policy_obj.add()
+      policy_obj.update()
+      return True
+
+>>>>>>> predefined_policies_ui

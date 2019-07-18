@@ -28,6 +28,9 @@
   <li class="nav-item" data-toggle="tooltip" data-placement="top" data-original-title="Policy List">
     <a class="nav-link" data-toggle="tab" href="#policies">Policies</a>
   </li>
+  <li class="nav-item" data-toggle="tooltip" data-placement="top" data-original-title="Predefined Policy List">
+    <a class="nav-link" data-toggle="tab" href="#prepolicies">Predefined Policies</a>
+  </li>
   <li class="nav-item" data-toggle="tooltip" data-placement="top" data-original-title="Add and remove OAuth providers.">
     <a class="nav-link" data-toggle="tab" href="#providers">OAuth Providers</a>
   </li>
@@ -51,6 +54,9 @@
   </div>
   <div class="tab-pane fade" id="policies">
     {% include "admin_policies_pane.html" %}
+  </div>
+  <div class="tab-pane fade" id="prepolicies">
+    {% include "admin_predefined_policies_pane.html" %}
   </div>
   <div class="tab-pane fade" id="providers">
     {% include "admin_providers_pane.html" %}
