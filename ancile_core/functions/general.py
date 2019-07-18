@@ -1,9 +1,57 @@
 """
 Generic Ancile functions meant to be useful on many different forms of data.
 """
-from ancile_core.decorators import transform_decorator, aggregate_decorator, comparison_decorator, filter_decorator
+from ancile_core.decorators import (transform_decorator, aggregate_decorator,
+                                    comparison_decorator, filter_decorator,
+                                    external_request_decorator)
 from ancile_web.errors import AncileException
 from ancile_core.collection import reduction_fn
+import requests
+
+# =============================================================================
+# External Request Generics
+# =============================================================================
+
+# Neither of these is presently functional given changes to how data policy
+# pairs are created. If we want to use them they'll need some rehabilitation
+
+# @external_request_decorator()
+# def get_data(target_url=None, user=None):
+#     """
+#     Access data from a specific target url with an empty request body.
+#     """
+#     data = {'output': []}
+#     token = get_token(user)
+
+#     r = requests.get(target_url, headers={'Authorization': "Bearer " + token})
+
+#     if r.status_code == 200:
+#         data.update(r.json()) # Need to maintain given dict
+#     else:
+#         print(r.status_code)
+#         raise AncileException("Request error")
+
+#     return data
+
+# @external_request_decorator()
+# def full_api(user, body=None, target_url=None):
+#     """
+#     Access data from a specified target_url wih the given body.
+#     """
+#     data = {'output': []}
+#     token = get_token(user)
+
+#     r = requests.get(target_url, headers={'Authorization': "Bearer " + token},
+#                      body=body)
+
+#     if r.status_code == 200:
+#         data.update(r.json()) # Need to maintain given dict
+#     else:
+#         print(r.status_code)
+#         raise AncileException("Request error")
+
+#     return data
+
 
 # =============================================================================
 # Toy Functions (good for testing)
