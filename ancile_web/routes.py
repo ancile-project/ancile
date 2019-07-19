@@ -531,7 +531,7 @@ def user_add_policy():
     provider = request.form.get("providerSelect")
     active = True if request.form.get("active") == "on" else False
     # validate policy
-    if Policy.insert(purpose, policy, active, provider, app, user, current_user.id):
+    if Policy.insert(purpose, policy, active, provider, app, user, current_user.id, False):
         return redirect("/user#policies")
     return redirect("/invalid_policy")
 
