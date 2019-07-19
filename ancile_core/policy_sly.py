@@ -31,7 +31,9 @@ class ParamCell(object):
         return self.op(name_val, self.value)
 
     def __repr__(self):
-        return f'<ParamCell: {self.name} {self.op} {self.value}>'
+        val_str = str(self.value) if not isinstance(self.value, str) \
+                                  else f'"{self.value}"'
+        return f'<ParamCell: {self.name} {self.op} {val_str}>'
 
     def __eq__(self, other):
         if self is other:
@@ -147,7 +149,7 @@ class PolicyLexer(Lexer):
 
     # Tokens
     TEXT = r'[a-zA-Z_][a-zA-Z0-9_]*'
-    STRING = r'\"[a-zA-Z0-9_:/\.]*\"'
+    STRING = r'\"[a-zA-Z0-9_:/\. \t]*\"'
     FLOAT = r'[-\+]?\d+\.\d+'
     NUMBER = r'[-\+]?\d+'
 
