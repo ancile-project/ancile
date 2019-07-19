@@ -136,8 +136,8 @@ class OAuth2Token(Base):
                     setattr(token, key, res.json()[key])
             if ('expires_at' not in res.json().keys() and
                 'expires_in' in res.json().keys()):
-                token['expires_at'] = int(time.time() +
-                                          res.json()['expires_in'])
+                token.expires_at = int(time.time() +
+                                       res.json()['expires_in'])
             token.update()
             print('Token updated successfully.')
         else:
