@@ -149,9 +149,25 @@ class PolicyLexer(Lexer):
 
     # Tokens
     TEXT = r'[a-zA-Z_][a-zA-Z0-9_]*'
-    STRING = r'\"[a-zA-Z0-9_:/\. \t]*\"'
-    FLOAT = r'[-\+]?\d+\.\d+'
-    NUMBER = r'[-\+]?\d+'
+
+    @_(r'[-\+]?\d+\.\d+')
+    def FLOAT(self, t):
+        t.value = float(t.value)
+        return t
+
+    @_(r'[-\+]?\d+')
+    def NUMBER(self, t):
+        t.value = int(t.value)
+        return t
+
+    @_(r'\"[a-zA-Z0-9_:/\. \t\'\@]*\"',
+       r'\'[a-zA-Z0-9_:/\. \t\"\@]*\'')
+    def STRING(self, t):
+        if t.value.startswith('\''):
+            t.value = t.value.strip("'")
+        else:
+            t.value = t.value.strip('"')
+        return t
 
     TEXT['ANYF'] = ANYF
     TEXT['private'] = PRIVATE
@@ -278,7 +294,7 @@ class PolicyParser(Parser):
 
     @_('TEXT equality_op STRING')
     def param(self, p):
-        return {p.TEXT: ParamCell(p.TEXT, p.equality_op, p.STRING.strip('"'))}
+        return {p.TEXT: ParamCell(p.TEXT, p.equality_op, p.STRING)}
 
     @_('TEXT numeric_op NUMBER')
     def param(self, p):
@@ -295,7 +311,7 @@ class PolicyParser(Parser):
     @_('TEXT EQ PRIVATE LPAREN STRING RPAREN')
     def param(self, p):
         return {p.TEXT: ParamCell(p.TEXT, operator.eq,
-                                  PrivateData(p.STRING.strip('"')))}
+                                  PrivateData(p.STRING))}
 
     @_('numeric range_op TEXT range_op numeric')
     def param(self, p):
@@ -361,15 +377,15 @@ class PolicyParser(Parser):
 
     @_('STRING')
     def set_elem(self, p):
-        return p.STRING.strip('"')
+        return p.STRING
 
     @_('NUMBER')
     def numeric(self, p):
-        return int(p.NUMBER)
+        return p.NUMBER
 
     @_('FLOAT')
     def numeric(self, p):
-        return float(p.FLOAT)
+        return p.FLOAT
 
     @_('equality_op')
     def numeric_op(self, p):
@@ -435,15 +451,15 @@ class PolicyParser(Parser):
 
     @_('STRING')
     def plist(self, p):
-        return [p.STRING.strip('"')]
+        return [p.STRING]
 
     @_('FLOAT')
     def plist(self, p):
-        return [float(p.FLOAT)]
+        return [p.FLOAT]
 
     @_('NUMBER')
     def plist(self, p):
-        return [int(p.NUMBER)]
+        return [p.NUMBER]
 
     @staticmethod
     def parse_it(text):
