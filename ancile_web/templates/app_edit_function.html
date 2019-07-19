@@ -1,0 +1,64 @@
+{% extends "default.html" %}
+
+{% block title %}App Panel{% endblock %}
+
+{% block content %}
+
+<h1>Function</h1>
+
+<hr class="my-4">
+
+<table class="table table-hover">
+  <thead>
+    <tr>
+      <th scope="col">Name</th>
+      <th scope="col">Approved?</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="table-default">
+      <td>{{ function.name }}</td>
+      <td>{{ function.approved  }}</td>
+    </tr>
+  </tbody>
+</table>
+
+<div id="editor">{{ function.code }}</div>
+<br>
+
+<style type="text/css" media="screen">
+    #editor { 
+        width: 50%;
+        margin: auto;
+        height: 250px;
+        border-radius: 5px;
+    }
+</style>
+
+<form method="POST" action={{ url_for("app_handle_edit_function", id=function.id)}} id="editFunctionForm">
+
+    <textarea id="codeTextarea" name="codeTextarea" style="display: none;">{{ function.code }}</textarea>
+
+    <label for="descriptionTextarea">Description</label>
+    <textarea class="form-control" id="descriptionTextarea" name="descriptionTextarea" style="width: 50%; margin: auto;"> {{ function.description }} </textarea>
+
+    <br>
+
+    <input type="submit" class="btn btn-primary" value="Submit edits" form="editFunctionForm">
+</form>
+
+<br>
+
+<a class="btn btn-secondary btn-lg" href="/app#functions" style="color:white;">Back</a>
+
+<script src={{ url_for("static", filename="ace/ace.js") }} type="text/javascript" charset="utf-8"></script>
+<script>
+    var editor = ace.edit("editor");
+    editor.setTheme("ace/theme/tomorrow");
+    editor.session.setMode("ace/mode/python");
+    editor.session.on('change', function(delta) {
+        document.getElementById("codeTextarea").value = editor.getValue()
+    });
+</script>
+
+{% endblock %}

@@ -5,6 +5,7 @@ from ancile_core.user_specific import UserSpecific
 from ancile_core.result import Result
 from ancile_core.storage import store as _store, load as _load, del_key, gen_key, store_encrypted as _encrypt
 from ancile_core.policy import Policy
+from ancile_core.decorators import use_type_decorator
 from RestrictedPython import compile_restricted_exec, safe_globals, limited_builtins, safe_builtins
 from ancile_core.collection import Collection
 import traceback
@@ -41,7 +42,7 @@ def gen_module_namespace():
             if not is_pac and mod_name not in exclude}
 
 
-def assemble_locals(result, user_specific, app_id):
+def assemble_locals(result, user_specific, app_id, app_module=None):
     lcls = gen_module_namespace()
 
     def user(name: str) -> UserSpecific:
@@ -66,6 +67,10 @@ def assemble_locals(result, user_specific, app_id):
     def load(key):
         return _load(f'{app_id}:{key}')
 
+    @use_type_decorator
+    def return_to_app(data, encryption_keys, decrypt_field_list=None):
+        result._dp_pair_data.append(data)
+
     lcls['result'] = result
     lcls['store'] = store
     lcls['load'] = load
@@ -73,6 +78,8 @@ def assemble_locals(result, user_specific, app_id):
     lcls['user'] = user
     lcls['new_collection'] = new_collection
     lcls['encrypt'] = encrypt
+    lcls['return_to_app'] = return_to_app
+    lcls['app'] = app_module
     return lcls
 
 def retrieve_compiled(program):
@@ -90,8 +97,7 @@ def retrieve_compiled(program):
     logger.debug("Used cached program")
     return dill.loads(redis_response)
 
-
-def execute(user_info, program, app_id=None, purpose=None):
+def execute(user_info, program, app_id=None, purpose=None, app_module=None):
     json_output = dict()
     # object to interact with the program
     result = Result()
@@ -107,7 +113,8 @@ def execute(user_info, program, app_id=None, purpose=None):
     glbls = {'__builtins__': safe_builtins}
     lcls = assemble_locals(result=result,
                            user_specific=users_specific,
-                           app_id=app_id)
+                           app_id=app_id,
+                           app_module=app_module)
     try:
         c_program = retrieve_compiled(program)
         exec(c_program, glbls, lcls)

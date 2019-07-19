@@ -1,6 +1,6 @@
 
 {% include "policy_visualizer.html" %}
-<form method="POST" action="/admin/add_policy" id="addPolicyForm">
+<form method="POST" action="/admin/add_predefined_policy" id="addPrePolicyForm">
 
   <label for="appSelect">App</label>
   <select class="form-control" id="appSelect" name="appSelect">
@@ -9,10 +9,14 @@
     {% endfor %}
   </select>
 
-  <label for="userSelect">User</label>
-  <select class="form-control" id="userSelect" name="userSelect">
-    {% for user in users %}
-      <option>{{ user.email }}</option>
+  <label for="groupSelect">Group</label>
+  <select class="form-control" id="groupSelect" name="groupSelect">
+    {% for group in groups %}
+      {% if group is none %}
+      <option value={{group}}>None</option>
+      {% else %}
+      <option>{{ group.name }}</option>
+      {% endif %}
     {% endfor %}
   </select>
 
@@ -29,16 +33,11 @@
     {% endfor %}
   </select>
 
-  <label for="active">Active?</label>
-  <input type="checkbox" name="active"></input>
+  <label for="active">Approved?</label>
+  <input type="checkbox" name="approved" checked></input>
 
   <br>
 
-  <label for="readOnly">Read-only?</label>
-  <input type="checkbox" name="readOnly"></input>
-
-  <br>
-
-  <input type="submit" class="btn btn-primary" value="Add policy" form="addPolicyForm">
+  <input type="submit" class="btn btn-primary" value="Add policy" form="addPrePolicyForm">
 
 </form>

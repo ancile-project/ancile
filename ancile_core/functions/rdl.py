@@ -5,7 +5,7 @@ import requests
 
 name = 'rdl'
 
-@external_request_decorator
+@external_request_decorator()
 def test_fetch(user=None, **kwargs):
     data = {'output': []}
     token = get_token(user)
@@ -14,7 +14,7 @@ def test_fetch(user=None, **kwargs):
 
     return data
 
-@external_request_decorator
+@external_request_decorator()
 def rdl_fetch(user=None, **kwargs):
     data = {'output': []}
     token = get_token(user)

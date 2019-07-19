@@ -5,7 +5,7 @@ from ancile_web.errors import AncileException
 
 name = 'test'
 
-@external_request_decorator
+@external_request_decorator()
 def get_split_train_mnist( data, part, split, token=None, user=None, name=None):
     import torchvision
     from torchvision.transforms import transforms
@@ -55,7 +55,7 @@ def get_loader(data, dataset_name, batch_size):
     data['output'].append(f'added {dataset_name} dataset.')
     return True
 
-@external_request_decorator
+@external_request_decorator()
 def get_test_mnist(data, token=None):
     import torchvision
     from torchvision.transforms import transforms

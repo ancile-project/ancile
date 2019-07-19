@@ -81,18 +81,21 @@ class DataPolicyPair:
         #print(f'Checking {command} against policy: {self._policy}')
             return self._policy.check_allowed(command, **kwargs)
 
-    def _advance_policy(self, command, update=True, **kwargs):
+    def _advance_policy(self, command, scope=None, update=True, **kwargs):
         if update:
-            self._policy = Policy.d_step(self._policy, {'command': command,
-                                                        'kwargs': kwargs})
+            self._policy = self._policy.d_step({'command': command,
+                                                'kwargs': kwargs},
+                                                scope=scope)
             return self._policy
         else:
-            return Policy.d_step(self._policy, {'command': command,
-                                                'kwargs': kwargs})
+            return self._policy.d_step({'command': command, 'kwargs': kwargs},
+                                        scope=scope)
 
     def _advance_policy_error(self, command, **kwargs):
-        if not self._advance_policy(command, **kwargs):
+        new_policy = self._advance_policy(command, **kwargs)
+        if not new_policy:
             raise PolicyError
+        else: return new_policy
 
     def _call(self, func, *args, scope=None, **kwargs):
         if self.is_expired:
@@ -102,7 +105,7 @@ class DataPolicyPair:
         command = func.__name__
         self._resolve_private_data_keys(kwargs)
 
-        if self._advance_policy(command, **kwargs):
+        if self._advance_policy_error(command, scope=scope, **kwargs):
             self._resolve_private_data_values(kwargs)
 
             if scope in {'transform', 'aggregate'}:
@@ -118,8 +121,6 @@ class DataPolicyPair:
                     kwargs['data'] = self._data
 
             return func(*args, **kwargs)
-        else:
-            raise PolicyError()
 
     def _call_transform(self, func, *args,  **kwargs):
         return self._call(func, *args, scope='transform', **kwargs)

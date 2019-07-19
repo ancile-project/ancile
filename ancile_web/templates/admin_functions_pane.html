@@ -1,0 +1,25 @@
+<table class="table table-hover">
+  <thead>
+    <tr>
+      <th scope="col">Name</th>
+      <th scope="col">App</th>
+      <th scope="col">Description</th>
+      <th scope="col">Approved?</th>
+      <th scope="col">More</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for function in functions %}
+    <tr {% if function.approved is sameas False %} class="table-danger" {% else %} class="table-default" {% endif %}>
+      <td>{{ function.name }}</td>
+      <td>{{ lookup_account(function.app_id) }}</td>
+      <td style="word-break:break-all;">{{ function.description }}</td>
+      <td>{{ function.approved }}</td>
+      <td>
+      <a href={{ url_for("admin_view_function", id=function.id) }}>View</a>
+      <a href={{ url_for("admin_delete_function", id=function.id) }}>Delete</a>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>

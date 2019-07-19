@@ -11,8 +11,7 @@
         <tr class="table-default">
         <td>{{ app.email }}</td>
         <td>
-            <a href={{ url_for("admin_view_app_functions", id=app.id) }}>View functions</a>
-            <a href={{ url_for("admin_delete_account", id=app.id) }}>Delete</a>
+            <a href={{ url_for("user_view_app", id=app.id) }}>View</a>
         </td>
         </tr>
         {% endfor %}

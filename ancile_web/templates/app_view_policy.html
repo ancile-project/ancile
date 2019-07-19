@@ -1,6 +1,6 @@
 {% extends "default.html" %}
 
-{% block title %}User Panel{% endblock %}
+{% block title %}App Panel{% endblock %}
 
 {% block content %}
 
@@ -17,22 +17,44 @@
 <table class="table table-hover">
   <thead>
     <tr>
+      {% if predefined is sameas False %}
       <th scope="col">User</th>
+      {% else %}
+      <th scope="col">Group</th>
+      {% endif %}
       <th scope="col">Purpose</th>
       <th scope="col">Provider</th>
+      {% if predefined is sameas False %}
+      <th scope="col">Read-only?</th>
       <th scope="col">Active?</th>
+      {% else %}
+      <th scope="col">Approved?</th>
+      {% endif %}
     </tr>
   </thead>
   <tbody>
     <tr class="table-default">
-      <td>{{ policy.user.email }}</td>
+      {% if predefined is sameas False %}
+      <td>{{ policy.user.email  }}</td>
+      {% else %}
+      {% if policy.group is none %}
+      <td>None</td>
+      {% else%}
+      <td>{{ policy.group.name  }}</td>
+      {% endif %}
+      {% endif %}
       <td style="word-break:break-all;">{{ policy.purpose }}</td>
-      <td>{{ policy.provider  }}</td>
+      <td>{{ policy.provider }}</td>
+      {% if predefined is sameas False %}
+      <td>{{ policy.read_only  }}</td>
       <td>{{ policy.active  }}</td>
+      {% else %}
+      <td>{{ policy.approved  }}</td>
+      {% endif %}
     </tr>
   </tbody>
 </table>
 
-<a class="btn btn-secondary btn-lg" href="/panel" style="color:white;">Back</a>
+<a class="btn btn-secondary btn-lg" href="/app#prepolicies" style="color:white;">Back</a>
 
 {% endblock %}

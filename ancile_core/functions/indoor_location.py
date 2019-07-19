@@ -4,7 +4,7 @@ from ancile_web.errors import AncileException
 
 name="location"
 
-@external_request_decorator
+@external_request_decorator()
 def fetch_location(user, device_type=None):
     import requests
     import datetime
@@ -45,7 +45,7 @@ def preload_location(user, path=None):
     return data
 
 
-@external_request_decorator
+@external_request_decorator()
 def fetch_history_location(data, token=None, fr=None, to=None, device_type=None):
     import requests
     import datetime

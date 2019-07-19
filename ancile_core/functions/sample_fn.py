@@ -1,11 +1,21 @@
+"""
+This module defines Ancile fake test functions that have no impact on data, but
+can be used for testing purposes.
+"""
 from ancile_core.decorators import transform_decorator, external_request_decorator
 from ancile_web.errors import AncileException
 
-@external_request_decorator
-def test_fetch(data, token=None, **kwargs):
-    data['token'] = token
-    data['test_fetch'] = True
-    return True
+
+# This currently won't work because of how DPPs are created normally and how
+# the proper token is routed to the function.
+# @external_request_decorator()
+# def fetch_test_data(target_url=None, user=None):
+#     from ancile_core.functions.general import get_token
+#     data = {'output': []}
+#     token = get_token(user)
+#     print(f"FUNC: fetch_test_data: {target_url}, {token}")
+#     data['fetch_test_data'] = True
+#     return data
 
 
 @transform_decorator
@@ -16,7 +26,6 @@ def test_transform(data):
         data['test_transform'].append(str(time.time()))
     else:
         data['test_transform'] = [str(time.time())]
-    return True
 
 
 @transform_decorator
@@ -27,4 +36,3 @@ def test_transform_param(data, param):
         data['test_transform_param'].append(str(param) + str(time.time()))
     else:
         data['test_transform_param'] = [str(param) + str(time.time())]
-    return True

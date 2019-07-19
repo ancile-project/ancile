@@ -1,11 +1,15 @@
 # coding: utf-8
-from ancile_web.app import db,app
+from ancile_web.app import db, app
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm.attributes import flag_modified
 from flask_security import UserMixin,RoleMixin
 from flask_security.core import current_user
 from datetime import datetime
 from bcrypt import gensalt
+from ancile_core.policy_sly import PolicyParser
+from ancile_web.errors import ParseError
+from time import time
+from ancile_web.errors import AncileException
 
 class Base(db.Model):
     __abstract__ = True
@@ -78,6 +82,9 @@ class OAuth2Token(Base):
     def user_email(self):
         return Account.query.filter_by(id=self.user_id).first().email
 
+    @property
+    def is_expired(self):
+        return time() > self.expires_at
 
     @classmethod
     def get_tokens_by_user(cls, user):
@@ -85,6 +92,11 @@ class OAuth2Token(Base):
         token_dict = dict()
         data_dict = dict()
         for token in user:
+            if token.is_expired:
+                try:
+                    OAuth2Token.update_token(token.name, token)
+                except AncileException:
+                    pass
             # token.update_tokens()
             token_dict[token.name] = token.to_token()
             data_dict[token.name] = token.private_data
@@ -107,7 +119,7 @@ class OAuth2Token(Base):
         # Basic Auth (default)
         from base64 import b64encode as encode
         if auth_method == 'client_secret_basic':
-            headers = {"Authorization": "basic " + str(encode(bytes(client_id + ":" + client_secret,'utf8')), 'utf-8')} 
+            headers = {"Authorization": "basic " + str(encode(bytes(client_id + ":" + client_secret,'utf8')), 'utf-8')}
 
 
         data = {'refresh_token': token.refresh_token,
@@ -124,7 +136,7 @@ class OAuth2Token(Base):
             token.update()
             print('Token updated successfully.')
         else:
-            raise Exception(f"Couldn't update token: {res.json()}")
+            raise AncileException(f"Couldn't update token: {res.json()}")
 
     # @classmethod
     # def get_private_data_by_user(cls, user):
@@ -190,6 +202,7 @@ class Policy(Base):
     purpose = db.Column(db.String(255), server_default=db.text("NULL::character varying"))
     policy = db.Column(db.Text)
     active = db.Column(db.Boolean, nullable=False, server_default=db.text('false'))
+    read_only = db.Column(db.Boolean, nullable=False, server_default=db.text('false'))
     provider = db.Column(db.Text)
     app_id = db.Column(db.ForeignKey('accounts.id'), index=True)
     user_id = db.Column(db.ForeignKey('accounts.id'), index=True)
@@ -207,17 +220,22 @@ class Policy(Base):
 
     # to be implemented--will attempt to parse policy
     def validate(self):
-      return True
+        try:
+            PolicyParser.parse_it(self.policy)
+        except ParseError:
+            return False
+        return True
 
     @classmethod
-    def insert(cls, purpose, policy, active, provider, app, user, creator):
+    def insert(cls, purpose, policy, active, provider, app, user, creator, readOnly):
       policy_obj = cls(purpose=purpose,
                           policy=policy,
                           active=active,
                           provider=provider,
                           app_id=Account.get_id_by_email(app),
                           user_id=Account.get_id_by_email(user),
-                          creator_id=creator)
+                          creator_id=creator,
+                          read_only=readOnly)
       if not policy_obj.validate():
         return False
       policy_obj.add()
@@ -233,4 +251,80 @@ class Policy(Base):
             policy_dict[policy.provider] = Policy(policy.policy)
         return policy_dict
 
+class Function(Base):
+    __tablename__ = 'functions'
+    id = db.Column(db.BigInteger, primary_key=True)
+    app_id = db.Column(db.ForeignKey('accounts.id'), index=True)
+    code = db.Column(db.Text)
+    description = db.Column(db.Text)
+    name = db.Column(db.String(128))
+    approved = db.Column(db.Boolean, nullable=False, server_default=db.text('false'))
 
+    @classmethod
+    def get_app_module(cls, app_id):
+        funcs = cls.query.filter_by(app_id=app_id, approved=True).all()
+        module = '\n'.join((fn.code for fn in funcs))
+        return module
+
+class PolicyGroup(Base):
+    __tablename__ = 'policy_group'
+    app_id = db.Column(db.ForeignKey('accounts.id'), index=True)
+    description = db.Column(db.Text)
+    name = db.Column(db.Text)
+
+    @classmethod
+    def get_id_by_name(cls, name):
+        group = cls.query.filter_by(name=name).first()
+        if group == None:
+            return None
+        return group.id
+
+class PredefinedPolicy(Base):
+    __tablename__ = 'predefined_policies'
+
+    purpose = db.Column(db.String(255), server_default=db.text("NULL::character varying"))
+    policy = db.Column(db.Text)
+    provider = db.Column(db.Text)
+    app_id = db.Column(db.ForeignKey('accounts.id'), index=True)
+    creator_id = db.Column(db.ForeignKey('accounts.id'))
+    approved = db.Column(db.Boolean, nullable=False, server_default=db.text('false'))
+
+    group_id = db.Column(db.ForeignKey('policy_group.id'), index=True)
+
+    app = db.relationship('Account', primaryjoin='PredefinedPolicy.app_id == Account.id')
+    group = db.relationship('PolicyGroup', primaryjoin='PredefinedPolicy.group_id == PolicyGroup.id')
+
+    @classmethod
+    def get_policy_group(cls, group_id):
+        return cls.query.filter_by(group_id=group_id).all()
+
+    def validate(self):
+        try:
+            PolicyParser.parse_it(self.policy)
+        except ParseError:
+            return False
+        return True
+
+    def generate_policy(self, user_id, active=True):
+        return Policy(purpose=self.purpose,
+                        policy=self.policy,
+                        provider=self.provider,
+                        app_id=self.app_id,
+                        creator_id=self.creator_id,
+                        user_id=user_id,
+                        active=active)
+
+    @classmethod
+    def insert(cls, purpose, policy, provider, app, group, creator, approved):
+        policy_obj = cls(purpose=purpose,
+                            policy=policy,
+                            provider=provider,
+                            app_id=Account.get_id_by_email(app),
+                            group_id=PolicyGroup.get_id_by_name(group),
+                            creator_id=creator,
+                            approved=approved)
+        if not policy_obj.validate():
+            return False
+        policy_obj.add()
+        policy_obj.update()
+        return True

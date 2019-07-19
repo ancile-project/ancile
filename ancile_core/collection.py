@@ -7,22 +7,9 @@ import ancile_core.policy as policy
 import ancile_core.time as ancile_web_time
 from functools import wraps
 from copy import deepcopy
-from ancile_core.policy import Policy
+from ancile_core.policy import Policy, intersect_list
 import logging
 logger = logging.getLogger(__name__)
-
-
-def collection_decorator(f):
-    @wraps(f)
-    def wrapper(*args, **kwargs):
-        dp_pair = kwargs.get('data', False)
-        if not isinstance(dp_pair, DataPolicyPair):
-            raise ValueError("You need to provide a Data object. Use get_data to get it.")
-
-        logger.info(f'function: {f.__name__} args: {args}, kwargs: {kwargs}, app: {dp_pair._app_id}')
-        return dp_pair._call_collection(f, *args, **kwargs)
-
-    return wrapper
 
 
 class Collection(object):
@@ -35,21 +22,30 @@ class Collection(object):
         return len(self._data_points)
 
     def __repr__(self):
-        return f"<Collection size:{len(self)}. The policy: {self.get_collection_policy()}"
+        return f"<Collection size:{len(self)}. The policy: {self.get_collection_policy()}>"
 
     def get_collection_policy(self):
-        rolling_policy = PolicyParser.parse_it("ANYF*")
-        for dpp in self._data_points:
-            rolling_policy = Policy._simplify(['intersect', rolling_policy, dpp._policy._policy])
-        return Policy(rolling_policy)
-
-
-    def _check_collection_policy(self, command, **kwargs):
         """
-        Check that intersection policy allows the command
+        Return the policy resulting from the intersection of all policies in
+        the collection.
 
-        :param command:
-        :return:
+        Note: If there are no points in the collection, it has the ANYF* policy
+              otherwise the policy is the intersection of the policies of the
+              collected DPPs.
+
+        :return: A Policy object representing the synthesized policy on the
+                 collection.
+        """
+        return intersect_list((dp._policy for dp in self._data_points),
+                              empty_policy='ANYF*')
+
+
+    def _check_collection_policy(self, command, **kwargs) -> bool:
+        """
+        Check if the collection policy allows the given command.
+
+        :param str command: The name of the command.
+        :return: T if the command is allowed, False otherwise
         """
         collection_policy = self.get_collection_policy()
         return collection_policy.check_allowed(command, **kwargs)
@@ -125,10 +121,10 @@ class Collection(object):
         for dpp in self._data_points:
             if lambda_function(dpp._data):
                 logger.info('')
-                dpp._advance_policy_error(['exec', 'filter_keep'])
+                dpp._advance_policy_error('filter_keep')
                 new_data_points.append(dpp)
             else:
-                dpp._advance_policy_error(['exec', 'filter_remove'])
+                dpp._advance_policy_error('filter_remove')
         new_collection = Collection(new_data_points)
         print(f"Reduced size of collection from {len(self._data_points)} to {len(new_data_points)}")
 
@@ -140,10 +136,10 @@ class Collection(object):
         for dpp in self._data_points:
             peek_next_policy = dpp._policy.d_step('filter_keep')
             if peek_next_policy.d_step(command):
-                dpp._advance_policy_error(['exec', 'filter_keep'])
+                dpp._advance_policy_error('filter_keep')
                 new_data_points.append(dpp)
             else:
-                dpp._advance_policy_error(['exec', 'filter_remove'])
+                dpp._advance_policy_error('filter_remove')
         new_collection = Collection(new_data_points)
         print(f"Reduced size of collection from {len(self._data_points)} to {len(new_data_points)}")
 

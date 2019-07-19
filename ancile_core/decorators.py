@@ -37,17 +37,6 @@ def transform_decorator(f):
 
     return wrapper
 
-
-def store_decorator(f):
-    @wraps(f)
-    def wrapper(*args, **kwargs):
-        dp_pair = decorator_preamble(args, kwargs)
-
-        logger.info(f'function: {f.__name__} args: {args}, kwargs: {kwargs}, app: {dp_pair._app_id}')
-        return dp_pair._call_store(f, *args, **kwargs)
-
-    return wrapper
-
 def external_request_decorator(split_to_collection=False):
     """
     Intended call:
