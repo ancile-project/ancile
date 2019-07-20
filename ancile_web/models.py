@@ -106,6 +106,7 @@ class OAuth2Token(Base):
     @staticmethod
     def update_token(name, token):
         import importlib, requests
+        import time
 
         provider = getattr(importlib.import_module("ancile_web.oauth.providers." + name), name.capitalize())
         url = provider.OAUTH_CONFIG['access_token_url']
@@ -133,6 +134,10 @@ class OAuth2Token(Base):
                 # make sure key is an attribute of token
                 if key in dir(token):
                     setattr(token, key, res.json()[key])
+            if ('expires_at' not in res.json().keys() and
+                'expires_in' in res.json().keys()):
+                token.expires_at = int(time.time() +
+                                       res.json()['expires_in'])
             token.update()
             print('Token updated successfully.')
         else:
