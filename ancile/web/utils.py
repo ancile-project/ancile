@@ -1,6 +1,6 @@
 from os import kill
 import signal
-from ancile.web.errors import AncileException
+from ancile.utils.errors import AncileException
 
 def _get_pid():
     with open('.pidfile') as f:

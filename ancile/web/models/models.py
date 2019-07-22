@@ -1,14 +1,16 @@
 # coding: utf-8
-from web.app import db, app
+from ancile.web.app import db, app
 from sqlalchemy.dialects.postgresql import JSONB
 from flask_security import UserMixin,RoleMixin
 from flask_security.core import current_user
 from datetime import datetime
 from bcrypt import gensalt
-from core.policy_sly import PolicyParser
-from ancile.web.errors import ParseError
+from ancile.core.policy_sly import PolicyParser
+from ancile.utils.errors import ParseError
 from time import time
-from ancile.web.errors import AncileException
+from ancile.utils.errors import AncileException
+
+# @TODO Split into separate files.
 
 class Base(db.Model):
     __abstract__ = True

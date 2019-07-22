@@ -1,6 +1,6 @@
 from core.decorators import transform_decorator, external_request_decorator
 from core.functions.general import get_token
-from ancile.web.errors import AncileException
+from ancile.utils.errors import AncileException
 
 name="location"
 
@@ -34,7 +34,6 @@ def fetch_location(user, device_type=None):
 
 @external_request_decorator(split_to_collection=True)
 def preload_location(user, path=None):
-    import os
     import json
 
     data = list()

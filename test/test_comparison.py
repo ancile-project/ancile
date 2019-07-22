@@ -1,6 +1,5 @@
 import unittest
 from test.tools import run_test
-from ancile.web.errors import ParseError
 
 
 class ComparisonTests(unittest.TestCase):

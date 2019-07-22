@@ -2,7 +2,7 @@ from core.policy_sly import PolicyParser
 from core.datapolicypair import DataPolicyPair
 from core.decorators import transform_decorator, use_type_decorator
 from RestrictedPython import compile_restricted_exec, safe_builtins
-from ancile.web.errors import PolicyError
+from ancile.utils.errors import PolicyError
 from core.core import gen_module_namespace
 from core.collection import Collection
 

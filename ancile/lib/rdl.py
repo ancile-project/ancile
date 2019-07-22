@@ -1,6 +1,6 @@
 from core.decorators import transform_decorator, external_request_decorator
 from core.functions.general import get_token
-from ancile.web.errors import AncileException
+from ancile.utils.errors import AncileException
 import requests
 
 name = 'rdl'

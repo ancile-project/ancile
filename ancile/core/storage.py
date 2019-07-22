@@ -1,6 +1,6 @@
 from core.datapolicypair import DataPolicyPair
 from core.collection import Collection
-from ancile.web.errors import AncileException
+from ancile.utils.errors import AncileException
 import redis
 import pickle
 from uuid import uuid4

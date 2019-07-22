@@ -1,5 +1,5 @@
 from core.datapolicypair import DataPolicyPair, PrivateData
-from ancile.web.errors import AncileException
+from ancile.utils.errors import AncileException
 from core.user_specific import UserSpecific
 from core.result import Result
 from core.storage import store as _store, load as _load, del_key, gen_key, store_encrypted as _encrypt

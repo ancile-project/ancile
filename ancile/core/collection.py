@@ -1,12 +1,7 @@
-from core.policy import Policy
-from time import time
-from core.policy_sly import PolicyParser
-from ancile.web.errors import PolicyError, AncileException
+from ancile.utils.errors import PolicyError, AncileException
 from core.datapolicypair import DataPolicyPair
-import core.policy as policy
 import core.time as ancile_web_time
 from functools import wraps
-from copy import deepcopy
 from core.policy import Policy, intersect_list
 import logging
 logger = logging.getLogger(__name__)

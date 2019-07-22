@@ -3,7 +3,7 @@ Generic Ancile functions meant to be useful on many different forms of data.
 """
 from core.decorators import (transform_decorator, aggregate_decorator,
                              comparison_decorator, filter_decorator)
-from ancile.web.errors import AncileException
+from ancile.utils.errors import AncileException
 from core.collection import reduction_fn
 
 

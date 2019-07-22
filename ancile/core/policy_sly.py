@@ -1,7 +1,7 @@
 from sly import Lexer, Parser
 import operator
 from enum import Enum
-from ancile.web.errors import ParseError
+from ancile.utils.errors import ParseError
 from core.private_data import PrivateData
 
 

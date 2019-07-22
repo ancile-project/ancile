@@ -1,25 +1,18 @@
-from web.app import app
-from flask import Flask, request, json, render_template, url_for, Response, redirect, jsonify
-from flask_sqlalchemy import SQLAlchemy
-from flask_security import Security, SQLAlchemyUserDatastore, login_required
-from flask_security.core import current_user
-from flask_principal import Principal, Permission, RoleNeed
-from flask_migrate import Migrate
-from flask_mail import Mail
+from flask import request, json, render_template, url_for, redirect, jsonify
+from flask_security import login_required
+from flask_principal import Permission, RoleNeed
 import redis
-from core.core import execute, UserInfoBundle
+from ancile.core.core import execute, UserInfoBundle
 import yaml
 import traceback
 import pickle
 import logging
 import jwt
 from config.loader import REDIS_CONFIG, ENABLE_CACHE
-from web.models import *
-from web.oauth.oauth import oauth, OAUTH_BACKENDS, register_backend
-from ancile.web.errors import AncileException
-import signal
-from web.utils import reload_server
-from web.visualizer import parse_policy
+from ancile.web.models.models import *
+from ancile.web.oauth.oauth import OAUTH_BACKENDS
+from ancile.web.utils import reload_server
+from ancile.web.visualizer import parse_policy
 from json import loads, dumps
 
 logger = logging.getLogger(__name__)
@@ -72,7 +65,7 @@ def get_app_id(token):
     return pickle.loads(redis_response)
 
 def retrieve_app_module(app_id):
-    from web.models import Function
+    from ancile.web.models.models import Function
     import dill
     import types
 

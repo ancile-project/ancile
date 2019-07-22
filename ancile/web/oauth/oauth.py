@@ -1,9 +1,12 @@
-from web.app import app
+import pkgutil
+import importlib
+
+from ancile.web.app import app
 from flask import redirect
 from authlib.flask.client import OAuth
 from loginpass import create_flask_blueprint
-from web.models import OAuth2Token
-from web.oauth.providers import *
+from ancile.web.models.models import OAuth2Token
+from ancile.web.oauth.providers import *
 from config.loader import PROVIDERS
 
 oauth = OAuth(app, update_token=OAuth2Token.update_token)
@@ -17,8 +20,6 @@ def handle_authorize(remote, token, user_info):
     else:
       raise Exception("No token supplied.")
 
-import pkgutil
-import importlib
 
 # load local providers
 backend_path = "ancile_web/oauth/providers/"
