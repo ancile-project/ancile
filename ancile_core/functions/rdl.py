@@ -6,8 +6,10 @@ import requests
 name = 'rdl'
 
 
-@external_request_decorator
-def rdl_fetch_usage(data, token=None, **kwargs):
+@external_request_decorator()
+def rdl_fetch_usage(user=None, **kwargs):
+    data = {'output': []}
+    token = user['token']
     r = requests.get('https://localhost:9980/test/api/usage',
                      headers={'Authorization': f'Bearer {token}'})
     if r.status_code == 200:
@@ -15,9 +17,13 @@ def rdl_fetch_usage(data, token=None, **kwargs):
     else:
         raise AncileException(f"Request error: {r.json()}")
 
+    return data
 
-@external_request_decorator
-def rdl_fetch_urls(data, token=None, **kwargs):
+
+@external_request_decorator()
+def rdl_fetch_urls(user=None, **kwargs):
+    data = {'output': []}
+    token = user['token']
     r = requests.get('https://localhost:9980/test/api/urls',
                      headers={'Authorization': f'Bearer {token}'})
     if r.status_code == 200:
@@ -25,9 +31,13 @@ def rdl_fetch_urls(data, token=None, **kwargs):
     else:
         raise AncileException(f"Request error: {r.json()}")
 
+    return data
 
-@external_request_decorator
-def rdl_fetch_youtube_search_history(data, token=None, **kwargs):
+
+@external_request_decorator()
+def rdl_fetch_youtube_search_history(user=None, **kwargs):
+    data = {'output': []}
+    token = user['token']
     r = requests.get('https://localhost:9980/test/api/youtube_search',
                      headers={'Authorization': f'Bearer {token}'})
     if r.status_code == 200:
@@ -35,15 +45,21 @@ def rdl_fetch_youtube_search_history(data, token=None, **kwargs):
     else:
         raise AncileException(f"Request error: {r.json()}")
 
+    return data
 
-@external_request_decorator
-def rdl_fetch_youtube_watch_history(data, token=None, **kwargs):
+
+@external_request_decorator()
+def rdl_fetch_youtube_watch_history(user=None, **kwargs):
+    data = {'output': []}
+    token = user['token']
     r = requests.get('https://localhost:9980/test/api/youtube_watch',
                      headers={'Authorization': f'Bearer {token}'})
     if r.status_code == 200:
         data.update(r.json())
     else:
-        raise AncileException(f"Request error: {r.json()}")
+        raise AncileException(f"Request error: {r.json()}, token: {token}")
+
+    return data
 
 
 def aggregate_rdl_data(data_date_pairs, keep_raw_data):
@@ -73,10 +89,11 @@ def rdl_group_usage_data_by_date(data):
     data_date_pairs = [(x[0], x[1]) for x in data['data']['usage']]
     results_flat_list = aggregate_rdl_data(data_date_pairs, False)
     data['output'].append('RDL Usage to Count By Date Transform.')
+
     # Delete raw data
     del data['data']
     data['data_searches_timeline'] = results_flat_list
-    return True
+    return data
 
 
 @transform_decorator
@@ -87,7 +104,7 @@ def rdl_group_url_data_by_date(data):
     # Delete raw data
     del data['data']
     data['data_urls_timeline'] = results_flat_list
-    return True
+    return data
 
 
 @transform_decorator
@@ -98,7 +115,7 @@ def rdl_group_youtube_search_data_by_date(data):
     # Delete raw data
     del data['data']
     data['data_youtube_search_timeline'] = results_flat_list
-    return True
+    return data
 
 
 @transform_decorator
@@ -109,7 +126,7 @@ def rdl_group_youtube_watch_data_by_date(data):
     # Delete raw, unfiltered data
     del data['data']
     data['data_youtube_watch_timeline'] = results_flat_list
-    return True
+    return data
 
 
 @transform_decorator
@@ -120,7 +137,7 @@ def rdl_group_usage_data_by_usage_date(data):
     # Delete raw data
     del data['data']
     data['data_usage_dates_count'] = results_obj_list
-    return True
+    return data
 
 
 @transform_decorator
@@ -131,7 +148,7 @@ def rdl_group_url_data_by_url_date(data):
     # Delete raw data
     del data['data']
     data['data_urls_dates_count'] = results_obj_list
-    return True
+    return data
 
 
 @transform_decorator
@@ -144,7 +161,7 @@ def rdl_group_youtube_search_data_by_query_date(data):
     # Delete raw, unfiltered urls from data
     del data['data']
     data['data_youtube_searches_dates_count'] = results_obj_list
-    return True
+    return data
 
 
 def delete_searched_for(searched_for_str):
@@ -162,7 +179,7 @@ def rdl_group_youtube_watch_data_by_query_date(data):
     # Delete raw data
     del data['data']
     data['data_youtube_watched_dates_count'] = results_obj_list
-    return True
+    return data
 
 
 def delete_watched(searched_for_str):
@@ -219,7 +236,7 @@ def rdl_categorize_youtube_watch_data(data):
 
     data['output'].append('RDL Youtube Watched Videos Categorized.')
 
-    return True
+    return data
 
 
 def get_youtube_video_id(url):
@@ -243,4 +260,4 @@ def rdl_group_youtube_watch_data_by_query_date_and_category(data):
     # Delete raw data
     del data['data']
     data['data_youtube_watched_dates_count'] = results_obj_list
-    return True
+    return data
