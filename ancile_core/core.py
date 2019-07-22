@@ -8,6 +8,7 @@ from ancile_core.policy import Policy
 from ancile_core.decorators import use_type_decorator
 from RestrictedPython import compile_restricted_exec, safe_globals, limited_builtins, safe_builtins
 from ancile_core.collection import Collection
+from ancile_core.lib_namespace import gen_module_namespace
 import traceback
 import redis
 from collections import namedtuple
@@ -21,26 +22,6 @@ UserInfoBundle = namedtuple("UserInfoBundle", ['username', 'policies',
                                                'tokens', 'private_data'])
 
 r = redis.Redis(**REDIS_CONFIG)
-
-
-def gen_module_namespace():
-    import pkgutil
-    import importlib
-    import ancile_core.functions as base
-    from ancile_core.functions._config import exclude
-
-    importlib.invalidate_caches()
-
-    prefix_name = base.__name__ + '.'
-
-    # This slightly gross comprehension creates a dictionary with the module
-    # name and the imported module for all modules (NOT PACKAGES) in the given
-    # base package excludes any module mentioned in the exclude list
-    # (see functions._config.py)
-    return {mod_name: importlib.import_module(prefix_name + mod_name)
-            for _, mod_name, is_pac in pkgutil.iter_modules(path=base.__path__)
-            if not is_pac and mod_name not in exclude}
-
 
 def assemble_locals(result, user_specific, app_id, app_module=None):
     lcls = gen_module_namespace()

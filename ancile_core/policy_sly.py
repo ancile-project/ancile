@@ -3,13 +3,67 @@ import operator
 from enum import Enum
 from ancile_web.errors import ParseError
 from ancile_core.private_data import PrivateData
-
+from ancile_core.lib_namespace import find_function
+import inspect
 
 class RangeType(Enum):
     OPEN = 1     # (a,b)
     CLOSED = 2   # [a,b]
     LOPEN = 3    # (a,b]
     ROPEN = 4    # [a,b)
+
+
+class FuncType(Enum):
+    NONE = 0
+    FETCH = 1
+    TRANSFORM = 2
+    AGGREGATE = 3
+    REDUCE = 4
+    RETURN = 5
+    COLLECTION = 6
+    CONDITION = 7
+
+
+def dec_string_to_type(string:str) -> FuncType:
+    if 'external_request_decorator' in string:
+        return FuncType.FETCH
+    elif 'transform_decorator' in string:
+        return FuncType.TRANSFORM
+    elif 'use_type_decorator' in string or string == 'return_to_app':
+        return FuncType.RETURN
+    elif 'comparison_decorator' in string:
+        return FuncType.CONDITION
+    elif 'aggregate_decorator' in string:
+        return FuncType.AGGREGATE
+    elif 'reduction_fn' in string:
+        return FuncType.REDUCE
+    elif 'add_to_collection' == string:
+        return FuncType.COLLECTION
+    else:
+        return FuncType.NONE
+
+def get_fn_type(function_name):
+    if function_name == 'add_to_collection':
+        return FuncType.COLLECTION
+    elif function_name in ['return_to_app', 'append_dp_data_to_result']:
+        return FuncType.RETURN
+    elif function_name in ['_enforce_comparison', '_test_false', '_test_true']:
+        return FuncType.CONDITION
+
+    function_list = find_function(function_name)
+    if function_list == []:
+        return FuncType.NONE
+
+    # get the decorator name w/o leading @ and convert to an enum
+    types = [dec_string_to_type(x[1:]) for x in
+             (inspect.getsource(fn).split()[0] for fn in function_list)]
+
+    # multiple definitions are fine if they agree
+    if all((x == types[0] for x in types)):
+        return types[0]
+    else:
+        # Otherwise give up
+        return FuncType.NONE
 
 
 class ParamCell(object):
@@ -475,16 +529,30 @@ class PolicyParser(Parser):
             parsed_policies[provider] = PolicyParser.parse_it(policy)
         return parsed_policies
 
+    @staticmethod
+    def annotate(parsed):
+        operator = parsed[0]
+
+        if operator == 'exec':
+            name = parsed[1]
+            parsed.append(get_fn_type(name))
+        elif operator in ['star', 'neg']:
+            PolicyParser.annotate(parsed[1])
+        elif operator in ['union', 'intersect', 'concat']:
+            PolicyParser.annotate(parsed[1])
+            PolicyParser.annotate(parsed[2])
+
+    @staticmethod
+    def parse_with_annotation(policy):
+        parsed = PolicyParser.parse_it(policy)
+        PolicyParser.annotate(parsed)
+        return parsed
 
 if __name__ == '__main__':
-    lexer = PolicyLexer()
-    parser = PolicyParser()
     while True:
         try:
             text = input('calc > ')
         except EOFError:
             break
         if text:
-            lexed = lexer.tokenize(text)
-            # print(f"lexed: {list(lexed)}\n")
-            print(parser.parse(lexed))
+            print(PolicyParser.parse_with_annotation(text))
