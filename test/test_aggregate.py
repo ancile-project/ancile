@@ -1,7 +1,7 @@
 import unittest
 from test.tools import run_test
-from ancile_core.datapolicypair import DataPolicyPair
-from ancile_core.functions import general
+from core.datapolicypair import DataPolicyPair
+from core.functions import general
 
 class FunctionTests(unittest.TestCase):
     def test_reduction_1(self):

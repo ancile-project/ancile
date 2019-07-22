@@ -1,6 +1,6 @@
 import unittest
 from test.tools import run_test
-from ancile_web.errors import ParseError
+from ancile.web.errors import ParseError
 
 
 class FunctionTests(unittest.TestCase):

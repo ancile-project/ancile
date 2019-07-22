@@ -1,8 +1,8 @@
 import unittest
 
-from ancile_core.collection import Collection
-from ancile_core.datapolicypair import DataPolicyPair
-from ancile_core.user_specific import UserSpecific
+from core.collection import Collection
+from core.datapolicypair import DataPolicyPair
+from core.user_specific import UserSpecific
 
 
 class ActualProgramTests(unittest.TestCase):
@@ -68,8 +68,8 @@ class ActualProgramTests(unittest.TestCase):
 
 
     def test_user(self):
-        from ancile_core.functions.indoor_location import preload_location
-        from ancile_core.functions.deep_learning import make_dataset, train, serve_model
+        from core.functions.indoor_location import preload_location
+        from core.functions.deep_learning import make_dataset, train, serve_model
         path = '/Users/ebagdasaryan/Documents/development/ancile/location_dump.json'
 
         user = UserSpecific({'location': 'ANYF*'}, {'location': {'access_token': ''}}, None, username=None, app_id=None)
@@ -87,8 +87,8 @@ class ActualProgramTests(unittest.TestCase):
 
 
     def test_collection_for_each(self):
-        from ancile_core.functions.general import double
-        from ancile_core.functions.general import collection_average, collection_sum
+        from core.functions.general import double
+        from core.functions.general import collection_average, collection_sum
         from copy import deepcopy
         col = Collection()
         dpp_1 = DataPolicyPair('(collection_average + (double.collection_average)).ret', None, None, None, None,

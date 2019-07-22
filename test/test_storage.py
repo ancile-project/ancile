@@ -8,11 +8,11 @@ class StorageTest(unittest.TestCase):
     @mock.patch('redis.StrictRedis.get')
     @mock.patch('redis.StrictRedis.set')
     def test_first(self, mock_set, mock_get):
-        from ancile_core.core import assemble_locals
-        from ancile_core.datapolicypair import DataPolicyPair
-        from ancile_core.result import Result
+        from core.core import assemble_locals
+        from core.datapolicypair import DataPolicyPair
+        from core.result import Result
         # from ancile_core.storage import load
-        from ancile_core.utils import _decrypt as decrypt
+        from core.utils import _decrypt as decrypt
 
         data = {}
         def m_set(key, value):
