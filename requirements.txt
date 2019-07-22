@@ -32,7 +32,6 @@ Flask-WTF==0.14.2
 idna==2.8
 itsdangerous==1.1.0
 Jinja2==2.10.1
-json
 loginpass==0.3
 Mako==1.0.10
 MarkupSafe==1.1.1
