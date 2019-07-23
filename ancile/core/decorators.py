@@ -1,12 +1,12 @@
-from ancile.core.datapolicypair import DataPolicyPair
+from ancile.core.primitives.data_policy_pair import DataPolicyPair
 from ancile.utils.errors import AncileException
 import ancile.core.policy as policy
 import ancile.core.storage as storage
 import inspect
 from functools import wraps
-from ancile.core.user_specific import UserSpecific
+from ancile.core.user_specific import UserSecrets
 import logging
-from ancile.core.collection import Collection
+from ancile.core.primitives.collection import Collection
 logger = logging.getLogger(__name__)
 import copy
 
@@ -55,7 +55,7 @@ def external_request_decorator(split_to_collection=False):
             name = kwargs.pop('name', False)
             sample_policy = kwargs.pop('sample_policy', '(ANYF*).return')
 
-            if not isinstance(user_specific, UserSpecific):
+            if not isinstance(user_specific, UserSecrets):
                 raise ValueError("You have to provide a UserSpecific object to fetch new data.")
 
 

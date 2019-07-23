@@ -1,8 +1,9 @@
 from ancile.utils.errors import AncileException, PolicyError
-from core.policy import Policy
-from core.private_data import PrivateData
-import core.time as ancile_web_time
+from ancile.core.primitives.policy.policy import Policy
+from ancile.core.private_data import PrivateData
+import ancile.core.time as ancile_web_time
 import logging
+import uuid
 logger = logging.getLogger(__name__)
 
 
@@ -11,9 +12,19 @@ class DataPolicyPair:
 
     def __init__(self, policy, token, name, username, private_data,
                  app_id=None):
+        """
+
+        :param policy: instance of the policy
+        :param token: access token to retrieve data
+        :param name: custom name that can help identify the DPP
+        :param username:
+        :param private_data:
+        :param app_id:
+        """
+        self._uuid = uuid.uuid1().hex
         self._name = name
         self._username = username
-        self._data = {'output': list()}
+        self._data = None
         self._policy = Policy(policy) if not isinstance(policy, Policy) else policy
         self._token = token
         self._encryption_keys = {}
@@ -23,7 +34,6 @@ class DataPolicyPair:
         self._was_loaded = False
         self._load_key = ''
 
-        # FWIW, keep a link to the last DPP
         self._previous_dpp = None
 
         if isinstance(private_data, dict) and private_data.get(self._name, False):
@@ -33,7 +43,7 @@ class DataPolicyPair:
 
     @property
     def metadata(self):
-        return {'name': self._name,
+        return {'name': self._name, 'uuid': self._uuid,
                 'username': self._username}
 
     def __copy__(self):

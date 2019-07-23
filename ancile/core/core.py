@@ -1,11 +1,11 @@
-from ancile.core.datapolicypair import DataPolicyPair, PrivateData
+from ancile.core.primitives.data_policy_pair import DataPolicyPair
 from ancile.utils.errors import AncileException
-from ancile.core.user_specific import UserSpecific
+from ancile.core.user_secrets import UserSecrets
 from ancile.core.primitives.result import Result
 from ancile.core.advanced.storage import store as _store, load as _load, del_key, gen_key, store_encrypted as _encrypt
 from ancile.core.decorators import use_type_decorator
 from RestrictedPython import compile_restricted_exec, safe_builtins
-from ancile.core.collection import Collection
+from ancile.core.primitives.collection import Collection
 import traceback
 import redis
 from collections import namedtuple
@@ -42,7 +42,7 @@ def gen_module_namespace():
 def assemble_locals(result, user_specific, app_id, app_module=None):
     lcls = gen_module_namespace()
 
-    def user(name: str) -> UserSpecific:
+    def user(name: str) -> UserSecrets:
         return user_specific[name]
 
     def store(obj, name):
@@ -100,10 +100,10 @@ def execute(user_info, program, app_id=None, purpose=None, app_module=None):
     result = Result()
     users_specific = dict()
     for user in user_info:
-        user_specific = UserSpecific(user.policies, user.tokens,
-                                     user.private_data,
-                                     username=user.username,
-                                     app_id=app_id)
+        user_specific = UserSecrets(user.policies, user.tokens,
+                                    user.private_data,
+                                    username=user.username,
+                                    app_id=app_id)
         users_specific[user.username] = user_specific
 
 

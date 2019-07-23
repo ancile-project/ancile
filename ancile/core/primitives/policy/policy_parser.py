@@ -2,7 +2,7 @@ from sly import Lexer, Parser
 import operator
 from enum import Enum
 from ancile.utils.errors import ParseError
-from core.private_data import PrivateData
+from ancile.core.private_data import PrivateData
 
 
 class RangeType(Enum):
