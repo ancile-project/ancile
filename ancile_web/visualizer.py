@@ -3,8 +3,7 @@
 """
 from enum import Enum
 import traceback
-from ancile_core.policy import PolicyParser
-from ancile_core.policy_sly import ParseError
+from ancile_core.policy_sly import FuncType, ParseError, PolicyParser
 
 class NodeType(Enum):
     STAR = 1
@@ -18,18 +17,30 @@ OPERATORS = {
     NodeType.UNION: "OR"
 }
 
+COLORS = {
+    FuncType.NONE: "#ecf5ed",
+    FuncType.FETCH: "#d2dae7",
+    FuncType.TRANSFORM: "#aec5aa",
+    FuncType.AGGREGATE: "#a3ccf4",
+    FuncType.REDUCE: "#d1d098",
+    FuncType.RETURN: "#ff955f",
+    FuncType.COLLECTION: "#bebcc1",
+    FuncType.CONDITION: "#e7d5f9"
+}
+
 class Node:
 
     """
         Simple structure to hold information on each node
         of the policy.
     """
-    def __init__(self, id_num, content, args, children=None):
+    def __init__(self, id_num, content, args, func_type, children=None):
         self.id_num = id_num
         self.content = content
         self.children = children or []
         self.visited = False
         self.args = param_cell_to_str(args)
+        self.func_type = func_type
 
     def __repr__(self):
         return f"Node(A{self.id_num}, {self.content}, {self.args})"
@@ -80,7 +91,7 @@ def traverse_tree(policy, count=0, children=None):
     operator, first = policy[:2]
 
     if operator == "exec":
-        return [Node(count, first, policy[2], children)], count+1
+        return [Node(count, first, policy[2], policy[3], children)], count+1
 
     if operator == "concat":
 
@@ -156,7 +167,7 @@ def visualize_policies(tree, start="graph TD\n"):
 
         else:
             args = args = "<div class=args>" + "<br/>".join(node.args) + "</div>"
-            content += f"A{node.id_num}[\"{node.content} {args}\"]\n"
+            content += f"A{node.id_num}[\"{node.content} {args}\"]\nstyle A{node.id_num} fill:{COLORS[node.func_type]}\n"
             for child in node.children:
 
                 stack.append(child)
@@ -219,7 +230,7 @@ def parse_policy(policy):
         :returns Dictionary with status and parsed_policy (or traceback)
     """
     try:
-        parsed_policy = PolicyParser.parse_it(policy)
+        parsed_policy = PolicyParser.parse_with_annotation(policy)
     except ParseError:
         return {
             "status": "error",
@@ -228,6 +239,7 @@ def parse_policy(policy):
     top_nodes, _ = traverse_tree(parsed_policy)
     mermaid_string = visualize_policies(top_nodes)
 
+    print(mermaid_string)
     return {
         "status": "ok",
         "parsed_policy": mermaid_string
