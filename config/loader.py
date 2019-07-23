@@ -21,7 +21,6 @@ def configure_app(app):
     app.config.update(**configs['security'])
     app.config.update(**configs['mail'])
     app.config.update(**oauth['secrets'])
-    app.config.update(**configs['api_keys'])
 
     if ENABLE_LOGGING:
         import os

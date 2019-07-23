@@ -299,7 +299,7 @@ def obj_political_filter(raw_obj):
 # Note: Makes 6 calls to YouTube API for Speed Purposes Mostly
 # There's sometimes an error when making 40-50 calls.
 @transform_decorator
-def rdl_categorize_youtube_watch_data(data):
+def rdl_categorize_youtube_watch_data(data, youtube_api_key):
     """
     Categorizes YouTube Watched videos using YouTubes category API
     Adds in the categories to original data
@@ -317,13 +317,12 @@ def rdl_categorize_youtube_watch_data(data):
 
     temp_id_list_for_query = []
     req_count = 0
-    api_key = current_app.config['YOUTUBE_API_KEY']
     for iter_id in id_list:
         temp_id_list_for_query.append(iter_id)
         # Max of 50 YouTube Video IDs Per API Query
         if len(temp_id_list_for_query) == 50:
             cats = requests.get(
-                'https://www.googleapis.com/youtube/v3/videos?key=' + api_key + '&part=snippet&id='
+                'https://www.googleapis.com/youtube/v3/videos?key=' + youtube_api_key + '&part=snippet&id='
                 + ','.join(temp_id_list_for_query), verify=False)
             response_json = json.loads(cats.text)
             join_category_ids_to_orig(data, response_json)
