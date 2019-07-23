@@ -1,4 +1,4 @@
-from core.datapolicypair import DataPolicyPair
+from ancile.core.datapolicypair import DataPolicyPair
 from ancile.utils.errors import AncileException
 from core.policy_sly import PolicyParser
 
