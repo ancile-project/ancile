@@ -104,6 +104,35 @@ admin_permission = Permission(RoleNeed('admin'))
 user_permission = Permission(RoleNeed('user'))
 app_permission = Permission(RoleNeed('app'))
 
+@app.route('/api/internal', methods=['POST'])
+@login_required
+@app_permission.require(http_exception=403)
+def run_api_site():
+    js = request.json
+    logger.info(f'Request: {js}')
+
+    app_id = current_user.id
+    purpose = js['purpose']
+    program = js['program']
+    users = js['users']
+
+    user_info = []
+
+    for user in users:
+        try:
+            user_info.append(get_user(user, app_id, purpose))
+        except Exception:
+            return json.dumps({"result": "error",
+                               "traceback": traceback.format_exc()})
+    logger.debug(f'Passing user_info: {user_info}')
+
+    res = execute(user_info=user_info,
+                  program=program,
+                  app_id=app_id,
+                  purpose=purpose,
+                  app_module=retrieve_app_module(app_id))
+    logger.info(f'Returning: {res}')
+    return json.dumps(res)
 
 @app.route('/api/run', methods=['POST'])
 def run_api():
