@@ -55,6 +55,10 @@
   </tbody>
 </table>
 
+{% if predefined is sameas False %}
+<a class="btn btn-secondary btn-lg" href="/app#policies" style="color:white;">Back</a>
+{% else %}
 <a class="btn btn-secondary btn-lg" href="/app#prepolicies" style="color:white;">Back</a>
+{% endif %}
 
 {% endblock %}
