@@ -1,5 +1,5 @@
 import unittest
-from test.tools import run_test
+from test.unit.restricted.tools import run_test
 from core.datapolicypair import DataPolicyPair
 from core.functions import general
 
