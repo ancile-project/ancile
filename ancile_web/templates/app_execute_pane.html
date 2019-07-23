@@ -3,6 +3,8 @@
 <form id="executeForm">
     <input id="users" type="text" name="users" placeholder="Users"></input>
 
+    <input id="purpose" type="text" name="purpose" placeholder="Purpose"></input>
+
     <textarea id="codeTextarea" name="codeTextarea" style="display: none;"></textarea>
     <div id="editor"></div>
 
@@ -19,7 +21,7 @@
 
 <style type="text/css" media="screen">
     #execDiv {
-        height: 325px;
+        height: 375px;
         width: 75%;
         margin: auto;
     }
@@ -32,10 +34,10 @@
         width: 49%;
     }
     #output {
-        height: 295px;
+        height: 337px;
         font-family: monospace;
     }
-    #users {
+    #users, #purpose {
         width: 100%;
         margin-bottom: 10px;
     }
