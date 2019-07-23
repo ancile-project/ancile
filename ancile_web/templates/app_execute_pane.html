@@ -1,0 +1,60 @@
+<div id="execDiv">
+<div id="execFormDiv">
+<form id="executeForm">
+    <input id="users" type="text" name="users" placeholder="Users"></input>
+
+    <textarea id="codeTextarea" name="codeTextarea" style="display: none;"></textarea>
+    <div id="editor"></div>
+
+    <input class="btn btn-primary" type="submit" value="Run"></input>
+
+</form>
+</div>
+
+<div id="outputDiv">
+<textarea id="output" class="form-control" readonly>test</textarea>
+</div>
+
+</div>
+
+<style type="text/css" media="screen">
+    #execDiv {
+        height: 325px;
+        width: 75%;
+        margin: auto;
+    }
+    #execFormDiv {
+        float: left;
+        width: 50%;
+    }
+    #outputDiv {
+        float: right;
+        width: 49%;
+    }
+    #output {
+        height: 295px;
+        font-family: monospace;
+    }
+    #users {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+    #editor {
+        height: 250px;
+        border-radius: 5px;
+        border-style: solid;
+        border-width: 1px;
+        border-color: #ddd;
+        margin-bottom: 5px;
+    }
+</style>
+
+<script src={{ url_for("static", filename="ace/ace.js") }} type="text/javascript" charset="utf-8"></script>
+<script>
+    var editor = ace.edit("editor");
+    editor.setTheme("ace/theme/tomorrow");
+    editor.session.setMode("ace/mode/python");
+    editor.session.on('change', function(delta) {
+        document.getElementById("codeTextarea").value = editor.getValue()
+    });
+</script>
