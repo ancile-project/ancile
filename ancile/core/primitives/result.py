@@ -1,4 +1,4 @@
-from core.decorators import use_type_decorator
+from ancile.core.decorators import use_type_decorator
 import logging
 logger = logging.getLogger(__name__)
 

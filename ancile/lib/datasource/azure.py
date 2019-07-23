@@ -1,5 +1,5 @@
-from core.decorators import external_request_decorator
-from core.functions.general import get_token
+from ancile.core.decorators import external_request_decorator
+from ancile.lib.general import get_token
 
 name="azure"
 

@@ -5,7 +5,7 @@ from flask_security import UserMixin,RoleMixin
 from flask_security.core import current_user
 from datetime import datetime
 from bcrypt import gensalt
-from ancile.core.policy_sly import PolicyParser
+from ancile.core.primitives.policy_sly import PolicyParser
 from ancile.utils.errors import ParseError
 from time import time
 from ancile.utils.errors import AncileException

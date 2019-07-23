@@ -1,12 +1,12 @@
-from core.datapolicypair import DataPolicyPair
+from ancile.core.datapolicypair import DataPolicyPair
 from ancile.utils.errors import AncileException
-import core.policy as policy
-import core.storage as storage
+import ancile.core.policy as policy
+import ancile.core.storage as storage
 import inspect
 from functools import wraps
-from core.user_specific import UserSpecific
+from ancile.core.user_specific import UserSpecific
 import logging
-from core.collection import Collection
+from ancile.core.collection import Collection
 logger = logging.getLogger(__name__)
 import copy
 

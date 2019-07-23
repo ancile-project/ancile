@@ -1,15 +1,15 @@
-from core.datapolicypair import DataPolicyPair, PrivateData
+from ancile.core.datapolicypair import DataPolicyPair, PrivateData
 from ancile.utils.errors import AncileException
-from core.user_specific import UserSpecific
-from core.result import Result
-from core.storage import store as _store, load as _load, del_key, gen_key, store_encrypted as _encrypt
-from core.decorators import use_type_decorator
+from ancile.core.user_specific import UserSpecific
+from ancile.core.primitives.result import Result
+from ancile.core.advanced.storage import store as _store, load as _load, del_key, gen_key, store_encrypted as _encrypt
+from ancile.core.decorators import use_type_decorator
 from RestrictedPython import compile_restricted_exec, safe_builtins
-from core.collection import Collection
+from ancile.core.collection import Collection
 import traceback
 import redis
 from collections import namedtuple
-from core.utils import *
+from ancile.core.utils import *
 from config.loader import REDIS_CONFIG, ENABLE_CACHE
 import logging
 logger = logging.getLogger(__name__)
@@ -23,8 +23,8 @@ r = redis.Redis(**REDIS_CONFIG)
 def gen_module_namespace():
     import pkgutil
     import importlib
-    import core.functions as base
-    from core.functions._config import exclude
+    import ancile.lib as base
+    from ancile.lib._config import exclude
 
     importlib.invalidate_caches()
 

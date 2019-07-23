@@ -3,8 +3,8 @@
 """
 from enum import Enum
 import traceback
-from ancile.core.policy import PolicyParser
-from ancile.core.policy_sly import ParseError
+from ancile.core.primitives.policy import PolicyParser
+from ancile.core.primitives.policy_sly import ParseError
 
 class NodeType(Enum):
     STAR = 1

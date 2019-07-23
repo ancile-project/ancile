@@ -1,4 +1,4 @@
-from web.app import app
+from ancile.web.app import app
 
 if __name__ == '__main__':
     app.run()

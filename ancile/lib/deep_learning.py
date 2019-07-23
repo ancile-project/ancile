@@ -1,5 +1,5 @@
-from core.collection import reduction_fn
-from core.decorators import transform_decorator, aggregate_decorator, \
+from ancile.core.collection import reduction_fn
+from ancile.core.decorators import transform_decorator, aggregate_decorator, \
     external_request_decorator
 
 name = 'test'
@@ -206,7 +206,7 @@ def prepare_for_json(data):
 
 def make_dataset(collection, batch_size=20):
     from ancile.lib.dl.corpus import Corpus
-    from core.functions.dl.helpers import batchify
+    from ancile.lib.dl.helpers import batchify
     import datetime
 
     data = {'output': []}
@@ -236,8 +236,8 @@ def make_dataset(collection, batch_size=20):
 
 @reduction_fn
 def train(collection, epochs, batch_size, bptt, lr, log_interval, clip):
-    from core.functions.dl.helpers import train_helper, test, batchify
-    from core.functions.dl.model import RNNModel
+    from ancile.lib.dl.helpers import train_helper, test, batchify
+    from ancile.lib.dl.model import RNNModel
     import torch.nn as nn
 
     data = make_dataset(collection, batch_size=batch_size)
@@ -261,9 +261,9 @@ def train(collection, epochs, batch_size, bptt, lr, log_interval, clip):
 
 @transform_decorator
 def train_dp(data, epochs, batch_size, bptt, lr, log_interval, sigma, S):
-    from core.functions.dl.helpers import train_dp_helper, test, batchify
-    from core.functions.dl.model import RNNModel
-    from core.functions.dl.compute_dp_sgd_privacy import apply_dp_sgd_analysis
+    from ancile.lib.dl.helpers import train_dp_helper, test, batchify
+    from ancile.lib.dl.model import RNNModel
+    from ancile.lib.dl.compute_dp_sgd_privacy import apply_dp_sgd_analysis
     import torch.nn as nn
 
     criterion = nn.CrossEntropyLoss()
@@ -293,7 +293,7 @@ def train_dp(data, epochs, batch_size, bptt, lr, log_interval, sigma, S):
 
 @aggregate_decorator(reduce=True)
 def serve_model(data, bptt, batch_size):
-    from core.functions.dl.helpers import serve_helper
+    from ancile.lib.helpers import serve_helper
     dataset, model = data['aggregated']
     processed_dataset = make_dataset(dataset)
     ntokens = len(processed_dataset['corpus'].dictionary)

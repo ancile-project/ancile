@@ -2,7 +2,7 @@
 This module defines Ancile fake test functions that have no impact on data, but
 can be used for testing purposes.
 """
-from core.decorators import transform_decorator
+from ancile.core.decorators import transform_decorator
 
 
 # This currently won't work because of how DPPs are created normally and how
