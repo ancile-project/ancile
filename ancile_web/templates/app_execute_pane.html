@@ -1,0 +1,81 @@
+<div id="execDiv">
+<div id="execFormDiv">
+<form id="executeForm">
+    <input id="users" type="text" name="users" placeholder="Users"></input>
+
+    <input id="purpose" type="text" name="purpose" placeholder="Purpose"></input>
+
+    <textarea id="codeTextarea" name="codeTextarea" style="display: none;"></textarea>
+    <div id="editor"></div>
+
+
+</form>
+    <button class="btn btn-primary" onclick="clickFunction()" value="Run">Run</button>
+</div>
+
+<div id="outputDiv">
+<textarea id="output" class="form-control" readonly>test</textarea>
+</div>
+
+</div>
+
+<style type="text/css" media="screen">
+    #execDiv {
+        height: 375px;
+        width: 75%;
+        margin: auto;
+    }
+    #execFormDiv {
+        float: left;
+        width: 50%;
+    }
+    #outputDiv {
+        float: right;
+        width: 49%;
+    }
+    #output {
+        height: 337px;
+        font-family: monospace;
+    }
+    #users, #purpose {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+    #editor {
+        height: 250px;
+        border-radius: 5px;
+        border-style: solid;
+        border-width: 1px;
+        border-color: #ddd;
+        margin-bottom: 5px;
+    }
+</style>
+
+<script src={{ url_for("static", filename="ace/ace.js") }} type="text/javascript" charset="utf-8"></script>
+<script>
+    var editor = ace.edit("editor");
+    editor.setTheme("ace/theme/tomorrow");
+    editor.session.setMode("ace/mode/python");
+    editor.session.on('change', function(delta) {
+        document.getElementById("codeTextarea").value = editor.getValue()
+    });
+    
+    function clickFunction() {
+      let requestBody = {
+        users: document.getElementById("users").value.split(","),
+        purpose: document.getElementById("purpose").value,
+        program: editor.getValue()
+      }
+
+      let request = new XMLHttpRequest();
+      request.onreadystatechange = () => {
+        if (request.readyState === 4 && request.status === 200) {
+          document.getElementById("output").innerHTML = request.responseText;
+        }
+      }
+
+      request.open("POST", "/api/internal");
+      request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+      request.send(JSON.stringify(requestBody));
+    }
+</script>

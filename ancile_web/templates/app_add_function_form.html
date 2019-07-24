@@ -8,7 +8,9 @@
 
   <label for="codeTextarea">Code</label>
   <textarea id="codeTextarea" name="codeTextarea" style="display: none;"></textarea>
-  <div id="editor">def function():</div>
+  <div id="executeEditor">def function():</div>
+
+  <div>test</div>
 
   <br>
 
@@ -17,7 +19,7 @@
 </form>
 
 <style type="text/css" media="screen">
-    #editor { 
+    #executeEditor { 
         height: 250px;
         border-radius: 5px;
     }
@@ -25,7 +27,7 @@
 
 <script src={{ url_for("static", filename="ace/ace.js") }} type="text/javascript" charset="utf-8"></script>
 <script>
-    var editor = ace.edit("editor");
+    var editor = ace.edit("executeEditor");
     editor.setTheme("ace/theme/tomorrow");
     editor.session.setMode("ace/mode/python");
     editor.session.on('change', function(delta) {
