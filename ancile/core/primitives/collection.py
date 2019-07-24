@@ -140,26 +140,3 @@ class Collection(object):
 
         return new_collection
 
-
-
-
-def reduction_fn(f):
-    @wraps(f)
-    def wrapper(*args, **kwargs):
-        collection = kwargs.get('collection', None)
-        if not isinstance(collection, Collection):
-            raise AncileException('Please provide a Collection object as `collection` argument.')
-        policy = collection.get_collection_policy().d_step({'command': f.__name__,
-                                                            'kwargs': kwargs})
-        if not policy:
-            raise PolicyError(f'Collection policy prevented execution of \'{f.__name__}\'')
-
-        kwargs['collection'] = [x._data for x in collection._data_points]
-        logger.info(f'function: {f.__name__} args: {args}, kwargs: {kwargs}')
-        data = f(*args, **kwargs)
-        dp = DataPolicyPair(policy, None, 'reduce', None, None)
-        dp._data = data
-
-        return dp
-
-    return wrapper

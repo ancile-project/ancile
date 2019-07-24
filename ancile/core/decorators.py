@@ -1,10 +1,11 @@
 from ancile.core.primitives.data_policy_pair import DataPolicyPair
 from ancile.utils.errors import AncileException
-import ancile.core.policy as policy
-import ancile.core.storage as storage
+import ancile.core.primitives.policy as policy
+import ancile.core.advanced.storage as storage
+from ancile.utils.errors import PolicyError
 import inspect
 from functools import wraps
-from ancile.core.user_specific import UserSecrets
+from ancile.core.user_secrets import UserSecrets
 import logging
 from ancile.core.primitives.collection import Collection
 logger = logging.getLogger(__name__)
@@ -182,9 +183,9 @@ def aggregate_decorator(reduce=False):
                                     private_data=dict(), app_id=app_id)
             new_dp._data['aggregated'] = new_data
             if kwargs.get('user_specific', False):
-                from core.user_specific import UserSpecific
+
                 user_specific_dict = kwargs['user_specific']
-                new_us = UserSpecific(policies=None, tokens=None, private_data=None,
+                new_us = UserSecrets(policies=None, tokens=None, private_data=None,
                                     username='aggregated', app_id=app_id)
                 new_us._active_dps['aggregated'] = new_dp
                 user_specific_dict['aggregated'] = new_us
@@ -214,5 +215,31 @@ def filter_decorator(f):
                 new_collection._data_points.append(data_point)
             else:
                 data_point._advance_policy('filter_remove')
+
+    return wrapper
+
+
+
+
+
+
+def reduction_decorator(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        collection = kwargs.get('collection', None)
+        if not isinstance(collection, Collection):
+            raise AncileException('Please provide a Collection object as `collection` argument.')
+        policy = collection.get_collection_policy().d_step({'command': f.__name__,
+                                                            'kwargs': kwargs})
+        if not policy:
+            raise PolicyError(f'Collection policy prevented execution of \'{f.__name__}\'')
+
+        kwargs['collection'] = [x._data for x in collection._data_points]
+        logger.info(f'function: {f.__name__} args: {args}, kwargs: {kwargs}')
+        data = f(*args, **kwargs)
+        dp = DataPolicyPair(policy, None, 'reduce', None, None)
+        dp._data = data
+
+        return dp
 
     return wrapper
