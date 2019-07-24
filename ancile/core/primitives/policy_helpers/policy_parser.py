@@ -1,18 +1,9 @@
 from sly import Parser
 import operator
-from enum import Enum
 from ancile.utils.errors import ParseError
 from ancile.core.primitives.policy_helpers.private_data import PrivateData
 from ancile.core.primitives.policy_helpers.policy_lexer import *
-from ancile.core.primitives.policy_helpers.params import ParamCell, RangeCell, SetCell
-
-class RangeType(Enum):
-    OPEN = 1     # (a,b)
-    CLOSED = 2   # [a,b]
-    LOPEN = 3    # (a,b]
-    ROPEN = 4    # [a,b)
-
-
+from ancile.core.primitives.policy_helpers.params import ParamCell, RangeCell, SetCell, RangeType
 
 
 class PolicyParser(Parser):

@@ -1,3 +1,4 @@
+from ancile.core.primitives.policy_helpers.params import RangeType
 
 class RangeCell(object):
     """

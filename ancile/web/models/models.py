@@ -5,7 +5,8 @@ from flask_security import UserMixin,RoleMixin
 from flask_security.core import current_user
 from datetime import datetime
 from bcrypt import gensalt
-from ancile.core.primitives.policy_sly import PolicyParser
+from ancile.core.primitives.policy_helpers.policy_parser import PolicyParser
+from ancile.core.primitives.policy import Policy
 from ancile.utils.errors import ParseError
 from time import time
 from ancile.utils.errors import AncileException
@@ -250,7 +251,7 @@ class Policy(Base):
 
     @classmethod
     def get_by_user_app_purpose(cls, app, user, purpose):
-        from core.policy import Policy
+
         policies = cls.query.filter_by(app_id=app, user_id=user, purpose=purpose)
         policy_dict = dict()
         for policy in policies:

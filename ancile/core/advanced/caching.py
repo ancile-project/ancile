@@ -1,9 +1,8 @@
-
-
+from RestrictedPython import compile_restricted_exec
+import dill
 
 
 def retrieve_compiled(program, redis):
-    import dill
     redis_response = redis.get(program) if ENABLE_CACHE else None
 
     if redis_response is None:

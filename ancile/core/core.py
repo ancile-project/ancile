@@ -1,7 +1,6 @@
 from ancile.utils.errors import AncileException
 from ancile.core.user_secrets import UserSecrets
 from ancile.core.primitives.result import Result
-from ancile.core.decorators import use_type_decorator
 from RestrictedPython import compile_restricted_exec, safe_builtins
 import traceback
 import redis
@@ -31,7 +30,6 @@ def execute(user_info, program, app_id=None, purpose=None, app_module=None):
                                     app_id=app_id)
         users_specific[user.username] = user_specific
 
-
     glbls = {'__builtins__': safe_builtins}
     lcls = assemble_locals(result=result,
                            user_specific=users_specific,
@@ -40,6 +38,7 @@ def execute(user_info, program, app_id=None, purpose=None, app_module=None):
     try:
         c_program = retrieve_compiled(program, r)
         exec(c_program, glbls, lcls)
+
     except:
         print(traceback.format_exc())
         json_output = {'result': 'error', 'traceback': traceback.format_exc()}

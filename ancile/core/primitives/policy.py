@@ -1,5 +1,5 @@
 from copy import deepcopy
-from ancile.core.primitives.policy_sly import PolicyParser
+from ancile.core.primitives.policy_helpers.policy_parser import PolicyParser
 # from typing import List
 
 
