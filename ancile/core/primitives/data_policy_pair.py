@@ -1,7 +1,7 @@
 from ancile.utils.errors import AncileException, PolicyError
 from ancile.core.primitives.policy import Policy
-from ancile.core.private_data import PrivateData
-import ancile.core.time as ancile_web_time
+from ancile.core.primitives.policy_helpers.private_data import PrivateData
+import ancile.utils.time as ancile_web_time
 import logging
 import uuid
 logger = logging.getLogger(__name__)

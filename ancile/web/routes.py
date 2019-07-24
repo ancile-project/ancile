@@ -864,7 +864,7 @@ def app_add_group():
 @login_required
 def logout():
     # Remove the user information from the session
-    logout_user()
+    # logout_user()
     return redirect("/")
 
 @app.errorhandler(403)
