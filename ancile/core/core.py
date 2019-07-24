@@ -2,14 +2,14 @@ from ancile.core.primitives.data_policy_pair import DataPolicyPair
 from ancile.utils.errors import AncileException
 from ancile.core.user_secrets import UserSecrets
 from ancile.core.primitives.result import Result
-from ancile.core.advanced.storage import store as _store, load as _load, del_key, gen_key, store_encrypted as _encrypt
+from ancile.core.advanced.storage import _store, _load, gen_key, del_key
 from ancile.core.decorators import use_type_decorator
 from RestrictedPython import compile_restricted_exec, safe_builtins
 from ancile.core.primitives.collection import Collection
 import traceback
 import redis
 from collections import namedtuple
-from ancile.core.utils import *
+from ancile.core.advanced.encryption import encrypt
 from config.loader import REDIS_CONFIG, ENABLE_CACHE
 import logging
 logger = logging.getLogger(__name__)
@@ -54,7 +54,7 @@ def assemble_locals(result, user_specific, app_id, app_module=None):
 
     def encrypt(obj, name):
         key = gen_key()
-        encrypted_data = _encrypt(obj, f'{app_id}:{key}')
+        encrypted_data = encrypt(obj, f'{app_id}:{key}')
         result._stored_keys[name] = key
         result._encrypted_data[name] = encrypted_data
 

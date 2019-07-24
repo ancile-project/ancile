@@ -1,11 +1,11 @@
-from core.datapolicypair import DataPolicyPair
-from core.collection import Collection
+from ancile.core.primitives.data_policy_pair import DataPolicyPair
+from ancile.core.primitives.collection import Collection
 from ancile.utils.errors import AncileException
 import redis
 import pickle
 from uuid import uuid4
 from config.loader import REDIS_CONFIG
-from core.utils import encrypt
+from ancile.core.advanced.encryption import encrypt
 import logging
 logger = logging.getLogger(__name__)
 
@@ -16,7 +16,7 @@ r = redis.Redis(**REDIS_CONFIG)
 def gen_key():
     return uuid4()
 
-def store_encrypted(obj, key):
+def _store_encrypted(obj, key):
     if not isinstance(obj, DataPolicyPair):
         raise AncileException('Encrypted storage only applies to DataPolicyPairs')
 
@@ -29,7 +29,7 @@ def store_encrypted(obj, key):
     return crypt
 
 
-def store(obj, key):
+def _store(obj, key):
     if not isinstance(obj, DataPolicyPair) and not isinstance(obj, Collection):
         raise AncileException("Cannot store this object.")
 
@@ -40,7 +40,7 @@ def store(obj, key):
 
     logger.info(f'Stored object {obj} under id \'{key}\'')
 
-def load(key):
+def _load(key):
     value = r.get(key)
     if value is None:
         raise AncileException("Nothing stored under this ID.")

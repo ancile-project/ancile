@@ -1,4 +1,4 @@
-from ancile.core.collection import reduction_fn
+from ancile.core.primitives.collection import reduction_fn
 from ancile.core.decorators import transform_decorator, aggregate_decorator, \
     external_request_decorator
 
