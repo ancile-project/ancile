@@ -1,5 +1,5 @@
 from ancile.core.decorators import transform_decorator, external_request_decorator
-from ancile.core.functions.general import get_token
+from ancile.lib.general import get_token
 from ancile.utils.errors import AncileException
 
 name="location"

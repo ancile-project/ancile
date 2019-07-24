@@ -4,7 +4,7 @@ in a way that is agnostic to data source. These functions are primarily wrapped
 over by Ancile functions that are configured for a particular data source's
 format.
 """
-from core.decorators import transform_decorator
+
 from geopy.distance import distance
 from geopy import Point
 from numpy import random

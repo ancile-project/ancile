@@ -1,10 +1,10 @@
 """
 Generic Ancile functions meant to be useful on many different forms of data.
 """
-from core.decorators import (transform_decorator, aggregate_decorator,
-                             comparison_decorator, filter_decorator)
+from ancile.core.decorators import (transform_decorator, aggregate_decorator,
+                             comparison_decorator, filter_decorator, reduction_decorator)
 from ancile.utils.errors import AncileException
-from core.collection import reduction_fn
+
 
 
 # =============================================================================
@@ -260,7 +260,7 @@ def field_comparison(data, field_path, comparison_operator, value):
 #  Reduction Functions
 # =============================================================================
 
-@reduction_fn
+@reduction_decorator
 def collection_average(collection: list, value_key: str=None):
     """
     Compute the average value of a given field across a collection.
@@ -278,7 +278,7 @@ def collection_average(collection: list, value_key: str=None):
 
     return {'collection_average': rolling_value / len(collection)}
 
-@reduction_fn
+@reduction_decorator
 def collection_and(collection: list, value_key: str=None):
     """
     Compute the boolean AND of a given field across a collection.
@@ -295,7 +295,7 @@ def collection_and(collection: list, value_key: str=None):
 
     return {'collection_and':all((item[value_key] for item in collection))}
 
-@reduction_fn
+@reduction_decorator
 def collection_or(collection: list, value_key: str=None):
     """
     Compute the boolean OR of a given field across a collection.
@@ -312,7 +312,7 @@ def collection_or(collection: list, value_key: str=None):
 
     return {'collection_or': any((item[value_key] for item in collection))}
 
-@reduction_fn
+@reduction_decorator
 def collection_sum(collection: list, value_key: str=None):
     """
     Compute the sum value of a given field across a collection.

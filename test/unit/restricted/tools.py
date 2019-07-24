@@ -1,10 +1,10 @@
-from core.policy_sly import PolicyParser
-from core.datapolicypair import DataPolicyPair
-from core.decorators import transform_decorator, use_type_decorator
+from ancile.core.primitives.policy_helpers.policy_parser import PolicyParser
+from ancile.core.primitives.data_policy_pair import DataPolicyPair
+from ancile.core.decorators import transform_decorator, use_type_decorator
 from RestrictedPython import compile_restricted_exec, safe_builtins
 from ancile.utils.errors import PolicyError
-from core.core import gen_module_namespace
-from core.collection import Collection
+from ancile.core.context_building import gen_module_namespace
+from ancile.core.primitives.collection import Collection
 
 
 def get_dummy_pair(input_policy: str, id_num) -> DataPolicyPair:

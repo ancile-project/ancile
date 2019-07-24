@@ -2,8 +2,8 @@
 This module defines Ancile functions to work with temporal information inside
 Ancile.
 """
-from core.decorators import comparison_decorator
-import core.time as ancile_web_time
+from ancile.core.decorators import comparison_decorator
+import ancile.utils.time as ancile_web_time
 
 @comparison_decorator
 def in_time_window(data, lower_str, upper_str, weekday_list=None):

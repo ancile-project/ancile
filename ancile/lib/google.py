@@ -4,8 +4,8 @@ This module defines Ancile functions to work with data coming from Google.
 Currently supports the following data sources:
 - Google Calendar
 """
-from core.decorators import transform_decorator, external_request_decorator
-from core.functions.general import get_token
+from ancile.core.decorators import transform_decorator, external_request_decorator
+from ancile.lib.general import get_token
 from ancile.utils.errors import AncileException
 
 name = 'google'

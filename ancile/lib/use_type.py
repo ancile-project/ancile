@@ -1,4 +1,4 @@
-from core.decorators import use_type_decorator
+from ancile.core.decorators import use_type_decorator
 
 
 @use_type_decorator

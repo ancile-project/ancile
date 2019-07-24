@@ -1,6 +1,5 @@
-from ancile.core.primitives.collection import reduction_fn
 from ancile.core.decorators import transform_decorator, aggregate_decorator, \
-    external_request_decorator
+    external_request_decorator, reduction_decorator
 
 name = 'test'
 
@@ -234,7 +233,7 @@ def make_dataset(collection, batch_size=20):
     return data
 
 
-@reduction_fn
+@reduction_decorator
 def train(collection, epochs, batch_size, bptt, lr, log_interval, clip):
     from ancile.lib.dl.helpers import train_helper, test, batchify
     from ancile.lib.dl.model import RNNModel
@@ -293,7 +292,7 @@ def train_dp(data, epochs, batch_size, bptt, lr, log_interval, sigma, S):
 
 @aggregate_decorator(reduce=True)
 def serve_model(data, bptt, batch_size):
-    from ancile.lib.helpers import serve_helper
+    from ancile.lib.dl.helpers import serve_helper
     dataset, model = data['aggregated']
     processed_dataset = make_dataset(dataset)
     ntokens = len(processed_dataset['corpus'].dictionary)

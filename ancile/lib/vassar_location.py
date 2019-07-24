@@ -2,9 +2,10 @@
 This module defines Ancile functions to work with data coming from the Vassar
 Campus Data server at campusdataservices.cs.vassar.edu.
 """
-from core.decorators import transform_decorator, external_request_decorator
-from core.functions import location
-from core.functions.general import get_token
+
+from ancile.core.decorators import transform_decorator, external_request_decorator
+from ancile.lib.general import get_token
+from ancile.lib import location
 from ancile.utils.errors import AncileException
 import requests
 
