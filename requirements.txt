@@ -36,6 +36,7 @@ Jinja2==2.10.1
 loginpass==0.3
 Mako==1.0.10
 MarkupSafe==1.1.1
+pandas==0.24
 passlib==1.7.1
 psycopg2-binary
 pycparser==2.19

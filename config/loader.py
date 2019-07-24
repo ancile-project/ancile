@@ -11,7 +11,6 @@ ENABLE_CACHE = configs['operational']['CACHE']
 ENABLE_LOGGING = configs['operational']['LOGGING']
 PROVIDERS = configs['providers']
 
-
 def _postgres_url(POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_HOST,
                   POSTGRES_PORT, POSTGRES_DB):
     return {"SQLALCHEMY_DATABASE_URI": f'postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}'}

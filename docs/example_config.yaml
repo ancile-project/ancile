@@ -14,7 +14,7 @@ server:
     SERVER_NAME: 
     SQLALCHEMY_TRACK_MODIFICATIONS: False
     SECRET_KEY: "super-secret"
-
+    SESSION_COOKIE_NAME: "ancile-session"
 security:
     SECURITY_PASSWORD_SALT: very secret salt
     SECURITY_UNAUTHORIZED_VIEW: "/"
