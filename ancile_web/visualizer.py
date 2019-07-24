@@ -5,17 +5,15 @@ from enum import Enum
 import traceback
 from ancile_core.policy_sly import FuncType, ParseError, PolicyParser
 
+
 class NodeType(Enum):
     STAR = 1
     NEG = 2
     INTERSECT = 3
     UNION = 4
 
-OPERATORS = {
-    NodeType.NEG: "NOT",
-    NodeType.INTERSECT: "AND",
-    NodeType.UNION: "OR"
-}
+
+OPERATORS = {NodeType.NEG: "NOT", NodeType.INTERSECT: "AND", NodeType.UNION: "OR"}
 
 COLORS = {
     FuncType.NONE: "#ecf5ed",
@@ -25,8 +23,9 @@ COLORS = {
     FuncType.REDUCE: "#d1d098",
     FuncType.RETURN: "#ff955f",
     FuncType.COLLECTION: "#bebcc1",
-    FuncType.CONDITION: "#e7d5f9"
+    FuncType.CONDITION: "#e7d5f9",
 }
+
 
 class Node:
 
@@ -34,6 +33,7 @@ class Node:
         Simple structure to hold information on each node
         of the policy.
     """
+
     def __init__(self, id_num, content, args, func_type, children=None):
         self.id_num = id_num
         self.content = content
@@ -46,22 +46,24 @@ class Node:
         return f"Node(A{self.id_num}, {self.content}, {self.args})"
 
 
-class SpecialNode():
+class SpecialNode:
 
     """
         A special node is a container node for
         loops, it saves the top and bottom nodes of
         the loop tree
     """
+
     def __init__(self, inner_tree, children, node_type):
         self.inner_tree = inner_tree
         self.leaves = get_bottom(inner_tree)
         self.children = children or []
         self.visited = False
         self.node_type = node_type
-    
+
     def __repr__(self):
         return str(self.inner_tree)
+
 
 def get_bottom(tree):
     """
@@ -78,6 +80,7 @@ def get_bottom(tree):
             children.append(node)
     return children
 
+
 def traverse_tree(policy, count=0, children=None):
     """
         Traverses policy list and generates a tree.
@@ -91,7 +94,7 @@ def traverse_tree(policy, count=0, children=None):
     operator, first = policy[:2]
 
     if operator == "exec":
-        return [Node(count, first, policy[2], policy[3], children)], count+1
+        return [Node(count, first, policy[2], policy[3], children)], count + 1
 
     if operator == "concat":
 
@@ -110,13 +113,14 @@ def traverse_tree(policy, count=0, children=None):
         second_side, count = traverse_tree(policy[2], count)
         inner_tree = first_side + second_side
         return [SpecialNode(inner_tree, children, NodeType.INTERSECT)], count
-    
+
     inner_tree, count = traverse_tree(first, count)
 
     if operator == "star":
         return [SpecialNode(inner_tree, children, NodeType.STAR)], count
 
     return [SpecialNode(inner_tree, children, NodeType.NEG)], count
+
 
 def visualize_policies(tree, start="graph TD\n"):
     """
@@ -131,7 +135,6 @@ def visualize_policies(tree, start="graph TD\n"):
     stack = tree.copy()
     while stack:
         node = stack.pop()
-
 
         if node.visited:
             continue
@@ -166,8 +169,8 @@ def visualize_policies(tree, start="graph TD\n"):
                 connections.add(connection_string)
 
         else:
-            args = args = "<div class=args>" + "<br/>".join(node.args) + "</div>"
-            content += f"A{node.id_num}[\"{node.content} {args}\"]\nstyle A{node.id_num} fill:{COLORS[node.func_type]}\n"
+            args = "<div class=args>" + "<br/>".join(node.args) + "</div>"
+            content += f'A{node.id_num}["{node.content} {args}"]\nstyle A{node.id_num} fill:{COLORS[node.func_type]}\n'
             for child in node.children:
 
                 stack.append(child)
@@ -188,8 +191,8 @@ def visualize_policies(tree, start="graph TD\n"):
                     connection = connect_to(node, child)
                     connections.add(connection)
 
+    return content + "\n".join(connections)
 
-    return content + '\n'.join(connections)
 
 def connect_to(node, child_node):
     """
@@ -204,21 +207,21 @@ def connect_to(node, child_node):
         tree = node.leaves
     else:
         tree = [node]
-    
+
     if isinstance(child_node, SpecialNode):
         bottom_tree = child_node.inner_tree
     else:
         bottom_tree = [child_node]
-    
+
     for node in tree:
         for child in bottom_tree:
             if isinstance(child, SpecialNode) or isinstance(node, SpecialNode):
                 output += connect_to(node, child)
             else:
                 output += f"A{node.id_num} --> A{child.id_num}" + "\n"
-    
+
     return output
-        
+
 
 def parse_policy(policy):
     """
@@ -232,18 +235,12 @@ def parse_policy(policy):
     try:
         parsed_policy = PolicyParser.parse_with_annotation(policy)
     except ParseError:
-        return {
-            "status": "error",
-            "error": traceback.format_exc()
-        }
+        return {"status": "error", "error": traceback.format_exc()}
     top_nodes, _ = traverse_tree(parsed_policy)
     mermaid_string = visualize_policies(top_nodes)
 
-    print(mermaid_string)
-    return {
-        "status": "ok",
-        "parsed_policy": mermaid_string
-    }
+    return {"status": "ok", "parsed_policy": mermaid_string}
+
 
 def param_cell_to_str(param_cells):
     """
