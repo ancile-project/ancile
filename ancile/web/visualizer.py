@@ -3,7 +3,7 @@
 """
 from enum import Enum
 import traceback
-from ancile.core.primitives.policy.policy import PolicyParser
+from ancile.core.primitives.policy import PolicyParser
 from ancile.core.primitives.policy_sly import ParseError
 
 class NodeType(Enum):

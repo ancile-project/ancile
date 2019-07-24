@@ -1,6 +1,6 @@
 from ancile.core.primitives.data_policy_pair import DataPolicyPair
 from ancile.utils.errors import AncileException
-from core.policy_sly import PolicyParser
+from ancile.core.primitives.policy_helpers.policy_parser import PolicyParser
 
 import logging
 logger = logging.getLogger(__name__)

@@ -1,4 +1,5 @@
 from ancile.core.primitives.data_policy_pair import DataPolicyPair
+from ancile.core.primitives.policy_helpers.private_data import PrivateData
 from ancile.utils.errors import AncileException
 from ancile.core.user_secrets import UserSecrets
 from ancile.core.primitives.result import Result

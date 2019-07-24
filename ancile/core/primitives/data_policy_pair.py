@@ -1,5 +1,5 @@
 from ancile.utils.errors import AncileException, PolicyError
-from ancile.core.primitives.policy.policy import Policy
+from ancile.core.primitives.policy import Policy
 from ancile.core.private_data import PrivateData
 import ancile.core.time as ancile_web_time
 import logging
@@ -102,10 +102,12 @@ class DataPolicyPair:
                                         scope=scope)
 
     def _advance_policy_error(self, command, **kwargs):
+        previous_policy = self._policy
         new_policy = self._advance_policy(command, **kwargs)
         if not new_policy:
-            raise PolicyError
-        else: return new_policy
+            raise PolicyError(message=f'Cannot advance policy: {previous_policy} with command: {command}')
+        else:
+            return new_policy
 
     def _call(self, func, *args, scope=None, **kwargs):
         if self.is_expired:
