@@ -2,17 +2,17 @@ import unittest
 import unittest.mock as mock
 # from test.tools import run_test
 # from ancile_web.errors import ParseError
-
+from ancile.core.context_building import assemble_locals
+from ancile.core.primitives.data_policy_pair import DataPolicyPair
+from ancile.core.primitives.result import Result
+# from ancile_core.storage import load
+from ancile.core.advanced.encryption import _decrypt as decrypt
 
 class StorageTest(unittest.TestCase):
     @mock.patch('redis.StrictRedis.get')
     @mock.patch('redis.StrictRedis.set')
     def test_first(self, mock_set, mock_get):
-        from core.core import assemble_locals
-        from core.datapolicypair import DataPolicyPair
-        from core.result import Result
-        # from ancile_core.storage import load
-        from core.utils import _decrypt as decrypt
+
 
         data = {}
         def m_set(key, value):
