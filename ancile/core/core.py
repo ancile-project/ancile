@@ -1,12 +1,10 @@
-from ancile.utils.errors import AncileException
 from ancile.core.user_secrets import UserSecrets
 from ancile.core.primitives.result import Result
-from RestrictedPython import compile_restricted_exec, safe_builtins
+from RestrictedPython import safe_builtins
 import traceback
 import redis
 from collections import namedtuple
-from ancile.core.advanced.encryption import encrypt
-from config.loader import REDIS_CONFIG, ENABLE_CACHE
+from config.loader import REDIS_CONFIG
 import logging
 from ancile.core.context_building import assemble_locals
 from ancile.core.advanced.caching import retrieve_compiled
@@ -31,7 +29,7 @@ def execute(user_info, program, app_id=None, purpose=None, app_module=None):
         users_specific[user.username] = user_specific
 
     glbls = {'__builtins__': safe_builtins}
-    lcls = assemble_locals(result=result,
+    lcls = assemble_locals(redis=r, result=result,
                            user_specific=users_specific,
                            app_id=app_id,
                            app_module=app_module)
