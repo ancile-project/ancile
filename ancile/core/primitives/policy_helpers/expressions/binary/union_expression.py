@@ -7,7 +7,7 @@ from ancile.core.primitives.policy_helpers.expressions.binary.binary_expression 
 class UnionExpression(BinaryExpression):
 
     def __init__(self, l_expr: BaseExpression, r_expr: BaseExpression):
-        self.operation = '/\\'
+        self.operation = '+'
         super().__init__(l_expr, r_expr)
 
     def d_step(self):
