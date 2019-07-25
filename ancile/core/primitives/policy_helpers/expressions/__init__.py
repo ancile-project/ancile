@@ -8,5 +8,6 @@ from ancile.core.primitives.policy_helpers.expressions.binary.intersect_expressi
 
 from ancile.core.primitives.policy_helpers.expressions.unary.negation_expression import NegationExpression
 from ancile.core.primitives.policy_helpers.expressions.unary.unary_expression import UnaryExpression
+from ancile.core.primitives.policy_helpers.expressions.unary.star_expression import StarExpression
 
 

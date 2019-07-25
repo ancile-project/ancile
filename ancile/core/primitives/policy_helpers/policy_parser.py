@@ -1,9 +1,11 @@
 from sly import Parser
 import operator
+
 from ancile.utils.errors import ParseError
 from ancile.core.primitives.policy_helpers.private_data import PrivateData
 from ancile.core.primitives.policy_helpers.policy_lexer import *
 from ancile.core.primitives.policy_helpers.params import ParamCell, RangeCell, SetCell, RangeType
+from ancile.core.primitives.policy_helpers.expressions import *
 
 
 class PolicyParser(Parser):
@@ -25,11 +27,11 @@ class PolicyParser(Parser):
 
     @_('policy policy_op rclause')
     def clause(self, p):
-        return [p.policy_op, p.policy, p.rclause]
+        return p.policy_op(p.policy, p.rclause)
 
     @_('policy policy_op rclause')
     def rclause(self, p):
-        return [p.policy_op, p.policy, p.rclause]
+        return p.policy_op(p.policy, p.rclause)
 
     @_('policy')
     def rclause(self, p):
@@ -41,19 +43,19 @@ class PolicyParser(Parser):
 
     @_('INTERSECT')
     def policy_op(self, p):
-        return 'intersect'
+        return IntersectExpression
 
     @_('UNION')
     def policy_op(self, p):
-        return 'union'
+        return UnionExpression
 
     @_('NEG policy')
     def policy(self, p):
-        return ['neg', p.policy]
+        return NegationExpression(p.policy)
 
     @_('policy STAR')
     def policy(self, p):
-        return ['star', p.policy]
+        return StarExpression(p.policy)
 
     @_('policy')
     def clause(self, p):
@@ -61,7 +63,7 @@ class PolicyParser(Parser):
 
     @_('policy CONCAT policy')
     def policy(self, p):
-        return ['concat', p.policy0, p.policy1]
+        return ConcatExpression(p.policy0, p.policy1)
 
     @_('NUMBER')
     def policy(self, p):
@@ -69,15 +71,15 @@ class PolicyParser(Parser):
 
     @_('TEXT')
     def policy(self, p):
-        return ['exec', p.TEXT, {}]
+        return ExecExpression(p.TEXT)
 
     @_('ANYF')
     def policy(self, p):
-        return ['exec', "ANYF"]
+        return ExecExpression("ANYF")
 
     @_('TEXT LPAREN params RPAREN')
     def policy(self, p):
-        return ['exec', p.TEXT, p.params]
+        return ExecExpression(p.TEXT, p.params)
 
     @_('param COMMA params')
     def params(self, p):

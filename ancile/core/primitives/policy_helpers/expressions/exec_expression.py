@@ -11,7 +11,7 @@ class ExecExpression(BaseExpression):
 
     def __repr__(self):
         if self.params:
-            return f'{self.command}({", ".join([str(x) for x in self.params])})'
+            return f'{self.command}({", ".join([str(x) for x in self.params.values()])})'
         else:
             return f'{self.command}'
 
