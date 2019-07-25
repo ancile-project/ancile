@@ -1,7 +1,8 @@
+from urllib import parse
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.contrib.postgres import fields
-
+import requests_oauthlib
 
 class User(AbstractUser):
     pass
@@ -23,6 +24,18 @@ class DataProvider(models.Model):
     access_token_url = models.TextField()
     auth_url = models.TextField()
     extra_params = fields.JSONField()
+
+    def generate_url(self, scopes, base):
+        session = requests-oauthlib.OAuth2Session(
+            client_id=self.client_id,
+            redirect_url=redirect_url(base)
+        )
+
+        auth_url, state = session.authorization_url(self.auth_url)
+        return auth_url, state
+
+    def redirect_url(self, base):
+        return parse.urljoin(base, f"/{self.name}/callback")
 
 
 class Policy(models.Model):
@@ -63,7 +76,7 @@ class PredefinedPolicy(models.Model):
     approved = models.BooleanField()
     group_id = models.ForeignKey(PermissionGroup,
                                  on_delete=models.CASCADE)
-    
+
 class Function(models.Model):
     name = models.CharField(max_length=128)
     body = models.TextField()
