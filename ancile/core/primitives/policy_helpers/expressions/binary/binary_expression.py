@@ -12,7 +12,7 @@ class BinaryExpression(BaseExpression, ABC):
         self.r_expr = r_expr
 
     def __eq__(self, other):
-        if type(self) is type(other) and self.l_expr == other.l_expr \
+        if isinstance(other, self.__class__) and self.l_expr == other.l_expr \
                 and self.r_expr == other.r_expr:
             return True
         else:

@@ -22,7 +22,7 @@ class SetCell(object):
     def __eq__(self, other):
         if self is other:
             return True
-        elif not isinstance(other, SetCell):
+        elif not isinstance(other, self.__class__):
             return False
         else:
             return self._name == other._name and                              \

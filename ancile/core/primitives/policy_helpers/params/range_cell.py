@@ -44,7 +44,7 @@ class RangeCell(object):
     def __eq__(self, other):
         if self is other:
             return True
-        elif not isinstance(other, RangeCell):
+        elif not isinstance(other, self.__class__):
             return False
         else:
             return self.name == other.name and                                \

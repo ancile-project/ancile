@@ -1,4 +1,3 @@
-from ancile.core.primitives import Policy
 from ancile.core.primitives.policy_helpers.expressions.base_expression import BaseExpression
 
 
@@ -16,7 +15,7 @@ class ExecExpression(BaseExpression):
             return f'{self.command}'
 
     def __eq__(self, other):
-        if type(self) is type(other) and self.command == other.command \
+        if isinstance(other, self.__class__) and self.command == other.command \
                 and self.params == other.params:
             return True
         else:
