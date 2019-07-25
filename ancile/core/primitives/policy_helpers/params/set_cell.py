@@ -1,7 +1,4 @@
 
-
-
-
 class SetCell(object):
     def __init__(self, name, in_objects, invert):
         self._set = set(in_objects)

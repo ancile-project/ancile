@@ -3,17 +3,17 @@ from ancile.core.primitives.policy_helpers.expressions.exec_expression import Ex
 from ancile.core.primitives.policy_helpers.expressions.unary.unary_expression import UnaryExpression
 
 
-class NegationExpression(UnaryExpression):
+class StarExpression(UnaryExpression):
 
     def __init__(self, expression: BaseExpression):
-        self.operation = '!'
+        self.operation = '*'
         super().__init__(expression)
 
     def __repr__(self):
         if isinstance(self.expression, ExecExpression):
-            return f'!{self.expression}'
+            return f'{self.expression}*'
         else:
-            return f'!({self.expression})'
+            return f'({self.expression})*'
 
     def d_step(self):
         pass

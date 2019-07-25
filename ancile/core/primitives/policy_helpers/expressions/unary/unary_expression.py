@@ -9,6 +9,10 @@ class UnaryExpression(BaseExpression, ABC):
         super().__init__()
         self.expression = expression
 
+    def __eq__(self, other):
+        if type(self) is type(other) and self.expression == other.expression:
+            return True
+
     def d_step(self):
         pass
 
