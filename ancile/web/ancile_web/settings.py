@@ -33,6 +33,8 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     'ancile.web.dashboard.apps.DashboardConfig',
+    'ancile.web.api.apps.ApiConfig',
+    'ancile.web.oauth.apps.OauthConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
