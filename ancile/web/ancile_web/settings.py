@@ -24,6 +24,8 @@ SECRET_KEY = 'i)0z4&29eelwsf0*4d&8kh#20o4a0t)jnmlso+ce=a*dc&8pj#'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+LOGIN_URL = '/login'
+
 ALLOWED_HOSTS = []
 
 
@@ -54,7 +56,7 @@ ROOT_URLCONF = 'ancile.web.ancile_web.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': ["ancile/web/dashboard/templates"],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
