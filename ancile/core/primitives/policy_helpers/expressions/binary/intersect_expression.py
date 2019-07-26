@@ -43,7 +43,7 @@ class IntersectExpression(BinaryExpression):
     def simplify(self):
         """
         P + P = P
-        P + 0 = 0 + P = P
+        P & 0 = 0 + P = P
         P* + 1 = P*
 
         """

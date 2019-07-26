@@ -1,13 +1,7 @@
 from ancile.core.primitives.policy_helpers.expressions import *
-from enum import Enum
 
 
-class Constants(Enum):
-    ONE = 1
-    ZERO = 1
-
-
-class NoOpExpression(BaseExpression):
+class ConstantExpression(BaseExpression):
     command: Constants
 
     def __init__(self, command: Constants):
@@ -24,23 +18,23 @@ class NoOpExpression(BaseExpression):
         else:
             return False
 
-    def d_step(self, command, params=None):
+    def d_step(self, command, params=None) -> BaseExpression:
         """
         D(0, C) = 0
         D(1, C) = 0
 
         """
 
-        return NoOpExpression(Constants.ONE)
+        return ConstantExpression(Constants.ZERO)
 
-    def e_step(self):
+    def e_step(self) -> Constants:
         """
         E(0) = 0
         E(1) = 1
 
         :return:
         """
-        return self
+        return self.command
 
     def simplify(self):
 

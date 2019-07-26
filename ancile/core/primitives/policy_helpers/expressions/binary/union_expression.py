@@ -39,7 +39,7 @@ class UnionExpression(BinaryExpression):
         :return:
         """
 
-        return max(self.l_expr.e_step() + self.r_expr.e_step())
+        return self.l_expr.e_step() + self.r_expr.e_step()
 
     def simplify(self):
         """

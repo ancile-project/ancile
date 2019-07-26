@@ -18,12 +18,16 @@ class StarExpression(UnaryExpression):
         D(P*) = D(P,C).P*
 
         """
+        self.expression = self.expression.simplify()
 
         return ConcatExpression(self.expression.d_step(command, params), self)
 
-
     def e_step(self):
-        pass
+        """
+        E(P*) = 1
+        """
+
+        return Constants.ONE
 
     def simplify(self):
         pass

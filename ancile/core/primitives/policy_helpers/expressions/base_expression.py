@@ -1,4 +1,6 @@
+from __future__ import annotations
 from abc import ABC, abstractmethod
+from ancile.core.primitives.policy_helpers.expressions import *
 
 
 class BaseExpression(ABC):
@@ -12,13 +14,13 @@ class BaseExpression(ABC):
         pass
 
     @abstractmethod
-    def d_step(self, command, params=None):
+    def d_step(self, command, params=None) -> BaseExpression:
         pass
 
     @abstractmethod
-    def e_step(self):
+    def e_step(self) -> Constants:
         pass
 
     @abstractmethod
-    def simplify(self):
+    def simplify(self) -> BaseExpression:
         pass
