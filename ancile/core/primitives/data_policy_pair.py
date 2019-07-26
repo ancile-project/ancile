@@ -94,12 +94,10 @@ class DataPolicyPair:
     def _advance_policy(self, command, scope=None, update=True, **kwargs):
         if update:
             self._policy = self._policy.d_step({'command': command,
-                                                'kwargs': kwargs},
-                                                scope=scope)
+                                                'kwargs': kwargs}, None)
             return self._policy
         else:
-            return self._policy.d_step({'command': command, 'kwargs': kwargs},
-                                        scope=scope)
+            return self._policy.d_step({'command': command, 'kwargs': kwargs}, None)
 
     def _advance_policy_error(self, command, **kwargs):
         previous_policy = self._policy

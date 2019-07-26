@@ -12,7 +12,7 @@ class BaseExpression(ABC):
         pass
 
     @abstractmethod
-    def d_step(self):
+    def d_step(self, command, params=None):
         pass
 
     @abstractmethod

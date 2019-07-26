@@ -1,7 +1,4 @@
-from abc import ABC
-
-from ancile.core.primitives.policy_helpers.expressions.base_expression import BaseExpression
-from ancile.core.primitives.policy_helpers.expressions.binary.binary_expression import BinaryExpression
+from ancile.core.primitives.policy_helpers.expressions import *
 
 
 class ConcatExpression(BinaryExpression):
@@ -10,7 +7,15 @@ class ConcatExpression(BinaryExpression):
         self.operation = '.'
         super().__init__(l_expr, r_expr)
 
-    def d_step(self):
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            if self.l_expr == other.l_expr and self.r_expr == other.r_expr:
+                return True
+        else:
+            return False
+
+    def d_step(self, command, params=None):
+
         pass
 
     def e_step(self):

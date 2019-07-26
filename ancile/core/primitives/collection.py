@@ -129,8 +129,8 @@ class Collection(object):
         new_data_points = list()
 
         for dpp in self._data_points:
-            peek_next_policy = dpp._policy.d_step('filter_keep')
-            if peek_next_policy.d_step(command):
+            peek_next_policy = dpp._policy.d_step('filter_keep', None)
+            if peek_next_policy.d_step(command, None):
                 dpp._advance_policy_error('filter_keep')
                 new_data_points.append(dpp)
             else:

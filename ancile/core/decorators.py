@@ -230,7 +230,7 @@ def reduction_decorator(f):
         if not isinstance(collection, Collection):
             raise AncileException('Please provide a Collection object as `collection` argument.')
         policy = collection.get_collection_policy().d_step({'command': f.__name__,
-                                                            'kwargs': kwargs})
+                                                            'kwargs': kwargs}, None)
         if not policy:
             raise PolicyError(f'Collection policy prevented execution of \'{f.__name__}\'')
 

@@ -1,4 +1,5 @@
-from ancile.core.primitives.policy_helpers.expressions.base_expression import BaseExpression
+from ancile.core.primitives.policy_helpers.expressions import *
+from ancile.core.primitives.policy_helpers.expressions.noop_expression import NoOpExpression
 
 
 class ExecExpression(BaseExpression):
@@ -21,11 +22,26 @@ class ExecExpression(BaseExpression):
         else:
             return False
 
-    def d_step(self):
-        pass
+    def d_step(self, command, params=None):
+        if self.command == command:
+            for key, value in self.params.items():
+                if key == 'data':
+                    continue
+                # print(f'Checking for key: {key} and value: {value}, passed param: {params.get(key, False)}\n')
+                proposed_value = params.get(key, None)
+                if not value.evaluate(proposed_value):
+                    return Constants.ZERO
+
+            return Constants.ONE
 
     def e_step(self):
-        pass
+        """
+        E(C) = 0
+        :return:
+        """
+
+        return Constants.ZERO
 
     def simplify(self):
-        pass
+
+        return self

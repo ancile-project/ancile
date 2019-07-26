@@ -1,6 +1,4 @@
-from ancile.core.primitives.policy_helpers.expressions.base_expression import BaseExpression
-from ancile.core.primitives.policy_helpers.expressions.exec_expression import ExecExpression
-from ancile.core.primitives.policy_helpers.expressions.unary.unary_expression import UnaryExpression
+from ancile.core.primitives.policy_helpers.expressions import *
 
 
 class StarExpression(UnaryExpression):
@@ -15,8 +13,14 @@ class StarExpression(UnaryExpression):
         else:
             return f'({self.expression})*'
 
-    def d_step(self):
-        pass
+    def d_step(self, command, params=None):
+        """
+        D(P*) = D(P,C).P*
+
+        """
+
+        return ConcatExpression(self.expression.d_step(command, params), self)
+
 
     def e_step(self):
         pass
