@@ -1,23 +1,27 @@
 from ancile.core.primitives.data_policy_pair import DataPolicyPair
+from ancile.core.primitives.policy_helpers.expressions import *
 from ancile.utils.errors import AncileException
-import ancile.core.primitives.policy as policy
 import ancile.core.advanced.storage as storage
 from ancile.utils.errors import PolicyError
 import inspect
 from functools import wraps
 from ancile.core.user_secrets import UserSecrets
-import logging
 from ancile.core.primitives.collection import Collection
+
+import logging
 logger = logging.getLogger(__name__)
 import copy
+
 
 def check_args(args):
     if args:
         raise ValueError("Please specify keyword arguments instead of positions.")
 
+
 def check_data(dp_pair):
     if not isinstance(dp_pair, DataPolicyPair):
         raise ValueError("You need to provide a Data object. Use get_data to get it.")
+
 
 def decorator_preamble(args, kwargs) -> DataPolicyPair:
     check_args(args)
@@ -37,6 +41,7 @@ def transform_decorator(f):
         return new_dp_pair
 
     return wrapper
+
 
 def external_request_decorator(split_to_collection=False):
     """
@@ -81,8 +86,6 @@ def external_request_decorator(split_to_collection=False):
                 logger.info("CREATED A COLLECTION")
                 collection = Collection(data_points)
                 return collection
-
-
 
         return wrapper
     return actual_decorator
@@ -174,7 +177,7 @@ def aggregate_decorator(reduce=False):
 
                 set_users.add(dp_pair._username)
                 if new_policy:
-                    new_policy = policy.intersect(dp_pair._policy, new_policy)
+                    new_policy = IntersectExpression(dp_pair._policy, new_policy)
                 else:
                     new_policy = dp_pair._policy
 
@@ -217,10 +220,6 @@ def filter_decorator(f):
                 data_point._advance_policy('filter_remove')
 
     return wrapper
-
-
-
-
 
 
 def reduction_decorator(f):

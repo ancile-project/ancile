@@ -1,3 +1,5 @@
+from ancile.core.primitives.policy_helpers.expressions import IntersectExpression
+from ancile.core.primitives.policy_helpers.policy_parser import PolicyParser
 from ancile.utils.errors import PolicyError, AncileException
 from ancile.core.primitives.data_policy_pair import DataPolicyPair
 import ancile.utils.time as ancile_web_time
@@ -31,9 +33,8 @@ class Collection(object):
         :return: A Policy object representing the synthesized policy on the
                  collection.
         """
-        return intersect_list((dp._policy for dp in self._data_points),
-                              empty_policy='ANYF*')
-
+        return IntersectExpression.assemble_from_list((dp._policy for dp in self._data_points),
+                              empty_expr=PolicyParser.parse_it('ANYF*'))
 
     def _check_collection_policy(self, command, **kwargs) -> bool:
         """
@@ -44,7 +45,6 @@ class Collection(object):
         """
         collection_policy = self.get_collection_policy()
         return collection_policy.check_allowed(command, **kwargs)
-
 
     def _advance_collection_policy(self, command, **kwargs):
         """
@@ -60,7 +60,6 @@ class Collection(object):
                 dpp._advance_policy_error(command, **kwargs)
         else:
             raise PolicyError(f"Collection does not allow the policy_command: {command} with arguments {kwargs}")
-
 
     def add_to_collection(self, data: DataPolicyPair):
         """

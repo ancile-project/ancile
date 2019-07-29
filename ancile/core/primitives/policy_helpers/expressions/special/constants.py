@@ -15,22 +15,25 @@ class Constants(Enum):
     ZERO = False
 
     def __add__(self, other):
+        """
+        Logical OR operation
+        """
 
         return Constants(self.value or other.value)
 
     def __mul__(self, other):
+        """
+        Logical AND operation
+        """
 
         return Constants(self.value and other.value)
 
     def __neg__(self):
+        """
+        Logical NOT operation
+        """
 
         return Constants(not self.value)
-
-    def __repr__(self):
-        if self.value:
-            return "1"
-        else:
-            return "0"
 
     def __str__(self):
         if self.value:

@@ -5,17 +5,18 @@ class Command:
 
     """
 
-    def __init__(self, function_name, scopes=None, params=None):
+    def __init__(self, function, scopes=None, params=None):
         """
 
-        :param function_name: name of the function without module name
+        :param function: function object
         :param scopes: a list of function scope that can include
             function type (e.g. transform, return)
             or a module name (e.g. google, outlook)
 
         :param params: a dictionary with provided function arguments
         """
-        self.function_name = function_name
+        self.function = function
+        self.function_name = function.__name__
         self.scopes = scopes if scopes is not None else list()
         self.params = params if params is not None else dict()
 

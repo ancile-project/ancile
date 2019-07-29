@@ -51,4 +51,5 @@ uWSGI==2.0.18
 Werkzeug==0.15.4
 wheel
 WTForms==2.2.1
+wrapt
 #gevent
