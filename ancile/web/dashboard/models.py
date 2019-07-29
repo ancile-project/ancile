@@ -86,12 +86,12 @@ class PermissionGroup(models.Model):
     description = models.TextField()
     app = models.ForeignKey(App, on_delete=models.CASCADE)
     scopes = models.ManyToManyField(Scope)
+    approved = models.BooleanField(default=False)
 
 
 class PredefinedPolicy(models.Model):
     provider = models.ForeignKey(DataProvider, null=True, on_delete=models.SET_NULL)
     app = models.ForeignKey(App, on_delete=models.CASCADE)
-    approved = models.BooleanField()
     group = models.ForeignKey(PermissionGroup, on_delete=models.CASCADE)
 
     class Meta:
