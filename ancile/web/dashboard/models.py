@@ -19,6 +19,9 @@ class User(AbstractUser):
         else:
             return []
 
+    def policies_for_app(self, app):
+        return Policy.objects.filter(app=app, user=self, active=True).all()
+
 
 class AppManager(models.Manager):
     def retrieve_app(self, coded_salt):
@@ -81,9 +84,8 @@ class Policy(models.Model):
     class Meta:
         verbose_name = "Policy"
         verbose_name_plural = "Policies"
-        indexes = [
-            models.Index(fields=['user', 'app'])
-        ]
+        indexes = [models.Index(fields=["user", "app"])]
+
 
 class Scope(models.Model):
     value = models.TextField()
@@ -136,12 +138,19 @@ class PredefinedPolicy(models.Model):
         verbose_name_plural = "Predefined policies"
 
 
+class FunctionManager(models.Manager):
+    def get_app_module(self, app):
+        return "\n\n".join((fn.body for fn in self.filter(app=app).all()))
+
+
 class Function(models.Model):
     name = models.CharField(max_length=128)
     body = models.TextField()
     app = models.ForeignKey(App, on_delete=models.CASCADE)
     description = models.TextField()
     approved = models.BooleanField(default=False)
+
+    objects = FunctionManager()
 
 
 class Token(models.Model):
