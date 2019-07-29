@@ -10,6 +10,12 @@ from bcrypt import gensalt
 class User(AbstractUser):
     is_developer = models.BooleanField(default=False)
 
+    @property
+    def apps(self):
+        if self.is_developer:
+            return App.objects.filter(developers=self).all()
+        else:
+            return []
 
 class App(models.Model):
     name = models.CharField(max_length=128, unique=True)
@@ -56,7 +62,6 @@ class Policy(models.Model):
     app = models.ForeignKey(App, on_delete=models.CASCADE)
 
     active = models.BooleanField(default=False)
-    read_only = models.BooleanField(default=False)
 
     class Meta:
         verbose_name = "Policy"
