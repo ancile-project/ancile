@@ -101,7 +101,7 @@ class PermissionGroup(models.Model):
     def provider_scope_list(self):
         provider_dict = dict()
 
-        for scope in self.scopes:
+        for scope in self.scopes.all():
             if scope.provider in provider_dict:
                 provider_dict[scope.provider].append(scope)
             else:
