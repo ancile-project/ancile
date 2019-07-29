@@ -23,3 +23,9 @@ class Command:
     def __repr__(self):
 
         return f'<? COMMAND: function: {self.function_name}, scopes: {self.scopes}, params: {self.params}>'
+
+    def call(self):
+        """
+        Call the function
+        """
+        return self.function(kwargs=self.params)

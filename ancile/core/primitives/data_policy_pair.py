@@ -101,45 +101,41 @@ class DataPolicyPair:
         self._advance_policy(command, update=True)
         if not self._policy:
             raise PolicyError(message=f'Cannot advance policy: {previous_policy} with policy_command: {command}')
-        else:
-            return self._policy
 
-    def _call(self, func, *args, scopes=None, **kwargs):
+    def check_call(self, command):
         if self.is_expired:
             raise ValueError('Cannot use expired expired DataPolicyPair')
+        if not isinstance(command, Command):
+            raise ValueError(f'This call accepts Command object, check with docs, got: {command}')
+        self._resolve_private_data_keys(command.params)
+        self._advance_policy_error(command)
+        self._resolve_private_data_values(command.params)
 
-        check_is_func(func)
-        command = Command(function_name=func.__name__, scopes=scopes, params=kwargs)
-        self._resolve_private_data_keys(kwargs)
+    def _call_transform(self, command: Command):
+        """
+        If the policy check succeeds pass data argument
+        as parameter and call the function
+        """
+        self.check_call(command)
+        command.params['data'] = self._data
+        return command.call()
 
-        if self._advance_policy_error(command):
-            self._resolve_private_data_values(kwargs)
+    def _call_store(self, command):
+        self.check_call(command)
+        return command.call()
 
-            if scopes in {'transform', 'aggregate'}:
-                kwargs['data'] = self._data
-            if scopes == 'external':
-                kwargs['user'] = {'token': self._token}
+    def _call_external(self, command):
+        self.check_call(command)
+        command.params['user'] = {'token': self._token}
+        return command.call()
 
-            if scopes == 'return':
-                if self._policy.check_finished():
-                    kwargs['encryption_keys'] = self._encryption_keys
-                    kwargs['data'] = self._data
-                else:
-                    raise PolicyError(f"Return has failed. The current policy: {self.policy}")
+    def _use_method(self, command):
+        if not self._policy.check_finished():
+            raise PolicyError(f'The policy has not finished: {self._policy}. E-step failed.')
+        command.params['encryption_keys'] = self._encryption_keys
+        command.params['data'] = self._data
 
-            return func(*args, **kwargs)
-
-    def _call_transform(self, func, *args,  **kwargs):
-        return self._call(func, *args, scopes='transform', **kwargs)
-
-    def _call_store(self, func, *args, **kwargs):
-        return self._call(func, *args, scopes='store', **kwargs)
-
-    def _call_external(self, func, *args, **kwargs):
-        return self._call(func, *args, scopes='external', **kwargs)
-
-    def _use_method(self, func, *args, **kwargs):
-        return self._call(func, *args, scopes='return', **kwargs)
+        return command.call()
 
     def _call_collection(self, func, *args, **kwargs):
         return self._call(func, *args, scopes='collection', **kwargs)
