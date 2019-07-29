@@ -10,6 +10,12 @@ from bcrypt import gensalt
 class User(AbstractUser):
     is_developer = models.BooleanField(default=False)
 
+    @property
+    def apps(self):
+        if self.is_developer:
+            return App.objects.filter(developers=self).all()
+        else:
+            return []
 
 class App(models.Model):
     name = models.CharField(max_length=128, unique=True)
