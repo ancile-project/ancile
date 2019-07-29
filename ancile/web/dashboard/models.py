@@ -88,6 +88,14 @@ class PermissionGroup(models.Model):
     scopes = models.ManyToManyField(Scope)
     approved = models.BooleanField(default=False)
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["name", "app"],
+                name="permission_group:unique_name_app"
+            )
+        ]
+
 
 class PredefinedPolicy(models.Model):
     provider = models.ForeignKey(DataProvider, null=True, on_delete=models.SET_NULL)
