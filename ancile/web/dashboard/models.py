@@ -69,14 +69,15 @@ class Policy(models.Model):
 
 
 class Scope(models.Model):
-    name = models.TextField()
+    value = models.TextField()
+    simple_name = models.TextField()
     provider = models.ForeignKey(DataProvider, on_delete=models.CASCADE)
     description = models.TextField(blank=True)
 
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=["name", "provider"], name="scope:unique_scope_provider"
+                fields=["value", "provider"], name="scope:unique_scope_provider"
             )
         ]
 
@@ -95,6 +96,18 @@ class PermissionGroup(models.Model):
                 name="permission_group:unique_name_app"
             )
         ]
+
+    @property
+    def provider_scope_list(self):
+        provider_dict = dict()
+
+        for scope in self.scopes:
+            if scope.provider in provider_dict:
+                provider_dict[scope.provider].append(scope)
+            else:
+                provider_dict[scope.provider] = [scope]
+
+        return [(prov, scopes) for prov, scopes in provider_dict.items()]
 
 
 class PredefinedPolicy(models.Model):
