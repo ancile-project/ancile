@@ -22,4 +22,5 @@ urlpatterns = [
     url(r'^login/$', auth_views.LoginView.as_view(template_name="login.html"), name='login'),
     path('admin/', admin.site.urls),
     path('oauth/', include('ancile.web.oauth.urls')),
+    path('', include('ancile.web.dashboard.urls'))
 ]
