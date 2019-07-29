@@ -6,8 +6,7 @@ from ancile.web.dashboard.models import *
 
 @login_required
 def dashboard(request):
-    is_superuser = request.user.is_superuser
-    return render(request, "dashboard.html", {"is_superuser" : is_superuser, "is_developer" : True})
+    return render(request, "dashboard.html", {})
 
 @login_required
 def providers(request):
@@ -27,28 +26,35 @@ def apps(request):
 
 @login_required
 def admin_users(request):
-    return render(request, "admin/users.html", {})
+    users = User.objects.all()
+    return render(request, "admin/users.html", {"users" : users})
 
 @login_required
 def admin_tokens(request):
-    return render(request, "admin/tokens.html", {})
+    tokens = Token.objects.all()
+    return render(request, "admin/tokens.html", {"tokens" : tokens})
 
 @login_required
 def admin_apps(request):
-    return render(request, "admin/apps.html", {})
+    apps = App.objects.all()
+    return render(request, "admin/apps.html", {"apps" : apps})
 
 @login_required
 def admin_policies(request):
-    return render(request, "admin/policies.html", {})
+    policies = Policy.objects.all()
+    return render(request, "admin/policies.html", {"policies" : policies})
 
 @login_required
 def admin_groups(request):
-    return render(request, "admin/groups.html", {})
+    groups = PermissionGroup.objects.all()
+    return render(request, "admin/groups.html", {"groups" : groups})
 
 @login_required
 def admin_providers(request):
-    return render(request, "admin/providers.html", {})
+    providers = DataProvider.objects.all()
+    return render(request, "admin/providers.html", {"providers" : providers})
 
 @login_required
 def admin_functions(request):
-    return render(request, "admin/functions.html", {})
+    functions = Function.objects.all()
+    return render(request, "admin/functions.html", {"functions" : functions})
