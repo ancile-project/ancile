@@ -81,7 +81,9 @@ class Policy(models.Model):
     class Meta:
         verbose_name = "Policy"
         verbose_name_plural = "Policies"
-
+        indexes = [
+            models.Index(fields=['user', 'app'])
+        ]
 
 class Scope(models.Model):
     value = models.TextField()
