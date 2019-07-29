@@ -1,6 +1,6 @@
 import json
 from django.http import HttpResponse, Http404
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from ancile.web.dashboard.models import *
 
@@ -70,3 +70,41 @@ def admin_providers(request):
 def admin_functions(request):
     functions = Function.objects.all()
     return render(request, "admin/functions.html", {"functions" : functions})
+
+@login_required
+def admin_delete_user(request, user_id):
+    user = User.objects.get(pk=user_id)
+    user.delete()
+    return redirect("/dashboard/admin/users")
+
+@login_required
+def admin_view_user(request, user_id):
+    usr = User.objects.get(pk=user_id)
+    tokens = Token.objects.filter(user_id=user_id)
+    policies = Policy.objects.filter(user_id=user_id)
+    return render(request, "admin/view_user.html", {"usr" : usr, "tokens" : tokens, "policies" : policies})
+
+@login_required
+def admin_delete_token(request, token_id):
+    token = Token.objects.get(pk=token_id)
+    user_id = token.user.id
+    token.delete()
+    return redirect("/dashboard/admin/view/user/" + str(user_id))
+
+@login_required
+def admin_view_token(request, token_id):
+    token = Token.objects.get(pk=token_id)
+    return render(request, "admin/view_token.html", {"token" : token})
+
+@login_required
+def admin_delete_policy(request, policy_id):
+    policy = Policy.objects.get(pk=policy_id)
+    user_id = policy.user.id
+    policy.delete()
+    return redirect("/dashboard/admin/view/user/" + str(user_id))
+
+@login_required
+def admin_view_policy(request, policy_id):
+    token = Token.objects.get(pk=token_id)
+    return render(request, "admin/view_token.html", {"token" : token})
+

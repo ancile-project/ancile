@@ -13,5 +13,11 @@ urlpatterns = [
     path('admin/policies', views.admin_policies),
     path('admin/groups', views.admin_groups),
     path('admin/providers', views.admin_providers),
-    path('admin/functions', views.admin_functions)
+    path('admin/functions', views.admin_functions),
+    path('admin/delete/user/<int:user_id>', views.admin_delete_user),
+    path('admin/view/user/<int:user_id>', views.admin_view_user),
+    path('admin/delete/token/<int:token_id>', views.admin_delete_token),
+    path('admin/view/token/<int:token_id>', views.admin_view_token),
+    path('admin/delete/policy/<int:policy_id>', views.admin_delete_policy),
+    path('admin/view/policy/<int:policy_id>', views.admin_view_policy)
 ]

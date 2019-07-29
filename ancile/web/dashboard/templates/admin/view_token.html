@@ -1,0 +1,51 @@
+{% extends "base_table.html" %}
+
+{% block title %} Token {% endblock %}
+{% block admin_active %}active{% endblock %}
+{% block table_title %} Token {% endblock %}
+{% block table_sub %} A token. {% endblock %}
+
+
+{% block table_content %}
+  <thead class="text-primary">
+    <th>
+      User
+    </th>
+    <th>
+      Provider
+    </th>
+    <th>
+      Access Token
+    </th>
+    <th>
+      Refresh Token
+    </th>
+    <th>
+      Expires
+    </th>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        {{ token.user.username }}
+      </td>
+      <td>
+        {{ token.provider.name }}
+      </td>
+      <td>
+        {{ token.access_token }}
+      </td>
+      <td>
+        {{ token.refresh_token }}
+      </td>
+      <td>
+        {{ token.expires_at }}
+      </td>
+    </tr>
+  </tbody>
+{% endblock %}
+
+{% block post_table %}
+<a href="/dashboard/admin/view/user/{{ token.user.id }}" class="btn btn-default">Back</a>
+{% endblock %}
+

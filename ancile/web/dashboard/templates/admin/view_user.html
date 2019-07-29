@@ -1,0 +1,172 @@
+{% extends "base_table.html" %}
+
+{% block title %} Profile {% endblock %}
+{% block admin_active %}active{% endblock %}
+{% block table_title %} Profile {% endblock %}
+{% block table_sub %}  {% endblock %}
+
+
+{% block table_content %}
+  <thead class="text-primary">
+    <th>
+      Username
+    </th>
+    <th>
+      Email
+    </th>
+    <th>
+      Developer for
+    </th>
+    <th>
+      Admin?
+    </th>
+    <th>
+      Actions
+    </th>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        {{ usr.username }}
+      </td>
+      <td>
+        {{ usr.email }}
+      </td>
+      <td>
+        {% if usr.is_developer %}
+        {% for app in usr.apps %}
+        {{ app }},
+        {% endfor %}
+        {% else %}
+        <i class="material-icons">close</i>
+        {% endif %}
+      </td>
+      <td>
+        {% if usr.is_superuser %}
+        <i class="material-icons">check</i>
+        {% else %}
+        <i class="material-icons">close</i>
+        {% endif %}
+      </td>
+      <td>
+        <a href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons">delete</i></a>
+         <div class="dropdown-menu" aria-labelledby="deleteUserDropdownButton">
+           <a class="dropdown-item" href="/dashboard/admin/delete/user/{{ usr.id }}">Delete</a>
+         </div>
+      </td>
+    </tr>
+  </tbody>
+
+
+{% endblock %}
+
+{% block post_table %}
+
+<a href="/dashboard/admin/users" class="btn btn-default">Back</a>
+
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header card-header-primary">
+          <h4 class="card-title ">Tokens</h4>
+          <p class="card-category"></p>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table">
+              <thead class="text-primary">
+                <th>
+                  Provider
+                </th>
+                <th>
+                  Expires At
+                </th>
+                <th>
+                  Actions
+                </th>
+              </thead>
+              <tbody>
+                {% for token in tokens %}
+                <tr>
+                  <td>
+                    {{ token.provider.name }}
+                  </td>
+                  <td>
+                    {{ token.expires_at }}
+                  </td>
+                  <td>
+                    <a href="/dashboard/admin/view/token/{{ token.id }}"><i class="material-icons">pageview</i></a>
+                    <a href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons">delete</i></a>
+                     <div class="dropdown-menu" aria-labelledby="deleteTokenDropdownButton">
+                       <a class="dropdown-item" href="/dashboard/admin/delete/token/{{ token.id }}">Delete</a>
+                     </div>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+</div>
+
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header card-header-primary">
+          <h4 class="card-title ">Policies</h4>
+          <p class="card-category"></p>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table">
+              <thead class="text-primary">
+                <th>
+                  Application
+                </th>
+                <th>
+                  Provider
+                </th>
+                <th>
+                  Active
+                </th>
+                <th>
+                  Actions
+                </th>
+              </thead>
+              <tbody>
+                {% for policy in policies %}
+                <tr>
+                  <td>
+                    {{ policy.app.name }}
+                  </td>
+                  <td>
+                    {{ policy.provider.name }}
+                  </td>
+                  <td>
+                    {% if policy.active %}
+                    <i class="material-icons">check</i>
+                    {% else %}
+                    <i class="material-icons">close</i>
+                    {% endif %}
+                  </td>
+                  <td>
+                    <a href="#"><i class="material-icons">pageview</i></a>
+                    <a href="#"><i class="material-icons">edit</i></a>
+                    <a href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons">delete</i></a>
+                     <div class="dropdown-menu" aria-labelledby="deletePolicyDropdownButton">
+                       <a class="dropdown-item" href="/dashboard/admin/delete/policy/{{ policy.id }}">Delete</a>
+                     </div>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+</div>
+
+{% endblock %}
