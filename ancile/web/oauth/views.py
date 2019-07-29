@@ -37,7 +37,6 @@ def callback(request, provider):
 
             response_json = response.json()
 
-            print(response_json)
 
             if response.status_code == 200:
                 user = request.user     
@@ -52,7 +51,10 @@ def callback(request, provider):
                 )
                 token_object.save()
 
-                for scope in response_json["scope"].split():
+                scopes_raw = response_json.get("scope")
+                scopes = scopes_raw.split() if scopes_raw else []
+
+                for scope in scopes:
                     try:
                         scope_object = models.Scope.objects.get(name=scope,
                                                                 provider=provider_object)
