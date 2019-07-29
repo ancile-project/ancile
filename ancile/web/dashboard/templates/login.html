@@ -2,6 +2,8 @@
 
 {% block content %}
 
+<div style="margin: auto;'>
+
 {% if form.errors %}
 <p>Your username and password didn't match. Please try again.</p>
 {% endif %}
@@ -33,5 +35,7 @@
 </form>
 
 {# Assumes you setup the password_reset view in your URLconf #}
+
+</div>
 
 {% endblock %}

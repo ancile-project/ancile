@@ -1,0 +1,65 @@
+{% extends "base_table.html" %}
+
+{% block title %}Providers{% endblock %}
+{% block providers_active %}active{% endblock %}
+{% block table_title %} Providers {% endblock %}
+{% block table_sub %} These are the data sources that apps have access to. {% endblock %}
+
+{% block table_content %}
+  <thead class=" text-primary">
+    <th>
+      Data Provider
+    </th>
+    <th>
+      Access Token
+    </th>
+    <th>
+      Expires At
+    </th>
+    <th>
+      Actions
+    </th>
+  </thead>
+  <tbody>
+    {% for token in tokens %}
+    <tr>
+      <td>
+        {{ token.provider.name }}
+      </td>
+      <td>
+        {{ token.access_token }}
+      </td>
+      <td>
+        {{ token.expires_at }}
+      </td>
+      <td>
+        <a href="#"><i class="material-icons">pageview</i></a>
+        <a href="#"><i class="material-icons">delete</i></a>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+
+<button type="button" class="btn btn-default" data-toggle="modal" data-target="#addProviderModal">Add Provider</button>
+
+<div id="addProviderModal" class="modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add Provider</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        This is a modal.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary">Add Provider</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
