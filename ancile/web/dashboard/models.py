@@ -5,6 +5,8 @@ from django.contrib.postgres import fields
 from requests_oauthlib import OAuth2Session
 from base64 import b64encode
 from bcrypt import gensalt
+from jwt import encode, decode
+from config.loader import SECRET_KEY
 
 
 class User(AbstractUser):
@@ -17,6 +19,13 @@ class User(AbstractUser):
         else:
             return []
 
+
+class AppManager(models.Manager):
+    def retrieve_app(self, coded_salt):
+        token_salt = decode(coded_salt, SECRET_KEY)["salt"]
+        return self.get(token_salt=token_salt)
+
+
 class App(models.Model):
     name = models.CharField(max_length=128, unique=True)
     developers = models.ManyToManyField(User)
@@ -27,6 +36,12 @@ class App(models.Model):
     class Meta:
         verbose_name = "Application"
         verbose_name_plural = "Applications"
+
+    objects = AppManager()
+
+    @property
+    def encoded_salt(self):
+        return encode({"salt": self.token_salt}, SECRET_KEY).decode("ascii")
 
 
 class DataProvider(models.Model):
@@ -92,8 +107,7 @@ class PermissionGroup(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=["name", "app"],
-                name="permission_group:unique_name_app"
+                fields=["name", "app"], name="permission_group:unique_name_app"
             )
         ]
 
