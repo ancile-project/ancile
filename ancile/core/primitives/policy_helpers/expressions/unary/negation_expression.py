@@ -8,18 +8,18 @@ class NegationExpression(UnaryExpression):
         super().__init__(expression)
 
     def __repr__(self):
-        if isinstance(self.expression, ExecExpression):
+        if type(self.expression) in [ConstantExpression, ExecExpression] :
             return f'!{self.expression}'
         else:
             return f'!({self.expression})'
 
-    def d_step(self, command, params=None) -> BaseExpression:
+    def d_step(self, command) -> BaseExpression:
         """
         D(!P) = !D(P,C)
         """
         self.expression = self.expression.simplify()
 
-        return NegationExpression(self.expression.d_step(command, params))
+        return NegationExpression(self.expression.d_step(command))
 
     def e_step(self) -> Constants:
         """

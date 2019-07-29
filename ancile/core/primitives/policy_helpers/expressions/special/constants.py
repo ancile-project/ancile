@@ -25,3 +25,15 @@ class Constants(Enum):
     def __neg__(self):
 
         return Constants(not self.value)
+
+    def __repr__(self):
+        if self.value:
+            return "1"
+        else:
+            return "0"
+
+    def __str__(self):
+        if self.value:
+            return "1"
+        else:
+            return "0"

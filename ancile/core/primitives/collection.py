@@ -37,10 +37,10 @@ class Collection(object):
 
     def _check_collection_policy(self, command, **kwargs) -> bool:
         """
-        Check if the collection policy allows the given command.
+        Check if the collection policy allows the given policy_command.
 
-        :param str command: The name of the command.
-        :return: T if the command is allowed, False otherwise
+        :param str command: The name of the policy_command.
+        :return: T if the policy_command is allowed, False otherwise
         """
         collection_policy = self.get_collection_policy()
         return collection_policy.check_allowed(command, **kwargs)
@@ -59,7 +59,7 @@ class Collection(object):
             for dpp in self._data_points:
                 dpp._advance_policy_error(command, **kwargs)
         else:
-            raise PolicyError(f"Collection does not allow the command: {command} with arguments {kwargs}")
+            raise PolicyError(f"Collection does not allow the policy_command: {command} with arguments {kwargs}")
 
 
     def add_to_collection(self, data: DataPolicyPair):

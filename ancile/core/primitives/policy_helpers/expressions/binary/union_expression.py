@@ -22,7 +22,7 @@ class UnionExpression(BinaryExpression):
         else:
             return False
 
-    def d_step(self, command, params=None):
+    def d_step(self, command):
         """
         D(P1 + P2, C) = D(P1, C) + D(P2, C)
 
@@ -30,8 +30,8 @@ class UnionExpression(BinaryExpression):
         self.l_expr = self.l_expr.simplify()
         self.r_expr = self.r_expr.simplify()
 
-        return UnionExpression(self.l_expr.d_step(command, params),
-                               self.r_expr.d_step(command, params)).simplify()
+        return UnionExpression(self.l_expr.d_step(command),
+                               self.r_expr.d_step(command)).simplify()
 
     def e_step(self):
         """
@@ -53,13 +53,15 @@ class UnionExpression(BinaryExpression):
 
         if self.l_expr == self.r_expr:
             return self.l_expr
-        elif self.l_expr == Constants.ZERO:
+        elif self.l_expr == ConstantExpression(Constants.ZERO):
             return self.r_expr
-        elif self.r_expr == Constants.ZERO:
+        elif self.r_expr == ConstantExpression(Constants.ZERO):
             return self.l_expr
-        elif self.l_expr == Constants.ONE and isinstance(self.r_expr, StarExpression):
+        elif self.l_expr == ConstantExpression(Constants.ONE) \
+                and isinstance(self.r_expr, StarExpression):
             return self.r_expr
-        elif self.r_expr == Constants.ONE and isinstance(self.l_expr, StarExpression):
+        elif self.r_expr == ConstantExpression(Constants.ONE) \
+                and isinstance(self.l_expr, StarExpression):
             return self.l_expr
         else:
             return self

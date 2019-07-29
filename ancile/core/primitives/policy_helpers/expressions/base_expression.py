@@ -1,5 +1,6 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
+from ancile.core.primitives.policy_helpers.command import Command
 from ancile.core.primitives.policy_helpers.expressions import *
 
 
@@ -7,14 +8,13 @@ class BaseExpression(ABC):
 
     operation = None
 
-    def __init__(self):
-        pass
-
-    def __repr__(self):
-        pass
+    """
+    An abstract class for all Policy expressions.
+    It only has d_step, e_step, and simplify.
+    """
 
     @abstractmethod
-    def d_step(self, command, params=None) -> BaseExpression:
+    def d_step(self, command: Command) -> BaseExpression:
         pass
 
     @abstractmethod

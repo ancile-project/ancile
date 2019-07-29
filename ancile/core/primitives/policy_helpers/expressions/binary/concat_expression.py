@@ -17,19 +17,19 @@ class ConcatExpression(BinaryExpression):
         else:
             return False
 
-    def d_step(self, command, params=None):
+    def d_step(self, command):
         """
         D(P1.P2, C) = D(P1,C).P2 + E(P1).D(P2,C)
         """
         self.l_expr = self.l_expr.simplify()
         self.r_expr = self.r_expr.simplify()
 
-        new_l_expr = ConcatExpression(self.l_expr.d_step(command, params),
+        new_l_expr = ConcatExpression(self.l_expr.d_step(command),
                                       self.r_expr)
         new_r_expr = ConcatExpression(ConstantExpression(self.l_expr.e_step()),
-                                      self.r_expr.d_step(command, params))
+                                      self.r_expr.d_step(command))
 
-        return UnionExpression(new_l_expr, new_r_expr)
+        return UnionExpression(new_l_expr, new_r_expr).simplify()
 
     def e_step(self):
         """
@@ -48,12 +48,13 @@ class ConcatExpression(BinaryExpression):
         self.l_expr = self.l_expr.simplify()
         self.r_expr = self.r_expr.simplify()
 
-        if self.l_expr == Constants.ONE:
+        if self.l_expr == ConstantExpression(Constants.ONE):
             return self.r_expr
-        elif self.r_expr == Constants.ONE:
+        elif self.r_expr == ConstantExpression(Constants.ONE):
             return self.l_expr
-        elif self.l_expr == Constants.ZERO or self.r_expr == Constants.ZERO:
-            return Constants.ZERO
+        elif self.l_expr == ConstantExpression(Constants.ZERO) \
+                or self.r_expr == ConstantExpression(Constants.ZERO):
+            return ConstantExpression(Constants.ZERO)
         else:
             return self
 

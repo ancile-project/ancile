@@ -8,19 +8,19 @@ class StarExpression(UnaryExpression):
         super().__init__(expression)
 
     def __repr__(self):
-        if isinstance(self.expression, ExecExpression):
+        if type(self.expression) in [ConstantExpression, ExecExpression]:
             return f'{self.expression}*'
         else:
             return f'({self.expression})*'
 
-    def d_step(self, command, params=None):
+    def d_step(self, command):
         """
         D(P*) = D(P,C).P*
 
         """
         self.expression = self.expression.simplify()
 
-        return ConcatExpression(self.expression.d_step(command, params), self)
+        return ConcatExpression(self.expression.d_step(command), self)
 
     def e_step(self):
         """

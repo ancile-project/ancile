@@ -1,3 +1,4 @@
+from ancile.core.primitives.policy_helpers.command import Command
 from ancile.utils.errors import AncileException, PolicyError
 from ancile.core.primitives.policy import Policy
 from ancile.core.primitives.policy_helpers.private_data import PrivateData
@@ -9,6 +10,7 @@ logger = logging.getLogger(__name__)
 
 class DataPolicyPair:
     """An object containing data and the associated policies."""
+    _policy: Policy
 
     def __init__(self, policy, token, name, username, private_data,
                  app_id=None):
@@ -82,70 +84,65 @@ class DataPolicyPair:
         self._expires_at = ancile_web_time.get_timestamp_from_now(seconds)
 
     def __repr__(self):
-        return f'<DataPolicy. User: {self._username} Datasource: {self._name}>'
+        return f'<DataPolicy. User: {self._username} Datasource: {self._name}. Policy: {self._policy}>'
 
     def check_command_allowed(self, command, **kwargs):
         if self.is_expired:
             return False
         else:
-        #print(f'Checking {command} against policy: {self._policy}')
-            return self._policy.check_allowed(command, **kwargs)
+            return bool(self._policy)
 
-    def _advance_policy(self, command, scope=None, update=True, **kwargs):
-        if update:
-            self._policy = self._policy.d_step({'command': command,
-                                                'kwargs': kwargs}, None)
-            return self._policy
-        else:
-            return self._policy.d_step({'command': command, 'kwargs': kwargs}, None)
+    def _advance_policy(self, command, update=True):
 
-    def _advance_policy_error(self, command, **kwargs):
+        return self._policy.advance_policy(command, update)
+
+    def _advance_policy_error(self, command):
         previous_policy = self._policy
-        new_policy = self._advance_policy(command, **kwargs)
-        if not new_policy:
-            raise PolicyError(message=f'Cannot advance policy: {previous_policy} with command: {command}')
+        self._advance_policy(command, update=True)
+        if not self._policy:
+            raise PolicyError(message=f'Cannot advance policy: {previous_policy} with policy_command: {command}')
         else:
-            return new_policy
+            return self._policy
 
-    def _call(self, func, *args, scope=None, **kwargs):
+    def _call(self, func, *args, scopes=None, **kwargs):
         if self.is_expired:
             raise ValueError('Cannot use expired expired DataPolicyPair')
 
         check_is_func(func)
-        command = func.__name__
+        command = Command(function_name=func.__name__, scopes=scopes, params=kwargs)
         self._resolve_private_data_keys(kwargs)
 
-        if self._advance_policy_error(command, scope=scope, **kwargs):
+        if self._advance_policy_error(command):
             self._resolve_private_data_values(kwargs)
 
-            if scope in {'transform', 'aggregate'}:
+            if scopes in {'transform', 'aggregate'}:
                 kwargs['data'] = self._data
-            if scope == 'external':
+            if scopes == 'external':
                 kwargs['user'] = {'token': self._token}
 
-            if scope == 'return':
-                if self._policy.e_step() != 1:
-                    raise PolicyError()
-                else:
+            if scopes == 'return':
+                if self._policy.check_finished():
                     kwargs['encryption_keys'] = self._encryption_keys
                     kwargs['data'] = self._data
+                else:
+                    raise PolicyError(f"Return has failed. The current policy: {self.policy}")
 
             return func(*args, **kwargs)
 
     def _call_transform(self, func, *args,  **kwargs):
-        return self._call(func, *args, scope='transform', **kwargs)
+        return self._call(func, *args, scopes='transform', **kwargs)
 
     def _call_store(self, func, *args, **kwargs):
-        return self._call(func, *args, scope='store', **kwargs)
+        return self._call(func, *args, scopes='store', **kwargs)
 
     def _call_external(self, func, *args, **kwargs):
-        return self._call(func, *args, scope='external', **kwargs)
+        return self._call(func, *args, scopes='external', **kwargs)
 
     def _use_method(self, func, *args, **kwargs):
-        return self._call(func, *args, scope='return', **kwargs)
+        return self._call(func, *args, scopes='return', **kwargs)
 
     def _call_collection(self, func, *args, **kwargs):
-        return self._call(func, *args, scope='collection', **kwargs)
+        return self._call(func, *args, scopes='collection', **kwargs)
 
     def _resolve_private_data_keys(self, kwargs):
         for key, value in kwargs.items():

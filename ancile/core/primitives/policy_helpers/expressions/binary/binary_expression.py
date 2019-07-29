@@ -12,11 +12,12 @@ class BinaryExpression(BaseExpression, ABC):
         self.r_expr = r_expr
 
     def __repr__(self):
-        if isinstance(self.l_expr, ExecExpression) and isinstance(self.r_expr, ExecExpression):
+        if type(self.l_expr) in [ConstantExpression, ExecExpression] \
+                and type(self.r_expr) in [ConstantExpression, ExecExpression]:
             return f'{self.l_expr}{self.operation}{self.r_expr}'
-        elif isinstance(self.l_expr, ExecExpression):
+        elif type(self.l_expr) in [ConstantExpression, ExecExpression]:
             return f'{self.l_expr}{self.operation}({self.r_expr})'
-        elif isinstance(self.r_expr, ExecExpression):
+        elif type(self.r_expr) in [ConstantExpression, ExecExpression]:
             return f'({self.l_expr}){self.operation}{self.r_expr}'
         else:
             return f'({self.l_expr}){self.operation}({self.r_expr})'
