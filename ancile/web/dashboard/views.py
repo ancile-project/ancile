@@ -1,3 +1,5 @@
+import json
+from django.http import HttpResponse, Http404
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from ancile.web.dashboard.models import *
@@ -21,8 +23,18 @@ def policies(request):
 @login_required
 def apps(request):
     policies = Policy.objects.filter(user=request.user)
-    apps = [policy.app for policy in policies]
-    return render(request, "user/apps.html", {"apps" : apps})
+    context = {}
+    context["apps"] = [policy.app for policy in policies]
+    context["all_apps"] = App.objects.all()
+    return render(request, "user/apps.html", context)
+
+@login_required
+def get_app_groups(request):
+    app = request.POST.get("app")
+    if app:
+        group_names = [group.name for group in PermissionGroup.objects.filter(app__name=app)]
+        return HttpResponse(json.dumps(group_names), content_type="application/json")
+    raise Http404
 
 @login_required
 def admin_users(request):

@@ -27,5 +27,107 @@
       </td>
     </tr>
     {% endfor %}
+    <button class="btn btn-primary btn-round" data-toggle="modal" data-target="#addApp">
+      <i class="material-icons">add</i> New App
+    </button>
   </tbody>
+
+  <div class="modal fade" id="addApp" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">New App</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form>
+            <div class="form-group">
+                <label for="chosen-app">App name:</label>
+                <select class="form-control" id="chosen-app">
+                  <option selected="selected"></option>
+                  {% for app in all_apps %}
+                  <option>{{ app.name }}</option>
+                  {% endfor %}
+                </select>
+            </div>
+            <div class="form-group" id="permission-group" style="display: none;">
+              <label for="chosen-app">Permission group:</label>
+              <select class="form-control" id="chosen-group">
+                <option selected="selected"></option>
+              </select>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary">Begin setup</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+  (() => {
+    function getCookie(name) {
+      var cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+          var cookies = document.cookie.split(';');
+          for (var i = 0; i < cookies.length; i++) {
+              var cookie = cookies[i].trim();
+              // Does this cookie string begin with the name we want?
+              if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                  cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                  break;
+              }
+          }
+      }
+      return cookieValue;
+    }
+    var csrftoken = getCookie('csrftoken');
+    var appSelector = document.getElementById("chosen-app");
+    var permissionSelector = document.getElementById("chosen-group");
+
+    var permissionGroup = document.getElementById("permission-group");
+
+    var blankOption = new Option("", "", true, true);
+
+    appSelector.onchange = () => {
+      var newValue = appSelector.value;
+      if (newValue) {
+        permissionGroup.style.display = "";
+        permissionSelector.disabled = true;
+
+        var request = new XMLHttpRequest();
+        var form = new FormData();
+
+        form.append("app", newValue);
+        request.onreadystatechange = () => {
+          if (request.status == 200 && request.readyState == 4) {
+            permissionSelector.disabled = false;
+            var groups = JSON.parse(request.responseText);
+            permissionSelector.options.length = 0;
+            permissionSelector.options.add(blankOption);
+            groups.forEach(group => {
+              let option = new Option(group);
+              permissionSelector.options.add(option);
+            });
+          }
+        }
+
+        request.open(
+          "POST",
+          "permissiongroups"
+        )
+        request.setRequestHeader("X-CSRFToken", csrftoken);
+        request.send(form);
+      } else {
+
+        permissionGroup.style.display = 'none';
+
+      }
+    }
+
+  })();
+  </script>
 {% endblock %}
