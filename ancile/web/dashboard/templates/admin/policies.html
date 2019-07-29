@@ -1,47 +1,43 @@
 {% extends "base_table.html" %}
 
-{% block title %} Users {% endblock %}
+{% block title %} Policies {% endblock %}
 {% block admin_active %}active{% endblock %}
-{% block table_title %} Users {% endblock %}
-{% block table_sub %} These are the users on your Ancile instance. {% endblock %}
+{% block table_title %} Policies {% endblock %}
+{% block table_sub %} These are all of the policies on your Ancile instance. {% endblock %}
 
 
 {% block table_content %}
   <thead class="text-primary">
     <th>
-      Name
+      Application
     </th>
     <th>
-      Email
+      User
     </th>
     <th>
-      Developer?
+      Provider
     </th>
     <th>
-      Admin?
+      Active
     </th>
     <th>
       Actions
     </th>
   </thead>
   <tbody>
-    {% for usr in users %}
+    {% for policy in policies %}
     <tr>
       <td>
-        {{ usr.name }}
+        {{ policy.app.name }}
       </td>
       <td>
-        {{ usr.email }}
+        {{ policy.user.username }}
       </td>
       <td>
-        {% if usr.is_developer %}
-        <i class="material-icons">check</i>
-        {% else %}
-        <i class="material-icons">close</i>
-        {% endif %}
+        {{ policy.provider.name }}
       </td>
       <td>
-        {% if usr.is_superuser %}
+        {% if policy.active %}
         <i class="material-icons">check</i>
         {% else %}
         <i class="material-icons">close</i>
@@ -49,6 +45,7 @@
       </td>
       <td>
         <a href="#"><i class="material-icons">pageview</i></a>
+        <a href="#"><i class="material-icons">edit</i></a>
         <a href="#"><i class="material-icons">delete</i></a>
       </td>
     </tr>

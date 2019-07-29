@@ -54,20 +54,20 @@
               <p>Apps</p>
             </a>
           </li>
-          {% if is_developer %}
+          {% if user.is_developer %}
           <li class="nav-item {% block dev_active %}{% endblock%}">
             <a class="nav-link" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" href="#">
               <i class="material-icons">developer_mode</i>
               <p>Developer</p>
             </a>
               <div class="dropdown-menu" aria-labelledby="devDropdown">
-                {% for app in dev_apps%}
+                {% for app in user.apps%}
                 <a class="dropdown-item" href="/dashboard/dev/">app.name</a>
                 {% endfor %}
               </div>
           </li>
           {% endif %}
-          {% if is_superuser %}
+          {% if user.is_superuser %}
           <li class="nav-item {% block admin_active %}{% endblock%}">
             <a class="nav-link" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" href="#">
               <i class="material-icons">supervised_user_circle</i>
