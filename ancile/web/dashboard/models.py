@@ -62,7 +62,6 @@ class Policy(models.Model):
     app = models.ForeignKey(App, on_delete=models.CASCADE)
 
     active = models.BooleanField(default=False)
-    read_only = models.BooleanField(default=False)
 
     class Meta:
         verbose_name = "Policy"
