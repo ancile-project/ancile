@@ -14,8 +14,8 @@ echo "Deleting python virtualenv"
 rm -rf .env/ > /dev/null
 echo "Deleting Logs"
 rm -rf logs/ > /dev/null
-# echo "Deleting config files"
-# rm config/config.yaml config/oauth.yaml
+echo "Deleting config files"
+rm config/config.yaml
 echo "Stopping Docker containers"
 docker stop ancile_db redis_dev > /dev/null
 echo "Deleting Docker containers"
