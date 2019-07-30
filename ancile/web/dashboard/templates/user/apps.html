@@ -1,8 +1,5 @@
 {% extends "base_table.html" %}
 
-
-{% block pre_table %}
-{% endblock %}
 {% block title %} Apps {% endblock %}
 {% block apps_active %}active{% endblock %}
 {% block table_title %} Apps {% endblock %}
@@ -16,6 +13,12 @@
       Actions
     </th>
   </thead>
+  <div class="alert alert-success" id="delete-success" role="alert" style="display:none;">
+    Application deleted.
+  </div>
+  <div class="alert alert-danger" id="delete-fail" role="alert" style="display:none;">
+    Error.
+  </div>
   <button class="btn btn-primary btn-round" data-toggle="modal" data-target="#addApp">
     <i class="material-icons">add</i> New App
   </button>
@@ -26,9 +29,7 @@
         {{ app.name }}
       </td>
       <td style="text-align: right;">
-        <a href="#"><i class="material-icons">pageview</i></a>
-        <a href="#"><i class="material-icons">edit</i></a>
-        <a href="#"><i class="material-icons">delete</i></a>
+        <a href="#" onclick="removeApp(this, '{{ app.name }}');return false"><i class="material-icons">delete</i></a>
       </td>
     </tr>
     {% endfor %}
@@ -68,12 +69,19 @@
                 </select>
               </div>
             </form>
+            <div class="card" id="group-card" style="display:none;">
+                <div class="card-header">
+                  <h4 class="card-title" id="group-title">Regular header</h4>
+                </div>
+                <div id="group-description" class="card-body">
+                </div>
+              </div>
             <table class="table" id="permission-table" style="display: none;">
               <thead>
                 <tr>
                   <th>Provider</th>
                   <th>Scopes</th>
-                  <th>Status</th>
+                  <th>Enabled</th>
                   <th>Authorize</th>
                 </tr>
               </thead>
@@ -109,6 +117,44 @@
       return cookieValue;
     }
 
+    removeApp = function(button, app) {
+      let request = new XMLHttpRequest();
+      let form = new FormData();
+
+      let success = document.getElementById("delete-success");
+      let fail = document.getElementById("delete-fail");
+
+      form.append("app", app);
+
+      request.onreadystatechange = () => {
+        if (request.readyState === 4 && request.status === 200) {
+          let response = JSON.parse(request.responseText);
+
+          if (response.status === "ok") {
+            let row = button.parentNode.parentNode;
+            row.parentNode.removeChild(row);
+            success.style.display = "";
+            setTimeout(() => {
+              success.style.display = "none";
+            }, 3000)
+          } else {
+            fail.innerHTML = response.error;
+            fail.style.display = "";
+            setTimeout(() => {
+              fail.style.display = "none";
+            }, 3000)
+          }
+        }
+      }
+
+      request.open(
+        "POST",
+        "/api/app/delete"
+      )
+      request.setRequestHeader("X-CSRFToken", csrftoken);
+      request.send(form);
+    }
+
     var windows = []
     var addButton = document.getElementById("add-app-button");
     var csrftoken = getCookie('csrftoken');
@@ -119,6 +165,9 @@
     var permissionTable = document.getElementById("permission-table");
 
     var blankOption = new Option("", "", true, true);
+    var groupCard = document.getElementById("group-card");
+    var groupTitle = document.getElementById("group-title");
+    var groupDescription = document.getElementById("group-description");
 
     function reloadGroups() {
       var newValue = appSelector.value;
@@ -146,12 +195,18 @@
 
         request.open(
           "POST",
-          "permissiongroups"
+          "/api/app/groups"
         )
         request.setRequestHeader("X-CSRFToken", csrftoken);
         request.send(form);
       } else {
         permissionGroup.style.display = 'none';
+        
+        permissionGroup.getElementsByTagName("option").forEach(option => {
+          permissionGroup.removeChild(option);
+
+        })
+
       }
     }
 
@@ -166,7 +221,10 @@
     function reloadTable(noHide) {
       var appName = appSelector.value;
       var groupName = permissionSelector.value;
-      if (!noHide) permissionTable.style.display = "none";
+      if (!noHide) {
+        permissionTable.style.display = "none";
+        groupCard.style.display = "none";
+      } 
 
       if (groupName) {
         let request = new XMLHttpRequest();
@@ -181,7 +239,12 @@
             let allGood = true;
             let newTBody = permissionTable.getElementsByTagName("tbody")[0];
             newTBody.innerHTML = "";
-            let providers = JSON.parse(request.responseText);
+
+            let response = JSON.parse(request.responseText);
+            let providers = response.providers;
+            groupTitle.innerHTML = groupName;
+            groupDescription.innerHTML = response.description;
+
             providers.forEach(provider => {
               let newRow = newTBody.insertRow();
 
@@ -217,6 +280,7 @@
               }
             });
             permissionTable.style.display = "";
+            groupCard.style.display = "";
             addButton.disabled = !allGood;
           }
 
@@ -224,11 +288,13 @@
 
         request.open(
           "POST",
-          "/api/permissions"
+          "/api/app/permissions"
         );
         request.setRequestHeader("X-CSRFToken", csrftoken);
         request.send(form);
 
+      } else {
+        permissionTable.style.display = "none";
       }
     }
 
@@ -261,7 +327,7 @@
 
       request.open(
         "POST",
-        "/api/addgroup"
+        "/api/app/add"
       )
       request.setRequestHeader("X-CSRFToken", csrftoken);
       request.send(form);

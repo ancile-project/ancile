@@ -6,7 +6,6 @@ urlpatterns = [
     path('policies', views.policies),
     path('providers', views.providers),
     path('apps', views.apps),
-    path('permissiongroups', views.get_app_groups),
     path('admin/users', views.admin_users),
     path('admin/tokens', views.admin_tokens),
     path('admin/apps', views.admin_apps),

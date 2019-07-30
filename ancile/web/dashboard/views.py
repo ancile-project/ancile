@@ -31,14 +31,6 @@ def apps(request):
     return render(request, "user/apps.html", context)
 
 @login_required
-def get_app_groups(request):
-    app = request.POST.get("app")
-    if app:
-        group_names = [group.name for group in PermissionGroup.objects.filter(app__name=app)]
-        return HttpResponse(json.dumps(group_names), content_type="application/json")
-    raise Http404
-
-@login_required
 @user_is_admin
 def admin_users(request):
     users = User.objects.all()

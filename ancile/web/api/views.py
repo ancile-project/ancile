@@ -1,7 +1,7 @@
 import json
 from django.shortcuts import render
 # from ancile.core.core import execute
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth.decorators import login_required
 from ancile.web.dashboard.models import User, Token, PermissionGroup, DataProvider, App, PolicyTemplate, Policy
@@ -21,12 +21,12 @@ def check_permission_group(request):
 
     provider_scope = {tk.provider:tk.scopes.all() for tk in request.user.tokens}
 
-    return HttpResponse(json.dumps([{"path_name": provider.path_name,
+    return HttpResponse(json.dumps({"description": perm_group.description, "providers": [{"path_name": provider.path_name,
              "display_name": provider.display_name,
              "status": len(set(wanted_scopes) - set(provider_scope.get(provider, set()))) == 0,
              "scopes": [{"simple_name": sc.simple_name,
                          "value": sc.value} for sc in wanted_scopes]
-             } for provider, wanted_scopes in perm_group.provider_scope_list]))
+             } for provider, wanted_scopes in perm_group.provider_scope_list]}))
 
 @login_required
 @require_http_methods(["POST"])
@@ -63,3 +63,26 @@ def add_predefined_policy_to_user(request):
         return HttpResponse(json.dumps({"status": "ok"}))
     except Exception:
         return HttpResponse(json.dumps({"status": "error", "error": "An error has occurred."}))
+
+@login_required
+@require_http_methods(["POST"])
+def remove_app_for_user(request):
+    try:
+        app_name = request.POST['app']
+        app = App.objects.get(name=app_name)
+        user_policies = Policy.objects.filter(user=request.user,
+                                              app=app)
+        user_policies.delete()
+        
+        return HttpResponse(json.dumps({"status": "ok"}))
+    except Exception:
+        return HttpResponse(json.dumps({"status": "error", "error": "An error has occurred."}))
+
+@login_required
+@require_http_methods(["POST"])
+def get_app_groups(request):
+    app = request.POST.get("app")
+    if app:
+        group_names = [group.name for group in PermissionGroup.objects.filter(app__name=app)]
+        return HttpResponse(json.dumps(group_names), content_type="application/json")
+    raise Http404
