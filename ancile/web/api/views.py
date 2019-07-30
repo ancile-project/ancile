@@ -4,7 +4,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth.decorators import login_required
-from ancile.web.dashboard.models import User, Token, PermissionGroup, DataProvider, App, PredefinedPolicy, Policy
+from ancile.web.dashboard.models import User, Token, PermissionGroup, DataProvider, App, PolicyTemplate, Policy
 
 @require_http_methods(["POST"])
 def execute_api(request):
@@ -38,7 +38,7 @@ def add_predefined_policy_to_user(request):
         app = App.objects.get(name=app_name)
         perm_group = PermissionGroup.objects.get(name=group_name, app=app)
 
-        needed_policies = PredefinedPolicy.objects.filter(group=perm_group,
+        needed_policies = PolicyTemplate.objects.filter(group=perm_group,
                                                           app=app)
         
         new_policies = []
