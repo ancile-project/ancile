@@ -62,7 +62,7 @@
             </a>
               <div class="dropdown-menu" aria-labelledby="devDropdown">
                 {% for app in user.apps%}
-                <a class="dropdown-item" href="/dashboard/dev/">app.name</a>
+                <a class="dropdown-item" href="/dashboard/dev/">{{ app.name }}</a>
                 {% endfor %}
               </div>
           </li>
