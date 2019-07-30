@@ -8,6 +8,9 @@ from base64 import b64encode
 from bcrypt import gensalt
 from jwt import encode, decode
 from config.loader import SECRET_KEY
+import time
+import requests
+import json
 
 
 class User(AbstractUser):
@@ -67,6 +70,15 @@ class DataProvider(models.Model):
             b64encode(bytes(self.client_id + ":" + self.client_secret, "utf8")), "utf-8"
         )
 
+    @property
+    def request_headers(self):
+        headers = {"Authorization": "basic " + self.basic_auth_header}
+        if isinstance(self.extra_params, str):
+            headers.update(json.loads(self.extra_params))
+        else:
+            headers.update(**self.extra_params)
+        return headers
+
     def generate_url(self, scopes, base):
         session = OAuth2Session(
             client_id=self.client_id, redirect_uri=self.redirect_url(base), scope=scopes
@@ -76,7 +88,7 @@ class DataProvider(models.Model):
         return auth_url, state
 
     def redirect_url(self, base):
-        return parse.urljoin(base, f"/oauth/{self.name}/callback")
+        return parse.urljoin(base, f"/oauth/{self.path_name}/callback")
 
 
 @receiver(models.signals.post_init, sender=DataProvider)
@@ -139,11 +151,16 @@ class PermissionGroup(models.Model):
 
         return [(prov, scopes) for prov, scopes in provider_dict.items()]
 
+    @property
+    def policies(self):
+        return PredefinedPolicy.objects.filter(group=self)
+
 
 class PredefinedPolicy(models.Model):
     provider = models.ForeignKey(DataProvider, null=True, on_delete=models.SET_NULL)
     app = models.ForeignKey(App, on_delete=models.CASCADE)
     group = models.ForeignKey(PermissionGroup, on_delete=models.CASCADE)
+    text = models.TextField()
 
     class Meta:
         verbose_name = "Predefined policy"
@@ -165,6 +182,13 @@ class Function(models.Model):
     objects = FunctionManager()
 
 
+class TokenManager(models.Manager):
+    def create_token(self, user, provider, response):
+        token = Token(user=user, provider=provider)
+        token._update_token(response)
+        return token
+
+
 class Token(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     provider = models.ForeignKey(DataProvider, on_delete=models.CASCADE)
@@ -180,6 +204,62 @@ class Token(models.Model):
                 fields=["user", "provider"], name="token:unique_user_provider"
             )
         ]
+
+    objects = TokenManager()
+
+    @property
+    def expired(self):
+        return time.time() >= self.expires_at
+
+    def _update_token(self, update_dict):
+        self.token_type = update_dict.get("token_type", self.token_type)
+        self.access_token = update_dict.get("access_token", self.access_token)
+        self.refresh_token = update_dict.get("refresh_token", self.refresh_token)
+
+        expires_in = update_dict.get("expires_in", False)
+        if expires_in:
+            self.expires_at = time.time() + expires_in
+
+        self.save()
+
+        self.scopes.clear()
+
+        scopes_raw = update_dict.get("scope")
+        scopes = scopes_raw.split() if scopes_raw else []
+
+        for scope in scopes:
+            try:
+                scope_object = models.Scope.objects.get(
+                    name=scope, provider=self.provider
+                )
+            except models.Scope.DoesNotExist:
+                scope_object = models.Scope(
+                    name=scope, provider=self.provider, description=""
+                )
+                scope_object.save()
+            finally:
+                token_object.scopes.add(scope_object)
+
+    def refresh(self):
+        if self.refresh_token:
+            request_body = {
+                "refresh_token": self.refresh_token,
+                "grant_type": "refresh_token",
+                "client_id": self.provider.client_id,
+                "client_secret": self.provider.client_secret,
+            }
+
+            response = requests.post(
+                self.provider.access_token_url,
+                headers=self.provider.request_headers,
+                data=request_body,
+            )
+
+            if response.status_code == 200:
+                self._update_token(response.json())
+                return True
+            else:
+                return False
 
 
 class PrivateData(models.Model):
