@@ -16,12 +16,16 @@ class User(AbstractUser):
     @property
     def apps(self):
         if self.is_developer:
-            return App.objects.filter(developers=self).all()
+            return App.objects.filter(developers=self)
         else:
             return []
 
+    @property
+    def tokens(self):
+        return Token.objects.filter(user=self)
+
     def policies_for_app(self, app):
-        return Policy.objects.filter(app=app, user=self, active=True).all()
+        return Policy.objects.filter(app=app, user=self, active=True)
 
 
 class AppManager(models.Manager):
@@ -74,10 +78,12 @@ class DataProvider(models.Model):
     def redirect_url(self, base):
         return parse.urljoin(base, f"/oauth/{self.name}/callback")
 
+
 @receiver(models.signals.post_init, sender=DataProvider)
 def set_display_name(sender, instance, *args, **kwargs):
     if not instance.display_name:
         instance.display_name = instance.path_name.capitalize()
+
 
 class Policy(models.Model):
     text = models.TextField()
@@ -146,7 +152,7 @@ class PredefinedPolicy(models.Model):
 
 class FunctionManager(models.Manager):
     def get_app_module(self, app):
-        return "\n\n".join((fn.body for fn in self.filter(app=app).all()))
+        return "\n\n".join((fn.body for fn in self.filter(app=app)))
 
 
 class Function(models.Model):
