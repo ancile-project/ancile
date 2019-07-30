@@ -229,16 +229,16 @@ class Token(models.Model):
 
         for scope in scopes:
             try:
-                scope_object = models.Scope.objects.get(
-                    name=scope, provider=self.provider
+                scope_object = Scope.objects.get(
+                    value=scope, provider=self.provider
                 )
-            except models.Scope.DoesNotExist:
-                scope_object = models.Scope(
-                    name=scope, provider=self.provider, description=""
+            except Scope.DoesNotExist:
+                scope_object = Scope(
+                    value=scope, provider=self.provider, description=""
                 )
                 scope_object.save()
             finally:
-                token_object.scopes.add(scope_object)
+                self.scopes.add(scope_object)
 
     def refresh(self):
         if self.refresh_token:

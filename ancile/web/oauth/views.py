@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from ancile.web.dashboard import models
-from django.http import Http404, HttpResponseForbidden
+from django.http import Http404, HttpResponseForbidden, HttpResponse
 from ancile.web.oauth.utils import get_provider
 from django.contrib.auth.decorators import login_required
 import requests
@@ -43,12 +43,12 @@ def callback(request, provider):
                 models.Token.objects.create_token(
                     user, provider_object, response.json()
                 )
-                return redirect("/")
+
+                return HttpResponse("<script>window.close();</script>")
 
             return HttpResponseForbidden("Authorization error.")
 
     return HttpResponseForbidden("Inconsistent state.")
-
 
 @login_required
 def trigger_auth(request, provider):
@@ -56,6 +56,7 @@ def trigger_auth(request, provider):
     provider_object = get_provider(provider)
 
     scopes = request.GET.get("scopes")
+    close = request.GET.get("close")
 
     auth_url, state = provider_object.generate_url(
         scopes, request.scheme + "://" + request.get_host()
