@@ -2,6 +2,7 @@ from urllib import parse
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.contrib.postgres import fields
+from django.dispatch import receiver
 from requests_oauthlib import OAuth2Session
 from base64 import b64encode
 from bcrypt import gensalt
@@ -48,7 +49,8 @@ class App(models.Model):
 
 
 class DataProvider(models.Model):
-    name = models.CharField(max_length=128, unique=True)
+    path_name = models.CharField(max_length=128, unique=True)
+    display_name = models.TextField(unique=True, blank=True)
     client_id = models.TextField()
     client_secret = models.TextField()
     access_token_url = models.TextField()
@@ -72,6 +74,10 @@ class DataProvider(models.Model):
     def redirect_url(self, base):
         return parse.urljoin(base, f"/oauth/{self.name}/callback")
 
+@receiver(models.signals.post_init, sender=DataProvider)
+def set_display_name(sender, instance, *args, **kwargs):
+    if not instance.display_name:
+        instance.display_name = instance.path_name.capitalize()
 
 class Policy(models.Model):
     text = models.TextField()
