@@ -10,7 +10,7 @@ admin.site.register(
         Policy,
         Scope,
         PermissionGroup,
-        PredefinedPolicy,
+        PolicyTemplate,
         Function,
         Token,
         PrivateData,

@@ -153,18 +153,18 @@ class PermissionGroup(models.Model):
 
     @property
     def policies(self):
-        return PredefinedPolicy.objects.filter(group=self)
+        return PolicyTemplate.objects.filter(group=self)
 
 
-class PredefinedPolicy(models.Model):
+class PolicyTemplate(models.Model):
     provider = models.ForeignKey(DataProvider, null=True, on_delete=models.SET_NULL)
     app = models.ForeignKey(App, on_delete=models.CASCADE)
     group = models.ForeignKey(PermissionGroup, on_delete=models.CASCADE)
     text = models.TextField()
 
     class Meta:
-        verbose_name = "Predefined policy"
-        verbose_name_plural = "Predefined policies"
+        verbose_name = "Policy Template"
+        verbose_name_plural = "Policy Templates"
 
 
 class FunctionManager(models.Manager):
