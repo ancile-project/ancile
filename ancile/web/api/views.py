@@ -4,7 +4,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth.decorators import login_required
-from ancile.web.dashboard.models import User, Token, PermissionGroup, DataProvider, App
+from ancile.web.dashboard.models import User, Token, PermissionGroup, DataProvider, App, PredefinedPolicy, Policy
 
 @require_http_methods(["POST"])
 def execute_api(request):
@@ -27,3 +27,39 @@ def check_permission_group(request):
              "scopes": [{"simple_name": sc.simple_name,
                          "value": sc.value} for sc in wanted_scopes]
              } for provider, wanted_scopes in perm_group.provider_scope_list]))
+
+@login_required
+@require_http_methods(["POST"])
+def add_predefined_policy_to_user(request):
+    try:
+        app_name = request.POST['app']
+        group_name = request.POST['group']
+
+        app = App.objects.get(name=app_name)
+        perm_group = PermissionGroup.objects.get(name=group_name, app=app)
+
+        needed_policies = PredefinedPolicy.objects.filter(group=perm_group,
+                                                          app=app)
+        
+        new_policies = []
+
+        for policy in needed_policies:
+            if not Token.objects.filter(provider=policy.provider):
+                raise Exception("Provider not found")
+
+            new_policy = Policy(
+                text=policy.text,
+                provider=policy.provider,
+                user=request.user,
+                app=app,
+                active=True
+            )
+
+            new_policies.append(new_policy)
+        
+        for policy in new_policies:
+            policy.save()
+
+        return HttpResponse(json.dumps({"status": "ok"}))
+    except Exception:
+        return HttpResponse(json.dumps({"status": "error", "error": "An error has occurred."}))

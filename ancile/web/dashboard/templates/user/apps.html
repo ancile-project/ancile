@@ -1,10 +1,12 @@
 {% extends "base_table.html" %}
 
+
+{% block pre_table %}
+{% endblock %}
 {% block title %} Apps {% endblock %}
 {% block apps_active %}active{% endblock %}
 {% block table_title %} Apps {% endblock %}
 {% block table_sub %} These are the apps that are using your data. {% endblock %}
-
 {% block table_content %}
   <thead class=" text-primary">
     <th>
@@ -14,6 +16,9 @@
       Actions
     </th>
   </thead>
+  <button class="btn btn-primary btn-round" data-toggle="modal" data-target="#addApp">
+    <i class="material-icons">add</i> New App
+  </button>
   <tbody>
     {% for app in apps %}
     <tr>
@@ -27,48 +32,67 @@
       </td>
     </tr>
     {% endfor %}
-    <button class="btn btn-primary btn-round" data-toggle="modal" data-target="#addApp">
-      <i class="material-icons">add</i> New App
-    </button>
   </tbody>
-
+  {% endblock %}
+  {% block post_table %}
   <div class="modal fade" id="addApp" tabindex="-1" role="dialog">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">New App</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body">
-          <form>
-            <div class="form-group">
-                <label for="chosen-app">App name:</label>
-                <select class="form-control" id="chosen-app">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">New App</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="alert alert-success" id="add-success" role="alert" style="display:none;">
+              Application added.
+            </div>
+            <div class="alert alert-danger" id="add-fail" role="alert" style="display:none;">
+              Error.
+            </div>
+            <form>
+              <div class="form-group">
+                  <label for="chosen-app">App name:</label>
+                  <select class="form-control" id="chosen-app">
+                    <option selected="selected"></option>
+                    {% for app in all_apps %}
+                    <option>{{ app.name }}</option>
+                    {% endfor %}
+                  </select>
+              </div>
+              <div class="form-group" id="permission-group" style="display: none;">
+                <label for="chosen-app">Permission group:</label>
+                <select class="form-control" id="chosen-group">
                   <option selected="selected"></option>
-                  {% for app in all_apps %}
-                  <option>{{ app.name }}</option>
-                  {% endfor %}
                 </select>
-            </div>
-            <div class="form-group" id="permission-group" style="display: none;">
-              <label for="chosen-app">Permission group:</label>
-              <select class="form-control" id="chosen-group">
-                <option selected="selected"></option>
-              </select>
-            </div>
-          </form>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-primary">Begin setup</button>
+              </div>
+            </form>
+            <table class="table" id="permission-table" style="display: none;">
+              <thead>
+                <tr>
+                  <th>Provider</th>
+                  <th>Scopes</th>
+                  <th>Status</th>
+                  <th>Authorize</th>
+                </tr>
+              </thead>
+              <tbody>
+              </tbody>
+            </table>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="button" id="add-app-button" class="btn btn-primary" disabled="true">Add</button>
+          </div>
         </div>
       </div>
     </div>
-  </div>
   <script>
-  (() => {
+  window.onload = () => {
+    $(function () {
+      $('[data-toggle="tooltip"]').tooltip()
+    })
     function getCookie(name) {
       var cookieValue = null;
       if (document.cookie && document.cookie !== '') {
@@ -84,16 +108,23 @@
       }
       return cookieValue;
     }
+
+    var windows = []
+    var addButton = document.getElementById("add-app-button");
     var csrftoken = getCookie('csrftoken');
     var appSelector = document.getElementById("chosen-app");
     var permissionSelector = document.getElementById("chosen-group");
 
     var permissionGroup = document.getElementById("permission-group");
+    var permissionTable = document.getElementById("permission-table");
 
     var blankOption = new Option("", "", true, true);
 
-    appSelector.onchange = () => {
+    function reloadGroups() {
       var newValue = appSelector.value;
+      permissionSelector.options.length = 0;
+      permissionSelector.options.add(blankOption);
+
       if (newValue) {
         permissionGroup.style.display = "";
         permissionSelector.disabled = true;
@@ -103,15 +134,13 @@
 
         form.append("app", newValue);
         request.onreadystatechange = () => {
-          if (request.status == 200 && request.readyState == 4) {
-            permissionSelector.disabled = false;
+          if (request.status === 200 && request.readyState === 4) {
             var groups = JSON.parse(request.responseText);
-            permissionSelector.options.length = 0;
-            permissionSelector.options.add(blankOption);
             groups.forEach(group => {
               let option = new Option(group);
               permissionSelector.options.add(option);
             });
+            permissionSelector.disabled = false;
           }
         }
 
@@ -122,12 +151,135 @@
         request.setRequestHeader("X-CSRFToken", csrftoken);
         request.send(form);
       } else {
-
         permissionGroup.style.display = 'none';
+      }
+    }
+
+    function startAuth(provider, scopes, callback) {
+      return () => {
+        let authUrl = "/oauth/" + provider + "?scopes=" + scopes.join("+");
+        let authWindow = window.open(authUrl);
+        windows.push(authWindow);
+      }
+    }
+
+    function reloadTable(noHide) {
+      var appName = appSelector.value;
+      var groupName = permissionSelector.value;
+      if (!noHide) permissionTable.style.display = "none";
+
+      if (groupName) {
+        let request = new XMLHttpRequest();
+        let form = new FormData();
+
+        form.append("app", appName)
+        form.append("group", groupName);
+
+        request.onreadystatechange = () => {
+
+          if (request.status === 200 && request.readyState === 4) {
+            let allGood = true;
+            let newTBody = permissionTable.getElementsByTagName("tbody")[0];
+            newTBody.innerHTML = "";
+            let providers = JSON.parse(request.responseText);
+            providers.forEach(provider => {
+              let newRow = newTBody.insertRow();
+
+              let nameCell = newRow.insertCell(0);
+              nameCell.appendChild(document.createTextNode(provider.display_name));
+
+              let scopeCell = newRow.insertCell(1);
+              let scopeList = scopeCell.appendChild(document.createElement("ul"));
+              let scopes = []
+              provider.scopes.forEach(scope => {
+                let scopeListElement = scopeList.appendChild(document.createElement("li"));
+                scopeListElement.appendChild(document.createTextNode(scope.simple_name));
+                scopes.push(scope.value);
+              })
+
+              let statusCell = newRow.insertCell(2);
+              let statusObject = statusCell.appendChild(document.createElement("i"));
+              statusObject.className = "material-icons";
+              statusObject.innerHTML = provider.status ? "check" : "close";
+              allGood = provider.status && allGood;
+
+              let authCell = newRow.insertCell(3);
+              let authButton = authCell.appendChild(document.createElement("button"));
+              if (provider.status) {
+                authButton.disabled = true;
+                authButton.innerHTML = "Authorized";
+                authButton.className = "btn btn-success"
+              } else {
+                authButton.disabled = false;
+                authButton.innerHTML = "Authorize";
+                authButton.onclick = startAuth(provider.path_name, scopes);
+                authButton.className = "btn btn-info"
+              }
+            });
+            permissionTable.style.display = "";
+            addButton.disabled = !allGood;
+          }
+
+        }
+
+        request.open(
+          "POST",
+          "/api/permissions"
+        );
+        request.setRequestHeader("X-CSRFToken", csrftoken);
+        request.send(form);
 
       }
     }
 
-  })();
+    addButton.onclick = () => {
+      var success = document.getElementById("add-success");
+      var fail = document.getElementById("add-fail");
+      fail.style.display = "none";
+      addButton.disabled = true;
+
+      let request = new XMLHttpRequest();
+      let form = new FormData();
+      form.append("app", appSelector.value);
+      form.append("group", permissionSelector.value);
+
+      request.onreadystatechange = () => {
+
+        if (request.readyState === 4 && request.status === 200) {
+          let response = JSON.parse(request.responseText);
+
+          if (response.status == "ok") {
+            success.style.display = "";
+            location.reload();
+          } else {
+            fail.innerHTML = response.error;
+            fail.style.display = "";
+            addButton.disabled = false;
+          }
+        }
+      }
+
+      request.open(
+        "POST",
+        "/api/addgroup"
+      )
+      request.setRequestHeader("X-CSRFToken", csrftoken);
+      request.send(form);
+    }
+
+    appSelector.onchange = reloadGroups;
+    permissionSelector.onchange = reloadTable;
+
+    window.setInterval(function() {
+      windows.forEach(win => {
+        if (win.closed) {
+          reloadTable(true);
+        }
+      })
+      windows = windows.filter(win => !win.closed)
+    }, 1000);
+
+    reloadGroups();
+  }
   </script>
-{% endblock %}
+  {% endblock %}
