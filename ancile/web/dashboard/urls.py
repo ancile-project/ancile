@@ -33,6 +33,16 @@ urlpatterns = [
 
     path('admin/delete/group/<int:group_id>', views.admin_delete_group),
     path('admin/view/group/<int:group_id>', views.admin_view_group),
-    path('admin/add/group/<int:group_id>', views.admin_add_group),
-    path('admin/edit/group/<int:group_id>', views.admin_edit_group)
+    path('admin/add/group/<int:app_id>', views.admin_add_group),
+    path('admin/edit/group/<int:group_id>', views.admin_edit_group),
+
+    path('admin/delete/function/<int:function_id>', views.admin_delete_function),
+    path('admin/view/function/<int:function_id>', views.admin_view_function),
+    path('admin/add/function/<int:app_id>', views.admin_add_function),
+    path('admin/edit/function/<int:function_id>', views.admin_edit_function),
+
+    path('admin/delete/policy/template/<int:policy_id>', views.admin_delete_policy_template),
+    path('admin/view/policy/template/<int:policy_id>', views.admin_view_policy_template),
+    path('admin/add/policy/template/<int:group_id>', views.admin_add_policy_template),
+    path('admin/edit/policy/template/<int:policy_id>', views.admin_edit_policy_template)
 ]

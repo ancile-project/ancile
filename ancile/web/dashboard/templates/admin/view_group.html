@@ -1,0 +1,114 @@
+{% extends "base_table.html" %}
+
+{% block title %} Permission Group {% endblock %}
+{% block admin_active %}active{% endblock %}
+{% block table_title %} Permision Group {% endblock %}
+{% block table_sub %}  {% endblock %}
+
+
+{% block table_content %}
+  <thead class="text-primary">
+    <th>
+      Name
+    </th>
+    <th>
+      Description
+    </th>
+    <th>
+      Application
+    </th>
+    <th>
+      Scopes
+    </th>
+    <th>
+      Approved
+    </th>
+    <th>
+      Actions
+    </th>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        {{ group.name }}
+      </td>
+      <td>
+        {{ group.description }}
+      </td>
+      <td>
+        <a href="/dashboard/admin/view/app/{{ app.id }}">{{ app.name }}</a>
+      </td>
+      <td>
+        {% for scope in scopes %}
+        {{ scope.simple_name }}
+        {% endfor %}
+      </td>
+      <td>
+        {% if group.approved %}
+        <i class="material-icons">check</i>
+        {% else %}
+        <i class="material-icons">close</i>
+        {% endif %}
+      </td>
+      <td>
+        <a href="/dashboard/admin/edit/group/{{ group.id }}"><i class="material-icons">edit</i></a>
+        <a href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons">delete</i></a>
+         <div class="dropdown-menu" aria-labelledby="deleteUserDropdownButton">
+           <a class="dropdown-item" href="/dashboard/admin/delete/group/{{ group.id }}">Delete</a>
+         </div>
+      </td>
+    </tr>
+  </tbody>
+
+
+{% endblock %}
+
+{% block post_table %}
+
+<div style="text-align: center;">
+<a href="/dashboard/admin/add/policy/template/{{ group.id }}" class="btn btn-primary">Add Policy</a>
+<a href="/dashboard/admin/view/app/{{ app.id }}" class="btn btn-default">Back</a>
+</div>
+
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header card-header-primary">
+          <h4 class="card-title ">Policies</h4>
+          <p class="card-category"></p>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table">
+              <thead class="text-primary">
+                <th>
+                  Provider
+                </th>
+                <th>
+                  Actions
+                </th>
+              </thead>
+              <tbody>
+                {% for policy in policies %}
+                <tr>
+                  <td>
+                    {{ policy.provider.display_name }}
+                  </td>
+                  <td>
+                    <a href="/dashboard/admin/view/policy/template/{{ policy.id }}"><i class="material-icons">pageview</i></a>
+                    <a href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons">delete</i></a>
+                     <div class="dropdown-menu" aria-labelledby="deleteTokenDropdownButton">
+                       <a class="dropdown-item" href="/dashboard/admin/delete/policy/template/{{ policy.id }}">Delete</a>
+                     </div>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+</div>
+
+{% endblock %}

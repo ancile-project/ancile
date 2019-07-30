@@ -175,11 +175,12 @@ def admin_edit_user(request, user_id):
         form = AdminEditUserForm(request.POST)
 
         if form.is_valid():
-            user.is_developer = False if form.cleaned_data['apps'] == [] else True
+            user.is_developer = True if form.cleaned_data['is_developer'] else False
             if user.is_developer:
                 for app in user.apps:
                     if app.name not in form.cleaned_data['apps']:
                         app.developers.remove(user)
+                        app.save()
                 for app in form.cleaned_data['apps']:
                     this_app = App.objects.get(name=app)
                     this_app.developers.add(user)
@@ -215,27 +216,201 @@ def admin_view_app(request, app_id):
 @login_required
 @user_is_admin
 def admin_edit_app(request, app_id):
-    return redirect("/dashboard/admin/apps")
+    app = App.objects.get(pk=app_id)
+
+    if request.method == "POST":
+        form = AdminEditAppForm(request.POST)
+
+        if form.is_valid():
+            app.name = form.cleaned_data["name"]
+            app.description = form.cleaned_data["description"]
+            app.developers.clear()
+            for dev in form.cleaned_data["developers"]:
+                dev_user = User.objects.get(username=dev)
+                app.developers.add(dev_user)
+            app.save()
+            return redirect("/dashboard/admin/view/app/" + str(app_id))
+    else:
+        form = AdminEditAppForm(initial={"developers" : [usr.username for usr in app.developers.all()],
+                                            "name" : app.name,
+                                            "description" : app.description,
+                                            "app_id" : app_id})
+
+    return render(request, 'admin/edit_app.html', {"app_id" : app_id, "form" : form})
 
 @login_required
 @user_is_admin
 def admin_delete_group(request, group_id):
-    app = App.objects.get(id=group_id.app.id)
     group = PermissionGroup.objects.get(pk=group_id)
+    app = group.app
     group.delete()
     return redirect("/dashboard/admin/view/app/" + str(app.id))
 
 @login_required
 @user_is_admin
 def admin_view_group(request, group_id):
-    return redirect("/dashboard/admin/apps")
+    group = PermissionGroup.objects.get(pk=group_id)
+    policies = PolicyTemplate.objects.filter(group_id=group.id)
+    scopes = group.scopes.all()
+    return render(request, "admin/view_group.html", {"group" : group,
+                                                        "policies" : policies,
+                                                        "app" : group.app,
+                                                        "scopes" : scopes})
 
 @login_required
 @user_is_admin
-def admin_add_group(request, group_id):
-    return redirect("/dashboard/admin/apps")
+def admin_add_group(request, app_id):
+    if request.method == "POST":
+        form = AdminAddGroupForm(request.POST)
+
+        if form.is_valid():
+            group = PermissionGroup(name = form.cleaned_data['name'],
+                            description = form.cleaned_data['description'],
+                            approved = True if form.cleaned_data['approved'] else False,
+                            app_id=app_id)
+
+            group.save()
+            group.scopes.set([Scope.objects.get(value=scp) for scp in form.cleaned_data['scopes']])
+            group.save()
+            return redirect("/dashboard/admin/view/app/" + str(app_id))
+    else:
+        form = AdminEditGroupForm()
+
+    return render(request, 'admin/add_group.html', {"app_id" : app_id, "form" : form})
 
 @login_required
 @user_is_admin
 def admin_edit_group(request, group_id):
-    return redirect("/dashboard/admin/apps")
+    group = PermissionGroup.objects.get(pk=group_id)
+    app_id = group.app.id
+
+    if request.method == "POST":
+        form = AdminEditGroupForm(request.POST)
+
+        if form.is_valid():
+            group.name = form.cleaned_data['name']
+            group.description = form.cleaned_data['description']
+            group.scopes.clear()
+            group.scopes.set([Scope.objects.get(value=scp) for scp in form.cleaned_data['scopes']])
+            approved = True if form.cleaned_data['approved'] else False
+            group.save()
+            return redirect("/dashboard/admin/view/group/" + str(group_id))
+    else:
+        form = AdminEditGroupForm(initial={"name" : group.name,
+                                            "description" : group.description,
+                                            "approved" : group.approved,
+                                            "scopes" : [scp.value for scp in group.scopes.all()]})
+
+    return render(request, 'admin/edit_group.html', {"group_id" : group_id, "form" : form})
+
+@login_required
+@user_is_admin
+def admin_delete_function(request, function_id):
+    function = Function.objects.get(pk=function_id)
+    app = App.objects.get(id=function.app.id)
+    function.delete()
+    return redirect("/dashboard/admin/view/app/" + str(app.id))
+
+@login_required
+@user_is_admin
+def admin_view_function(request, function_id):
+    function = Function.objects.get(pk=function_id)
+    return render(request, "admin/view_function.html", {"function" : function})
+
+@login_required
+@user_is_admin
+def admin_add_function(request, app_id):
+    if request.method == "POST":
+        form = AdminAddFunctionForm(request.POST)
+
+        if form.is_valid():
+            function = Function(name = form.cleaned_data['name'],
+                            description = form.cleaned_data['description'],
+                            body = form.cleaned_data['body'],
+                            approved = True if form.cleaned_data["approved"] else False,
+                            app_id=app_id)
+
+            function.save()
+            return redirect("/dashboard/admin/view/app/" + str(app_id))
+    else:
+        form = AdminAddFunctionForm()
+
+    return render(request, 'admin/add_function.html', {"app_id" : app_id, "form" : form})
+
+@login_required
+@user_is_admin
+def admin_edit_function(request, function_id):
+    function = Function.objects.get(pk=function_id)
+
+    if request.method == "POST":
+        form = AdminEditFunctionForm(request.POST)
+
+        if form.is_valid():
+            function.name = form.cleaned_data["name"]
+            function.description = form.cleaned_data["description"]
+            function.body = form.cleaned_data["body"]
+            function.app_id = form.cleaned_data["app_id"]
+            function.approved = True if form.cleaned_data["approved"] else False
+            function.save()
+            return redirect("/dashboard/admin/view/app/" + str(function.app_id))
+    else:
+        form = AdminEditFunctionForm(initial={"name" : function.name,
+                                                "description" : function.description,
+                                                "approved" : function.approved,
+                                                "app_id" : function.app.id,
+                                                "body" : function.body})
+
+    return render(request, 'admin/edit_function.html', {"app_id" : function.app.id, "form" : form})
+
+@login_required
+@user_is_admin
+def admin_delete_policy_template(request, policy_id):
+    policy = PolicyTemplate.objects.get(pk=policy_id)
+    group_id = policy.group.id
+    policy.delete()
+    return redirect("/dashboard/admin/view/group/" + str(group_id))
+
+@login_required
+@user_is_admin
+def admin_view_policy_template(request, policy_id):
+    policy = PolicyTemplate.objects.get(pk=policy_id)
+    return render(request, "admin/view_policy_template.html", {"policy" : policy})
+
+@login_required
+@user_is_admin
+def admin_add_policy_template(request, group_id):
+    if request.method == "POST":
+        form = AdminAddPolicyTemplateForm(request.POST)
+
+        if form.is_valid():
+            group = PermissionGroup.objects.get(id=group_id)
+            policy = PolicyTemplate(text=form.cleaned_data['text'],
+                            provider=DataProvider.objects.get(path_name=form.cleaned_data['provider']),
+                            group=group,
+                            app=group.app)
+            policy.save()
+            return redirect("/dashboard/admin/view/group/" + str(group_id))
+    else:
+        form = AdminAddPolicyTemplateForm()
+
+    return render(request, 'admin/add_policy_template.html', {"group_id" : group_id, "form" : form})
+
+@login_required
+@user_is_admin
+def admin_edit_policy_template(request, policy_id):
+    policy = PolicyTemplate.objects.get(pk=policy_id)
+    group_id = policy.group.id
+
+    if request.method == "POST":
+        form = AdminEditPolicyTemplateForm(request.POST)
+
+        if form.is_valid():
+            policy.text = form.cleaned_data['text']
+            policy.provider = DataProvider.objects.get(path_name=form.cleaned_data['provider'])
+            policy.save()
+            return redirect("/dashboard/admin/view/group/" + str(group_id))
+    else:
+        form = AdminEditPolicyTemplateForm(initial={"text" : policy.text, "provider" : policy.provider.path_name})
+
+    return render(request, 'admin/edit_policy_template.html', {"policy_id" : policy_id, "form" : form})
+

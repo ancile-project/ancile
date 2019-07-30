@@ -35,6 +35,7 @@
         {% endfor %}
       </td>
       <td>
+        <a href="/dashboard/admin/edit/app/{{ app.id }}"><i class="material-icons">edit</i></a>
         <a href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons">delete</i></a>
          <div class="dropdown-menu" aria-labelledby="deleteUserDropdownButton">
            <a class="dropdown-item" href="/dashboard/admin/delete/app/{{ app.id }}">Delete</a>
@@ -49,6 +50,8 @@
 {% block post_table %}
 
 <div style="text-align: center;">
+<a href="/dashboard/admin/add/group/{{ app.id }}" class="btn btn-primary">Add Group</a>
+<a href="/dashboard/admin/add/function/{{ app.id }}" class="btn btn-primary">Add Function</a>
 <a href="/dashboard/admin/apps" class="btn btn-default">Back</a>
 </div>
 
@@ -73,6 +76,9 @@
                   Scopes
                 </th>
                 <th>
+                  Approved
+                </th>
+                <th>
                   Actions
                 </th>
               </thead>
@@ -86,10 +92,20 @@
                     {{ group.description }}
                   </td>
                   <td>
-                    {{ group.scope_list }}
+                    {% for scope in group.scopes.all %}
+                    {{ scope.simple_name }}
+                    {% endfor %}
+                  </td>
+                  <td>
+                    {% if group.approved %}
+                    <i class="material-icons">check</i>
+                    {% else %}
+                    <i class="material-icons">close</i>
+                    {% endif %}
                   </td>
                   <td>
                     <a href="/dashboard/admin/view/group/{{ group.id }}"><i class="material-icons">pageview</i></a>
+                    <a href="/dashboard/admin/edit/group/{{ group.id }}"><i class="material-icons">edit</i></a>
                     <a href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons">delete</i></a>
                      <div class="dropdown-menu" aria-labelledby="deleteTokenDropdownButton">
                        <a class="dropdown-item" href="/dashboard/admin/delete/group/{{ group.id }}">Delete</a>
