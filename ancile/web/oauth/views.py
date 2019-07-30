@@ -40,9 +40,16 @@ def callback(request, provider):
 
             if response.status_code == 200:
                 user = request.user
-                models.Token.objects.create_token(
-                    user, provider_object, response.json()
-                )
+
+                token_query = models.Token.objects.filter(user=user,
+                                                          provider=provider_object)
+                if token_query.exists():
+                    token = token_query[0]
+                    token._update_token(response_json)
+                else:
+                    models.Token.objects.create_token(
+                        user, provider_object, response.json()
+                    )
 
                 return HttpResponse("<script>window.close();</script>")
 
