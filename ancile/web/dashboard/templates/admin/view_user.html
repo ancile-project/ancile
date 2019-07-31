@@ -93,7 +93,7 @@
                 {% for token in tokens %}
                 <tr>
                   <td>
-                    {{ token.provider.name }}
+                    {{ token.provider.display_name }}
                   </td>
                   <td>
                     {{ token.expires_at }}
@@ -146,7 +146,7 @@
                     {{ policy.app.name }}
                   </td>
                   <td>
-                    {{ policy.provider.name }}
+                    {{ policy.provider.display_name }}
                   </td>
                   <td>
                     {% if policy.active %}

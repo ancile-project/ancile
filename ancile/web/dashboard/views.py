@@ -126,7 +126,7 @@ def admin_add_policy(request, user_id):
 
         if form.is_valid():
             policy = Policy(text=form.cleaned_data['text'],
-                            provider=DataProvider.objects.get(name=form.cleaned_data['provider']),
+                            provider=DataProvider.objects.get(path_name=form.cleaned_data['provider']),
                             user=User.objects.get(id=user_id),
                             app=App.objects.get(name=form.cleaned_data['app']),
                             active = True if form.cleaned_data['active'] else False)
@@ -135,7 +135,7 @@ def admin_add_policy(request, user_id):
     else:
         user = User.objects.get(id=user_id)
         form = AdminAddPolicyForm(initial={})
-        form.fields['provider'].choices=set([(token.provider.name, token.provider.name) for token in Token.objects.filter(user=user)])
+        form.fields['provider'].choices=set([(token.provider.path_name, token.provider.display_name) for token in Token.objects.filter(user=user)])
 
     return render(request, 'admin/add_policy.html', {"user_id" : user_id, "form" : form})
 
