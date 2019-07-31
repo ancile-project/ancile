@@ -182,7 +182,9 @@ def admin_edit_user(request, user_id):
             user.save()
             return redirect("/dashboard/admin/view/user/" + str(user_id))
     else:
-        form = AdminEditUserForm(initial={"apps" : [app.name for app in user.apps], "is_admin" : user.is_superuser})
+        form = AdminEditUserForm(initial={"apps" : [app.name for app in user.apps],
+                                            "is_admin" : user.is_superuser,
+                                            "is_developer" : user.is_developer})
 
     return render(request, 'admin/edit_user.html', {"user_id" : user_id, "form" : form})
 

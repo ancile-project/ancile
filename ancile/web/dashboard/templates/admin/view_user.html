@@ -64,7 +64,7 @@
 {% block post_table %}
 
 <div style="text-align: center;">
-<a href="/dashboard/admin/add/policy/{{ usr.id }}" class="btn btn-primary">Add Policy</a>
+<a href="/dashboard/admin/add/policy/{{ usr.id }}" class="btn btn-primary{% if tokens.all %}"{% else %} disabled"{% endif %}>Add Policy</a>
 <a href="/dashboard/admin/users" class="btn btn-default">Back</a>
 </div>
 
