@@ -52,5 +52,11 @@ urlpatterns = [
     path('admin/delete/policy/template/<int:policy_id>', views.admin_delete_policy_template),
     path('admin/view/policy/template/<int:policy_id>', views.admin_view_policy_template),
     path('admin/add/policy/template/<int:group_id>', views.admin_add_policy_template),
-    path('admin/edit/policy/template/<int:policy_id>', views.admin_edit_policy_template)
+    path('admin/edit/policy/template/<int:policy_id>', views.admin_edit_policy_template),
+
+    path('dev', views.dev_console),
+    path('dev/delete/app/<int:app_id>', views.dev_delete_app),
+    path('dev/view/app/<int:app_id>', views.dev_view_app),
+    path('dev/add/app/<int:app_id>', views.dev_add_app),
+    path('dev/edit/app/<int:app_id>', views.dev_edit_app),
 ]

@@ -311,7 +311,7 @@ def admin_edit_group(request, group_id):
             group.approved = True if form.cleaned_data['approved'] else False
             print(group.approved)
             group.save()
-            return redirect("/dashboard/admin/view/group/" + str(group_id))
+            return redirect("/dashboard/admin/view/app/" + str(app_id))
     else:
         form = AdminEditGroupForm(initial={"name" : group.name,
                                             "description" : group.description,
@@ -583,3 +583,48 @@ def admin_edit_scope(request, scope_id):
                                                 "title" : "Edit Scope",
                                                 "form_title" : "Edit Scope",
                                                 "form" : form})
+
+
+@login_required
+@user_is_developer
+def dev_console(request):
+    return render(request, "dev/console.html", {"apps" : request.user.apps})
+
+@login_required
+@user_is_developer
+def dev_delete_app(request, app_id):
+    app = App.objects.get(pk=app_id)
+    if app in request.user.apps:
+        app.delete()
+    return render(request, "dev/console.html", {"apps" : request.user.apps})
+
+@login_required
+@user_is_developer
+def dev_view_app(request, app_id):
+    app = App.objects.get(pk=app_id)
+    if app in request.user.apps:
+        groups = PermissionGroup.objects.filter(app=app)
+        functions = Function.objects.filter(app=app)
+        return render(request, "dev/view_app.html", {"app" : app,
+                                                        "groups" : groups,
+                                                        "functions" : functions})
+    else:
+        return redirect("/dashboard/dev")
+
+@login_required
+@user_is_developer
+def dev_add_app(request, app_id):
+    app = App.objects.get(pk=app_id)
+    if app in request.user.apps:
+        return render(request, "dev/view_app.html", {"apps" : request.user.apps})
+    else:
+        return redirect("/dashboard/dev")
+
+@login_required
+@user_is_developer
+def dev_edit_app(request, app_id):
+    app = App.objects.get(pk=app_id)
+    if app in request.user.apps:
+        return render(request, "dev/view_app.html", {"apps" : request.user.apps})
+    else:
+        return redirect("/dashboard/dev")

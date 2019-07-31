@@ -1,0 +1,45 @@
+{% extends "base_table.html" %}
+
+{% block title %} Developer Console {% endblock %}
+{% block dev_active %}active{% endblock %}
+{% block table_title %} Apps {% endblock %}
+{% block table_sub %} These are the apps you are develop. {% endblock %}
+
+
+{% block table_content %}
+  <thead class="text-primary">
+    <th>
+      Name
+    </th>
+    <th>
+      Description 
+    </th>
+    <th>
+      Actions
+    </th>
+  </thead>
+  <tbody>
+    {% for app in apps %}
+    <tr>
+      <td>
+        {{ app.name }}
+      </td>
+      <td>
+        {{ app.description }}
+      </td>
+      <td>
+        <a href="/dashboard/dev/view/app/{{ app.id }}"><i class="material-icons">pageview</i></a>
+        <a href="/dashboard/dev/edit/app/{{ app.id }}"><i class="material-icons">edit</i></a>
+        <a href="/dashboard/dev/delete/app/{{ app.id }}"><i class="material-icons">delete</i></a>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+{% endblock %}
+
+{% block post_table %}
+
+<div style="text-align: center;">
+<a href="/dashboard/dev/add/app" class="btn btn-primary">Create App</a>
+</div>
+{% endblock %}
