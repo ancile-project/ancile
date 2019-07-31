@@ -28,9 +28,9 @@
         {{ app.description }}
       </td>
       <td>
-        <a href="/dashboard/dev/view/app/{{ app.id }}"><i class="material-icons">pageview</i></a>
-        <a href="/dashboard/dev/edit/app/{{ app.id }}"><i class="material-icons">edit</i></a>
-        <a href="/dashboard/dev/delete/app/{{ app.id }}"><i class="material-icons">delete</i></a>
+        <a href="/dev/view/app/{{ app.id }}"><i class="material-icons">pageview</i></a>
+        <a href="/dev/edit/app/{{ app.id }}"><i class="material-icons">edit</i></a>
+        <a href="/dev/delete/app/{{ app.id }}"><i class="material-icons">delete</i></a>
       </td>
     </tr>
     {% endfor %}
@@ -40,6 +40,6 @@
 {% block post_table %}
 
 <div style="text-align: center;">
-<a href="/dashboard/dev/add/app" class="btn btn-primary">Create App</a>
+<a href="/dev/add/app" class="btn btn-primary">Create App</a>
 </div>
 {% endblock %}

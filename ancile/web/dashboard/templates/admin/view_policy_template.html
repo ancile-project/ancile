@@ -33,10 +33,10 @@
         {{ policy.provider.display_name }}
       </td>
       <td>
-        <a href="/dashboard/admin/edit/policy/template/{{ policy.id }}"><i class="material-icons">edit</i></a>
+        <a href="/admin/edit/policy/template/{{ policy.id }}"><i class="material-icons">edit</i></a>
         <a href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons">delete</i></a>
          <div class="dropdown-menu" aria-labelledby="deletePolicyDropdownButton">
-           <a class="dropdown-item" href="/dashboard/admin/delete/policy/template/{{ policy.id }}">Delete</a>
+           <a class="dropdown-item" href="/admin/delete/policy/template/{{ policy.id }}">Delete</a>
          </div>
       </td>
     </tr>
@@ -57,6 +57,6 @@
 
 <br>
 
-<a href="/dashboard/admin/view/group/{{ policy.group.id }}" class="btn btn-default">Back</a>
+<a href="/admin/view/group/{{ policy.group.id }}" class="btn btn-default">Back</a>
 {% endblock %}
 

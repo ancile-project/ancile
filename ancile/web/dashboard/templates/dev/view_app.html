@@ -35,10 +35,10 @@
         {% endfor %}
       </td>
       <td>
-        <a href="/dashboard/dev/edit/app/{{ app.id }}"><i class="material-icons">edit</i></a>
+        <a href="/dev/edit/app/{{ app.id }}"><i class="material-icons">edit</i></a>
         <a href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons">delete</i></a>
          <div class="dropdown-menu" aria-labelledby="deleteUserDropdownButton">
-           <a class="dropdown-item" href="/dashboard/dev/delete/app/{{ app.id }}">Delete</a>
+           <a class="dropdown-item" href="/dev/delete/app/{{ app.id }}">Delete</a>
          </div>
       </td>
     </tr>
@@ -50,9 +50,9 @@
 {% block post_table %}
 
 <div style="text-align: center;">
-<a href="/dashboard/dev/add/group/{{ app.id }}" class="btn btn-primary">Add Group</a>
-<a href="/dashboard/dev/add/function/{{ app.id }}" class="btn btn-primary">Add Function</a>
-<a href="/dashboard/dev" class="btn btn-default">Back</a>
+<a href="/dev/add/group/{{ app.id }}" class="btn btn-primary">Add Group</a>
+<a href="/dev/add/function/{{ app.id }}" class="btn btn-primary">Add Function</a>
+<a href="/dev" class="btn btn-default">Back</a>
 </div>
 
   <div class="row">
@@ -104,11 +104,11 @@
                     {% endif %}
                   </td>
                   <td>
-                    <a href="/dashboard/dev/view/group/{{ group.id }}"><i class="material-icons">pageview</i></a>
-                    <a href="/dashboard/dev/edit/group/{{ group.id }}"><i class="material-icons">edit</i></a>
+                    <a href="/dev/view/group/{{ group.id }}"><i class="material-icons">pageview</i></a>
+                    <a href="/dev/edit/group/{{ group.id }}"><i class="material-icons">edit</i></a>
                     <a href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons">delete</i></a>
                      <div class="dropdown-menu" aria-labelledby="deleteTokenDropdownButton">
-                       <a class="dropdown-item" href="/dashboard/dev/delete/group/{{ group.id }}">Delete</a>
+                       <a class="dropdown-item" href="/dev/delete/group/{{ group.id }}">Delete</a>
                      </div>
                   </td>
                 </tr>
@@ -162,11 +162,11 @@
                     {% endif %}
                   </td>
                   <td>
-                    <a href="/dashboard/dev/view/function/{{ function.id }}"><i class="material-icons">pageview</i></a>
-                    <a href="/dashboard/dev/edit/function/{{ function.id }}"><i class="material-icons">edit</i></a>
+                    <a href="/dev/view/function/{{ function.id }}"><i class="material-icons">pageview</i></a>
+                    <a href="/dev/edit/function/{{ function.id }}"><i class="material-icons">edit</i></a>
                     <a href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons">delete</i></a>
                      <div class="dropdown-menu" aria-labelledby="deletePolicyDropdownButton">
-                       <a class="dropdown-item" href="/dashboard/dev/delete/function/{{ function.id }}">Delete</a>
+                       <a class="dropdown-item" href="/dev/delete/function/{{ function.id }}">Delete</a>
                      </div>
                   </td>
                 </tr>
