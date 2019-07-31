@@ -30,7 +30,7 @@ LOGIN_URL = "/login"
 
 ALLOWED_HOSTS = [config.SERVER_NAME]
 
-
+LOGOUT_REDIRECT_URL = "/"
 # Application definition
 
 INSTALLED_APPS = [

@@ -149,6 +149,7 @@
 
     const greenButton = "btn btn-round btn-success tooltip-test";
     const purpleButton = "btn btn-round btn-primary tooltip-test";
+    const redButton = "btn btn-round btn-danger tooltip-test";
     const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
     function selectorChange() {
@@ -176,14 +177,24 @@
               formButton.className = purpleButton;
               formButton.title = scope.description;
               formButton.onclick = () => {
-                if (formButton.className === greenButton) {
+                if (formButton.className === greenButton || formButton.className === redButton) {
                   scopesToAdd = scopesToAdd.filter(scope => scope != scope.value);
                   formButton.className = purpleButton;
                   formButton.innerHTML = "<i class=\"material-icons\">add</i>" + scope.simple_name;
+                  formButton.onmouseover = null;
+                  formButton.onmouseleave = null;
                 } else {
                   scopesToAdd.push(scope.value);
                   formButton.innerHTML = "<i class=\"material-icons\">check</i>" + scope.simple_name;
                   formButton.className = greenButton;
+                  formButton.onmouseover = () => {
+                    formButton.innerHTML = "<i class=\"material-icons\">remove</i>" + scope.simple_name;
+                    formButton.className = redButton;
+                  }
+                  formButton.onmouseleave = () => {
+                    formButton.innerHTML = "<i class=\"material-icons\">check</i>" + scope.simple_name;
+                    formButton.className = greenButton;
+                  }
                 }
 
                 return false;
