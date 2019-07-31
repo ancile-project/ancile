@@ -20,8 +20,9 @@ from django.conf.urls import url
 
 urlpatterns = [
     url(r'^login/$', auth_views.LoginView.as_view(template_name="login.html"), name='login'),
+    url(r'^logout/$', auth_views.LogoutView.as_view(), name='logout'),
     path('admin/', admin.site.urls),
     path('oauth/', include('ancile.web.oauth.urls')),
-    path('dashboard/', include('ancile.web.dashboard.urls')),
+    path('', include('ancile.web.dashboard.urls')),
     path('api/', include('ancile.web.api.urls')),
 ]
