@@ -4,9 +4,9 @@ from django.shortcuts import render
 from django.http import HttpResponse, Http404, JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth.decorators import login_required
-from ancile.web.dashboard.models import User, Token, PermissionGroup, DataProvider, App, PolicyTemplate, Policy
 from ancile.web.api.queries import get_app_id, get_user_bundle, get_app_module
-
+from ancile.web.dashboard.models import User, Token, PermissionGroup, DataProvider, App, PolicyTemplate, Policy, Scope
+import traceback
 
 @require_http_methods(["POST"])
 def execute_api(request):
@@ -49,12 +49,12 @@ def check_permission_group(request):
 
     provider_scope = {tk.provider:tk.scopes.all() for tk in request.user.tokens}
 
-    return HttpResponse(json.dumps({"description": perm_group.description, "providers": [{"path_name": provider.path_name,
+    return JsonResponse({"description": perm_group.description, "providers": [{"path_name": provider.path_name,
              "display_name": provider.display_name,
              "status": len(set(wanted_scopes) - set(provider_scope.get(provider, set()))) == 0 and provider in provider_scope, 
              "scopes": [{"simple_name": sc.simple_name,
                          "value": sc.value} for sc in wanted_scopes]
-             } for provider, wanted_scopes in perm_group.provider_scope_list]}))
+             } for provider, wanted_scopes in perm_group.provider_scope_list]})
 
 @login_required
 @require_http_methods(["POST"])
@@ -88,9 +88,9 @@ def add_predefined_policy_to_user(request):
         for policy in new_policies:
             policy.save()
 
-        return HttpResponse(json.dumps({"status": "ok"}))
+        return JsonResponse({"status": "ok"})
     except Exception:
-        return HttpResponse(json.dumps({"status": "error", "error": "An error has occurred."}))
+        return JsonResponse({"status": "error", "error": "An error has occurred."})
 
 @login_required
 @require_http_methods(["POST"])
@@ -102,9 +102,9 @@ def remove_app_for_user(request):
                                               app=app)
         user_policies.delete()
         
-        return HttpResponse(json.dumps({"status": "ok"}))
+        return JsonResponse({"status": "ok"})
     except Exception:
-        return HttpResponse(json.dumps({"status": "error", "error": "An error has occurred."}))
+        return JsonResponse({"status": "error", "error": "An error has occurred."})
 
 @login_required
 @require_http_methods(["POST"])
@@ -112,5 +112,39 @@ def get_app_groups(request):
     app = request.POST.get("app")
     if app:
         group_names = [group.name for group in PermissionGroup.objects.filter(app__name=app)]
-        return HttpResponse(json.dumps(group_names), content_type="application/json")
+        return JsonResponse(group_names, safe=False)
     raise Http404
+
+@login_required
+@require_http_methods(["POST"])
+def remove_provider_for_user(request):
+    try:
+        provider_path = request.POST["provider"]
+        provider = DataProvider.objects.get(path_name=provider_path)
+        token = Token.objects.get(provider=provider,
+                                  user=request.user)
+        token.delete()
+        return JsonResponse({"status": "ok"})
+    except Exception:
+        return JsonResponse({"status": "error", "error": "An error has occurred."})
+
+@login_required
+@require_http_methods(["POST"])
+def get_provider_scopes(request):
+    try:
+        provider_path = request.POST["provider"]
+        provider = DataProvider.objects.get(path_name=provider_path)
+        scopes = Scope.objects.filter(provider=provider)
+
+        scopes_json = [
+            {
+                "simple_name": scope.simple_name,
+                "value": scope.value,
+                "description": scope.description
+            } for scope in scopes
+        ]
+
+        return JsonResponse(scopes_json, safe=False)
+    except Exception:
+        print(traceback.format_exc())
+        return JsonResponse({"status": "error", "error": "An error has occurred."})

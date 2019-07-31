@@ -15,7 +15,7 @@ def dashboard(request):
 @login_required
 def providers(request):
     tokens = Token.objects.filter(user=request.user)
-    return render(request, "user/providers.html", {"tokens" : tokens})
+    return render(request, "user/providers.html", {"tokens" : tokens, "all_providers": DataProvider.objects.all})
 
 @login_required
 def policies(request):

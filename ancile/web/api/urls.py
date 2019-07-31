@@ -6,6 +6,8 @@ urlpatterns = [
     path('app/permissions', views.check_permission_group),
     path('app/add', views.add_predefined_policy_to_user),
     path('app/delete', views.remove_app_for_user),
-    path('app/groups', views.get_app_groups)
+    path('app/groups', views.get_app_groups),
+    path('provider/delete', views.remove_provider_for_user),
+    path('provider/scopes', views.get_provider_scopes)
 ]
 
