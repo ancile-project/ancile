@@ -23,7 +23,7 @@ def check_permission_group(request):
 
     return HttpResponse(json.dumps({"description": perm_group.description, "providers": [{"path_name": provider.path_name,
              "display_name": provider.display_name,
-             "status": len(set(wanted_scopes) - set(provider_scope.get(provider, set()))) == 0,
+             "status": len(set(wanted_scopes) - set(provider_scope.get(provider, set()))) == 0 and provider in provider_scope, 
              "scopes": [{"simple_name": sc.simple_name,
                          "value": sc.value} for sc in wanted_scopes]
              } for provider, wanted_scopes in perm_group.provider_scope_list]}))
