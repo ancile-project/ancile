@@ -6,3 +6,5 @@ pyjwt
 bcrypt
 pyyaml
 django-crispy-forms
+redis
+dill
