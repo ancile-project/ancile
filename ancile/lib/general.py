@@ -1,10 +1,8 @@
 """
 Generic Ancile functions meant to be useful on many different forms of data.
 """
-from ancile.core.decorators import (transform_decorator, aggregate_decorator,
-                             comparison_decorator, filter_decorator, reduction_decorator)
+from ancile.core.decorators import *
 from ancile.utils.errors import AncileException
-
 
 
 # =============================================================================
@@ -56,7 +54,7 @@ from ancile.utils.errors import AncileException
 # Toy Functions (good for testing)
 # =============================================================================
 
-@transform_decorator
+@TransformDecorator()
 def double(data, key):
     """
     Double the value at the given key.
@@ -67,7 +65,7 @@ def double(data, key):
     """
     data[key] *= 2
 
-@transform_decorator
+@TransformDecorator()
 def counter(data: dict):
     """
     Create or increment a counter.
@@ -85,7 +83,7 @@ def counter(data: dict):
 # Transformation Functions
 # =============================================================================
 
-@transform_decorator
+@TransformDecorator()
 def keep_keys(data, keys):
     """
     Remove all keys except those listed from a DataPolicyPair.
@@ -98,7 +96,7 @@ def keep_keys(data, keys):
     for key in dropped:
         del data[key]
 
-@transform_decorator
+@TransformDecorator()
 def keep_path_keys(data, path, keys):
     """
     Remove all keys except those listed from the nested dictionary in a
@@ -113,7 +111,7 @@ def keep_path_keys(data, path, keys):
     for key in dropped:
         del data[path][key]
 
-@transform_decorator
+@TransformDecorator()
 def drop_keys(data, keys):
     """
     Delete the given keys from a DataPolicyPair.
@@ -126,7 +124,7 @@ def drop_keys(data, keys):
         if key in data.keys():
             del data[key]
 
-@transform_decorator
+@TransformDecorator()
 def flatten(data):
     """
     Flatten the internal structure of a DataPolicyPair.
@@ -160,12 +158,12 @@ def flat_dict(d):
 # Aggregation Functions
 # =============================================================================
 
-@aggregate_decorator()
+@AggregateDecorator()
 def basic_aggregation(data):
     """Aggregate two DataPolicyPairs together without changing the data."""
     pass
 
-@aggregate_decorator(reduce=True)
+@AggregateDecorator(reduce=True)
 def aggregate_and(data):
     """
     Produce an aggregate value with the AND of the specified boolean fields
@@ -183,7 +181,7 @@ def aggregate_and(data):
 
     return data
 
-@aggregate_decorator(reduce=True)
+@AggregateDecorator(reduce=True)
 def aggregate_or(data):
     """
     Produce an aggregate value with the OR of the specified boolean fields
@@ -201,7 +199,7 @@ def aggregate_or(data):
 
     return data
 
-@aggregate_decorator(reduce=True)
+@AggregateDecorator(reduce=True)
 def quorum(data, threshold):
     """
     Determine if the percentage of boolean values in the given list greater than
@@ -224,7 +222,7 @@ def quorum(data, threshold):
 # Comparison Functions
 # =============================================================================
 
-@comparison_decorator
+@ComparisonDecorator()
 def field_comparison(data, field_path, comparison_operator, value):
     """
     A generic comparison operator that compares a given key in the DataPolicyPair
@@ -260,7 +258,7 @@ def field_comparison(data, field_path, comparison_operator, value):
 #  Reduction Functions
 # =============================================================================
 
-@reduction_decorator
+@ReductionDecorator()
 def collection_average(collection: list, value_key: str=None):
     """
     Compute the average value of a given field across a collection.
@@ -278,7 +276,7 @@ def collection_average(collection: list, value_key: str=None):
 
     return {'collection_average': rolling_value / len(collection)}
 
-@reduction_decorator
+@ReductionDecorator()
 def collection_and(collection: list, value_key: str=None):
     """
     Compute the boolean AND of a given field across a collection.
@@ -295,7 +293,7 @@ def collection_and(collection: list, value_key: str=None):
 
     return {'collection_and':all((item[value_key] for item in collection))}
 
-@reduction_decorator
+@ReductionDecorator()
 def collection_or(collection: list, value_key: str=None):
     """
     Compute the boolean OR of a given field across a collection.
@@ -312,7 +310,7 @@ def collection_or(collection: list, value_key: str=None):
 
     return {'collection_or': any((item[value_key] for item in collection))}
 
-@reduction_decorator
+@ReductionDecorator()
 def collection_sum(collection: list, value_key: str=None):
     """
     Compute the sum value of a given field across a collection.
@@ -327,7 +325,7 @@ def collection_sum(collection: list, value_key: str=None):
 
     return {'collection_sum': sum((item[value_key] for item in collection))}
 
-@filter_decorator
+@FilterDecorator()
 def no_filter(collection=None):
     print('no_filter')
 

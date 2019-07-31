@@ -3,7 +3,7 @@ This module defines Ancile functions to work with data coming from the Vassar
 Campus Data server at campusdataservices.cs.vassar.edu.
 """
 
-from ancile.core.decorators import transform_decorator, external_request_decorator
+from ancile.core.decorators import *
 from ancile.lib.general import get_token
 from ancile.lib import location
 from ancile.utils.errors import AncileException
@@ -12,7 +12,7 @@ import requests
 name = 'cds'
 
 
-@external_request_decorator()
+@ExternalDecorator()
 def get_last_location(user):
     """
     Make a request to the last location API with the user's access token.
@@ -31,7 +31,8 @@ def get_last_location(user):
 
     return data
 
-@transform_decorator
+
+@TransformDecorator()
 def in_geofence(geofence, radius, data=None):
     """
     Determine if the user is inside the given circular geofence.
@@ -46,7 +47,8 @@ def in_geofence(geofence, radius, data=None):
     result_bool = location._in_geofence(geofence, location_tuple, radius)
     data['in_geofence'] = result_bool
 
-@transform_decorator
+
+@TransformDecorator()
 def in_geofences(geofences, data=None):
     """
     Determine if the user is within any of a given list of circular geofences.
@@ -78,6 +80,7 @@ def in_geofences(geofences, data=None):
 
     data['in_geofences'] = result
 
+
 def in_geofences_bool(geofences, data=None):
     """ A wrapper around in_geofences that reduces the value to a boolean"""
     in_geofences(geofences=geofences, data=data)
@@ -85,7 +88,8 @@ def in_geofences_bool(geofences, data=None):
     val = data._data.pop('in_geofences')
     data._data['in_geofences'] = val not in ["Location Unknown"]
 
-@transform_decorator
+
+@TransformDecorator()
 def fuzz_location(data, radius):
     """
     Fuzz a location point by moving it to some random location with the specified

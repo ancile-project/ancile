@@ -4,7 +4,7 @@ This module defines Ancile functions to work with data coming from Google.
 Currently supports the following data sources:
 - Google Calendar
 """
-from ancile.core.decorators import transform_decorator, external_request_decorator
+from ancile.core.decorators import *
 from ancile.lib.general import get_token
 from ancile.utils.errors import AncileException
 
@@ -38,7 +38,8 @@ def _get_primary_metadata(token):
 
     return primary[0]
 
-@external_request_decorator()
+
+@ExternalDecorator()
 def get_primary_calendar_metadata(user=None, **kwargs):
     """
     Retrieve primary calendar metadata as an Ancile function.
@@ -52,7 +53,8 @@ def get_primary_calendar_metadata(user=None, **kwargs):
     data['calendar'] = _get_primary_metadata(token)
     return data
 
-@external_request_decorator()
+
+@ExternalDecorator()
 def get_calendar_events_in_relative_window(user=None, min_time=0,
                                            max_time=1, **kwargs):
     """
@@ -96,7 +98,8 @@ def get_calendar_events_in_relative_window(user=None, min_time=0,
     data['events'] = r.json()['items']
     return data
 
-@transform_decorator
+
+@TransformDecorator()
 def event_occurring(data, event_title=None):
     """
     Check if a specified event title occurs in the list of occurring events.
@@ -111,7 +114,8 @@ def event_occurring(data, event_title=None):
     result = event_title in [event['summary'] for event in events]
     data['event_occurring'] = result
 
-@transform_decorator
+
+@TransformDecorator()
 def no_events_occurring(data):
     """
     Check if no events are in the list of occurring events.
