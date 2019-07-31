@@ -5,8 +5,19 @@ from ancile.core.primitives.policy_helpers.command import Command
 
 
 class BaseDecorator(ABC):
+    """
+    This is the Base class for all new decorators. It uses wrapt module to
+    interrupt the calls.
+    """
 
     def __init__(self, scopes=None, is_collection=False):
+        """
+
+        :param scopes: we can use this parameter to add aliases to functions,
+         such as data source name, function type, etc.
+        :param is_collection: not implemented, but can be a flag that the input
+        is a collection
+        """
         self.is_collection = is_collection
         self.scopes = scopes if scopes else list()
 
