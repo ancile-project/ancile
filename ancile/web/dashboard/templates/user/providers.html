@@ -11,7 +11,7 @@
       Data Provider
     </th>
     <th>
-      Access Token
+      Authorized Scopes
     </th>
     <th>
       Expires At
@@ -24,24 +24,33 @@
     {% for token in tokens %}
     <tr>
       <td>
-        {{ token.provider.name }}
+        {{ token.provider.display_name }}
       </td>
       <td>
-        {{ token.access_token }}
+        <ul>
+        {% for scope in token.scopes.all %}
+          <li>{{ scope.simple_name }}</li>
+        {% endfor %}
+        </ul>
       </td>
-      <td>
+      <td class="timestamp" style="display: none;">
         {{ token.expires_at }}
       </td>
       <td>
-        <a href="#"><i class="material-icons">pageview</i></a>
-        <a href="#"><i class="material-icons">delete</i></a>
+        <a href="#" onclick="removeProvider(this, '{{ token.provider.path_name }}'); return false"><i class="material-icons">delete</i></a>
       </td>
     </tr>
     {% endfor %}
   </tbody>
-
-<button type="button" class="btn btn-default" data-toggle="modal" data-target="#addProviderModal">Add Provider</button>
-
+  <div class="alert alert-success" id="delete-success" role="alert" style="display:none;">
+      Token deleted.
+    </div>
+    <div class="alert alert-danger" id="delete-fail" role="alert" style="display:none;">
+      Error.
+    </div>
+<button type="button" class="btn btn-primary btn-round" data-toggle="modal" data-target="#addProviderModal"><i class="material-icons">add</i>Add Provider</button>
+{% endblock %}
+{% block post_table %}
 <div id="addProviderModal" class="modal" tabindex="-1" role="dialog">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
@@ -52,14 +61,179 @@
         </button>
       </div>
       <div class="modal-body">
-        This is a modal.
+        <form>
+          <div class="form-group">
+              <label for="chosen-provider">Provider name:</label>
+              <select class="form-control" id="chosen-provider">
+                <option selected="selected"></option>
+                {% for provider in all_providers %}
+                <option value="{{ provider.path_name }}">{{ provider.display_name }}</option>
+                {% endfor %}
+              </select>
+          </div>
+          <div class="form-check" id="scope-group" style="display:none">
+            <label for="chosen-scopes">Select your scopes:</label>
+            <div id="chosen-scopes">
+            </div>
+          </div>
+        </form>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-primary">Add Provider</button>
+        <button type="button" class="btn btn-primary" id="add-button">Add Provider</button>
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
       </div>
     </div>
   </div>
 </div>
+<script>
+  window.onload = () => {
+    let csrftoken = (function getCookie(name) {
+      var cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+          var cookies = document.cookie.split(';');
+          for (var i = 0; i < cookies.length; i++) {
+              var cookie = cookies[i].trim();
+              // Does this cookie string begin with the name we want?
+              if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                  cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                  break;
+              }
+          }
+      }
+      return cookieValue;
+    })("csrftoken");
+
+    removeProvider = function(button, provider) {
+      let request = new XMLHttpRequest();
+      let form = new FormData();
+
+      let success = document.getElementById("delete-success");
+      let fail = document.getElementById("delete-fail");
+
+      form.append("provider", provider);
+
+      request.onreadystatechange = () => {
+        if (request.readyState === 4 && request.status === 200) {
+          let response = JSON.parse(request.responseText);
+
+          if (response.status === "ok") {
+            let row = button.parentNode.parentNode;
+            row.parentNode.removeChild(row);
+            success.style.display = "";
+            setTimeout(() => {
+              success.style.display = "none";
+            }, 3000)
+          } else {
+            fail.innerHTML = response.error;
+            fail.style.display = "";
+            setTimeout(() => {
+              fail.style.display = "none";
+            }, 3000)
+          }
+        }
+      }
+
+      request.open(
+        "POST",
+        "/api/provider/delete"
+      )
+      request.setRequestHeader("X-CSRFToken", csrftoken);
+      request.send(form);
+    }
+
+    let providerSelector = document.getElementById("chosen-provider");
+    let scopeGroup = document.getElementById("scope-group");
+    let scopeBoxes = document.getElementById("chosen-scopes");
+    let addButton = document.getElementById("add-button");
+    let scopesToAdd = [];
+
+    const greenButton = "btn btn-round btn-success tooltip-test";
+    const purpleButton = "btn btn-round btn-primary tooltip-test";
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+    function selectorChange() {
+      scopeGroup.style.display = "none";
+      scopeBoxes.innerHTML = "";
+      addButton.disabled = true;
+      let provider = providerSelector.value;
+      scopesToAdd = [];
+
+      if (provider) {
+
+        let request = new XMLHttpRequest();
+        let form = new FormData();
+
+        form.append("provider", provider);
+        
+        request.onreadystatechange = () => {
+
+          if (request.readyState === 4 && request.status === 200) {
+            let response = JSON.parse(request.responseText);
+
+            response.forEach((scope, index) => {
+              let formButton = scopeBoxes.appendChild(document.createElement("button"));
+              formButton.innerHTML = "<i class=\"material-icons\">add</i>" + scope.simple_name;
+              formButton.className = purpleButton;
+              formButton.title = scope.description;
+              formButton.onclick = () => {
+                if (formButton.className === greenButton) {
+                  scopesToAdd = scopesToAdd.filter(scope => scope != scope.value);
+                  formButton.className = purpleButton;
+                  formButton.innerHTML = "<i class=\"material-icons\">add</i>" + scope.simple_name;
+                } else {
+                  scopesToAdd.push(scope.value);
+                  formButton.innerHTML = "<i class=\"material-icons\">check</i>" + scope.simple_name;
+                  formButton.className = greenButton;
+                }
+
+                return false;
+              };
+            })
+
+            scopeGroup.style.display = "";
+            addButton.disabled = false;
+          }
+        }
+
+        request.open(
+          "POST",
+          "/api/provider/scopes"
+        )
+
+        request.setRequestHeader("X-CSRFToken", csrftoken);
+        request.send(form);
+      }
+    }
+    providerSelector.onchange = selectorChange;
+    selectorChange();
+
+    addButton.onclick = () => {
+      addButton.disabled = true;
+      providerSelector.disabled = true;
+      let provider = providerSelector.value;
+
+      let buttons = scopeBoxes.getElementsByClassName("button");
+      Array.prototype.forEach.call(buttons, button => button.disabled = true);
+      let w = window.open("/oauth/" + provider + "?scopes=" + scopesToAdd.join("+"));
+      setInterval(() => {
+        if (w.closed) location.reload();
+      }, 1000);
+    }
+
+    let timestamps = document.getElementsByClassName("timestamp");
+    Array.prototype.forEach.call(timestamps, timestamp => {
+      let unixTs = parseInt(timestamp.innerHTML) * 1000;
+      let datetime = new Date(unixTs);
+      
+      let half = (datetime.getHours() % 12) ==  datetime.getHours() ? "AM" : "PM";
+      let hour = datetime.getHours() % 12;
+      hour = hour ? hour : 12;
+
+      let string = hour + ":" + datetime.getMinutes() + half + " " + datetime.getDate() + " " + months[datetime.getMonth()] + " " + datetime.getFullYear();
+      timestamp.innerHTML = string;
+      timestamp.style.display = "";
+    })
+  }
+</script>
 
 {% endblock %}
