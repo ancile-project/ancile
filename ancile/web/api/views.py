@@ -1,14 +1,42 @@
 import json
 from django.shortcuts import render
 # from ancile.core.core import execute
-from django.http import HttpResponse, Http404
+from django.http import HttpResponse, Http404, JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth.decorators import login_required
 from ancile.web.dashboard.models import User, Token, PermissionGroup, DataProvider, App, PolicyTemplate, Policy
+from ancile.web.api.queries import get_app_id, get_user_bundle, get_app_module
+
 
 @require_http_methods(["POST"])
 def execute_api(request):
-    pass
+    try:
+        token = request.POST["token"]
+        users = request.POST["users"]
+        program = request.POST["program"]
+    except KeyError:
+        return JsonResponse({"status": "error",
+                             "error": "Missing one or more required paramters: (token, users, program)"})
+
+    try:
+        app_id = get_app_id(token)
+    except Exception:
+        return JsonResponse({"status": "error",
+                             "error": "Invalid token"})
+    try:
+        user_info = [get_user_bundle(user, app_id) for user in users]
+    except Exception:
+        return JsonResponse({"status": "error",
+                             "error": "Problem in retreiving user information"})
+
+    # res = execute(user_info=user_info,
+    #               program=program,
+    #               app_id=app_id,
+    #               app_module=get_app_module(app_id))
+    
+    # return JsonResponse(res)
+
+
 
 @login_required
 @require_http_methods(["POST"])
