@@ -1,5 +1,7 @@
 {% extends "base_dashboard.html" %}
 
+{% block title %}Login{% endblock %}
+{% block login_active %}active{% endblock%}
 {% block content %}
 
 {% if form.errors %}
@@ -38,7 +40,8 @@ Your username and password didn't match. Please try again.
                 <input class="form-control" type="password" name="password">
             </div>
             <div style="width:100%; text-align: center;">
-                <button type="submit" class="btn btn-primary">Submit</button>
+                <button type="submit" class="btn btn-primary">Log in</button>
+                <a href="/register" class="btn btn-primary">Register</a>
             </div>
             <input type="hidden" name="next" value="{{ next }}" >
         </form>

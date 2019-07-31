@@ -12,9 +12,8 @@ from django.views import generic
 class SignUp(generic.CreateView):
     form_class = UserRegistrationForm
     success_url = reverse_lazy('login')
-    template_name = 'signup.html'
+    template_name = 'register.html'
 
-@login_required
 def dashboard(request):
     return render(request, "dashboard.html", {})
 

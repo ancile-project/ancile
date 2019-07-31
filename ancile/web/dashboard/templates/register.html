@@ -1,28 +1,30 @@
 {% extends "base_dashboard.html" %}
 
-{% block title %}Sign Up{% endblock %}
-
+{% block title %}Register{% endblock %}
+{% block register_active %}active{% endblock%}
 {% block content %}
 
 <div class="card" style="max-width: 400px; margin: 0 auto;">
     <div class="card-header card-header-text card-header-primary" style="margin:0 auto;">
         <div class="card-text" style="text-align: center">
-            <h2 class="card-title">Sign Up</h4>
+            <h2 class="card-title">Register</h4>
         </div>
     </div>
     <div class="card-body">
+        <p style="text-align: center;">
+            Already have an account? <a href="/login">Login</a>.
+        </p>
         <form method="post">
             {% csrf_token %}
             {% for tag, field in form.fields.items %}
             <div class="form-group">
                 <label for="{{ tag }}">{{ field.label }}</label>
-                <input class="form-control" type="text" name="{{ tag }}" id="{{ tag }}">
+                <input class="form-control" type="{% if 'password' in tag %}password{% else %}text{% endif %}" name="{{ tag }}" id="{{ tag }}">
             </div>
             {% endfor %}
             <div style="width:100%; text-align: center;">
-                <button type="submit" class="btn btn-primary">Submit</button>
+                <button type="submit" class="btn btn-primary">Sign up</button>
             </div>
-            <input type="hidden" name="next" value="{{ next }}" >
         </form>
     </div>
 </div>

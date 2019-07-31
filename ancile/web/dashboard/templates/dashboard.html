@@ -5,5 +5,18 @@
 {% block dashboard_active %}active{% endblock %}
 
 {% block content %}
-
+{% if user.is_authenticated %}
+<h2>
+  Welcome back, {% if user.first_name %}{{ user.first_name }}{% else %}{{ user.username }}{% endif %}.
+</h2>
+{% else %}
+<div class="card" style="max-width: 400px;margin: 0 auto;text-align: center;">
+  <img class="card-img-top" src="/static/dashboard/img/ancile.png" alt="Ancile Logo">
+  <div class="card-body">
+    <p class="card-text"><strong>Ancile</strong> is a light, flexible framework for privacy-aware applications.</p>
+    <a href="/login" class="btn btn-primary">Login</a>
+    <a href="/register" class="btn btn-primary">Register</a>
+  </div>
+</div>
+{% endif %}
 {% endblock %}
