@@ -30,6 +30,15 @@ urlpatterns = [
     path('admin/view/app/<int:app_id>', views.admin_view_app),
     path('admin/edit/app/<int:app_id>', views.admin_edit_app),
 
+    path('admin/delete/provider/<int:provider_id>', views.admin_delete_provider),
+    path('admin/view/provider/<int:provider_id>', views.admin_view_provider),
+    path('admin/edit/provider/<int:provider_id>', views.admin_edit_provider),
+    path('admin/add/provider', views.admin_add_provider),
+
+    path('admin/delete/scope/<int:scope_id>', views.admin_delete_scope),
+    path('admin/edit/scope/<int:scope_id>', views.admin_edit_scope),
+    path('admin/add/scope/<int:provider_id>', views.admin_add_scope),
+
     path('admin/delete/group/<int:group_id>', views.admin_delete_group),
     path('admin/view/group/<int:group_id>', views.admin_view_group),
     path('admin/add/group/<int:app_id>', views.admin_add_group),

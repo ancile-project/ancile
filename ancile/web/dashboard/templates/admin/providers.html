@@ -19,14 +19,21 @@
     {% for provider in providers %}
     <tr>
       <td>
-        {{ provider.name }}
+        {{ provider.display_name }}
       </td>
       <td>
-        <a href="#"><i class="material-icons">pageview</i></a>
-        <a href="#"><i class="material-icons">edit</i></a>
-        <a href="#"><i class="material-icons">delete</i></a>
+        <a href="/dashboard/admin/view/provider/{{ provider.id }}"><i class="material-icons">pageview</i></a>
+        <a href="/dashboard/admin/edit/provider/{{ provider.id }}"><i class="material-icons">edit</i></a>
+        <a href="/dashboard/admin/delete/provider/{{ provider.id }}"><i class="material-icons">delete</i></a>
       </td>
     </tr>
     {% endfor %}
   </tbody>
+{% endblock %}
+
+{% block post_table %}
+
+<div style="text-align: center;">
+<a href="/dashboard/admin/add/provider" class="btn btn-primary">Add Provider</a>
+</div>
 {% endblock %}

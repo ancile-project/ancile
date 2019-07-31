@@ -2,7 +2,7 @@ from django import forms
 from ancile.web.dashboard.models import *
 
 class AdminAddPolicyForm(forms.Form):
-    text = forms.CharField(label="", widget=forms.Textarea)
+    text = forms.CharField(label="Policy", widget=forms.Textarea)
     provider = forms.ChoiceField(label="Provider")
     active = forms.BooleanField(label="Active?", required=False)
 
@@ -12,7 +12,7 @@ class AdminAddPolicyForm(forms.Form):
         self.fields['app'] = forms.ChoiceField(label="App", choices=app_choices)
 
 class AdminEditPolicyForm(forms.Form):
-    text = forms.CharField(label="", widget=forms.Textarea)
+    text = forms.CharField(label="Policy", widget=forms.Textarea)
     active = forms.BooleanField(label="Active?", required=False)
 
 class AdminEditUserForm(forms.Form):
@@ -71,7 +71,7 @@ class AdminEditFunctionForm(forms.Form):
         self.fields['app_id'] = forms.ChoiceField(label="App", choices=choices)
 
 class AdminAddPolicyTemplateForm(forms.Form):
-    text = forms.CharField(label="", widget=forms.Textarea)
+    text = forms.CharField(label="Policy", widget=forms.Textarea)
 
     def __init__(self, *args, **kwargs):
         super(AdminAddPolicyTemplateForm, self).__init__(*args, **kwargs)
@@ -79,9 +79,29 @@ class AdminAddPolicyTemplateForm(forms.Form):
         self.fields['provider'] = forms.ChoiceField(label="Provider", choices=provider_choices)
 
 class AdminEditPolicyTemplateForm(forms.Form):
-    text = forms.CharField(label="", widget=forms.Textarea)
+    text = forms.CharField(label="Policy", widget=forms.Textarea)
 
     def __init__(self, *args, **kwargs):
         super(AdminEditPolicyTemplateForm, self).__init__(*args, **kwargs)
+        provider_choices = [(provider.path_name, provider.display_name) for provider in DataProvider.objects.all()]
+        self.fields['provider'] = forms.ChoiceField(label="Provider", choices=provider_choices)
+
+class AdminAddProviderForm(forms.Form):
+    path_name = forms.CharField(label="Path Name")
+    display_name = forms.CharField(label="Display Name")
+    token_url = forms.CharField(label="Access Token URL")
+    auth_url = forms.CharField(label="Authorize URL")
+    client_id = forms.CharField(label="Client ID")
+    client_secret = forms.CharField(label="Client Secret")
+    json = forms.CharField(label="Extra Paramaters", widget=forms.Textarea)
+    
+class AdminAddScopeForm(forms.Form):
+    simple_name = forms.CharField(label="Display Name")
+    value = forms.CharField(label="Value")
+    description = forms.CharField(label="Description")
+
+class AdminEditScopeForm(AdminAddScopeForm):
+    def __init__(self, *args, **kwargs):
+        super(AdminEditScopeForm, self).__init__(*args, **kwargs)
         provider_choices = [(provider.path_name, provider.display_name) for provider in DataProvider.objects.all()]
         self.fields['provider'] = forms.ChoiceField(label="Provider", choices=provider_choices)

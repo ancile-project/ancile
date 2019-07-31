@@ -452,3 +452,134 @@ def admin_edit_policy_template(request, policy_id):
                                                 "form_title" : "Edit Policy",
                                                 "form" : form})
 
+@login_required
+@user_is_admin
+def admin_delete_provider(request, provider_id):
+    provider = DataProvider.objects.get(pk=provider_id)
+    provider.delete()
+    return redirect("/dashboard/admin/provider")
+
+@login_required
+@user_is_admin
+def admin_view_provider(request, provider_id):
+    provider = DataProvider.objects.get(pk=provider_id)
+    scopes = Scope.objects.filter(provider_id=provider_id)
+    params = json.loads(provider.extra_params)
+    return render(request, "admin/view_provider.html", {"provider" : provider,
+                                                        "scopes" : scopes,
+                                                        "extra_params" : params})
+
+@login_required
+@user_is_admin
+def admin_add_provider(request):
+    if request.method == "POST":
+        form = AdminAddProviderForm(request.POST)
+
+        if form.is_valid():
+            provider = DataProvider(path_name=form.cleaned_data['path_name'],
+                                    display_name=form.cleaned_data['display_name'],
+                                    access_token_url=form.cleaned_data['token_url'],
+                                    auth_url=form.cleaned_data['auth_url'],
+                                    client_id=form.cleaned_data['client_id'],
+                                    client_secret=form.cleaned_data['client_secret'],
+                                    extra_params=form.cleaned_data['json'])
+            provider.save()
+            return redirect("/dashboard/admin/providers")
+    else:
+        form = AdminAddProviderForm(initial={})
+
+    return render(request, 'admin/form.html', {"redirect" : "/dashboard/admin/add/provider",
+                                                "back" : "/dashboard/admin/providers",
+                                                "title" : "Add Provider",
+                                                "form_title" : "Add Provider",
+                                                "form" : form})
+
+@login_required
+@user_is_admin
+def admin_edit_provider(request, provider_id):
+    provider = DataProvider.objects.get(pk=provider_id)
+
+    if request.method == "POST":
+        form = AdminAddProviderForm(request.POST)
+
+        if form.is_valid():
+            provider.path_name = form.cleaned_data['path_name']
+            provider.display_name = form.cleaned_data['display_name']
+            provider.access_token_url = form.cleaned_data['token_url']
+            provider.auth_url = form.cleaned_data['auth_url']
+            provider.client_id = form.cleaned_data['client_id']
+            provider.client_secret = form.cleaned_data['client_secret']
+            provider.extra_params = form.cleaned_data['json']
+            provider.save()
+            return redirect("/dashboard/admin/view/provider/" + str(provider_id))
+    else:
+        form = AdminAddProviderForm(initial={"path_name" : provider.path_name,
+                                                "display_name" : provider.display_name,
+                                                "token_url" : provider.access_token_url,
+                                                "auth_url" : provider.auth_url,
+                                                "client_id" : provider.client_id,
+                                                "client_secret" : provider.client_secret,
+                                                "json" : provider.extra_params})
+
+    return render(request, 'admin/form.html', {"redirect" : "/dashboard/admin/edit/provider/" + str(provider_id),
+                                                "back" : "/dashboard/admin/view/provider/" + str(provider_id),
+                                                "title" : "Edit Provider",
+                                                "form_title" : "Edit Provider",
+                                                "form" : form})
+
+@login_required
+@user_is_admin
+def admin_delete_scope(request, scope_id):
+    scope = Scope.objects.get(pk=scope_id)
+    provider_id = scope.provider.id
+    scope.delete()
+    return redirect("/dashboard/admin/view/provider/" + str(provider_id))
+
+@login_required
+@user_is_admin
+def admin_add_scope(request, provider_id):
+    if request.method == "POST":
+        form = AdminAddScopeForm(request.POST)
+
+        if form.is_valid():
+            scope = Scope(simple_name=form.cleaned_data['simple_name'],
+                            value=form.cleaned_data['value'],
+                            description=form.cleaned_data['description'],
+                            provider=DataProvider.objects.get(pk=provider_id))
+            scope.save()
+            return redirect("/dashboard/admin/view/provider/" + str(provider_id))
+    else:
+        form = AdminAddScopeForm(initial={})
+
+    return render(request, 'admin/form.html', {"redirect" : "/dashboard/admin/add/scope/" + str(provider_id),
+                                                "back" : "/dashboard/admin/view/provider/" + str(provider_id),
+                                                "title" : "Add Scope",
+                                                "form_title" : "Add Scope",
+                                                "form" : form})
+
+@login_required
+@user_is_admin
+def admin_edit_scope(request, scope_id):
+    scope = Scope.objects.get(pk=scope_id)
+
+    if request.method == "POST":
+        form = AdminEditScopeForm(request.POST)
+
+        if form.is_valid():
+            scope.simple_name = form.cleaned_data['simple_name']
+            scope.value = form.cleaned_data['value']
+            scope.description = form.cleaned_data['description']
+            scope.provider = DataProvider.objects.get(path_name=form.cleaned_data['provider'])
+            scope.save()
+            return redirect("/dashboard/admin/view/provider/" + str(scope.provider.id))
+    else:
+        form = AdminEditScopeForm(initial={"simple_name" : scope.simple_name,
+                                                "value" : scope.value,
+                                                "description" : scope.description,
+                                                "provider" : scope.provider.path_name})
+
+    return render(request, 'admin/form.html', {"redirect" : "/dashboard/admin/edit/scope/" + str(scope_id),
+                                                "back" : "/dashboard/admin/view/provider/" + str(scope.provider.id),
+                                                "title" : "Edit Scope",
+                                                "form_title" : "Edit Scope",
+                                                "form" : form})
