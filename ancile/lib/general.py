@@ -223,7 +223,7 @@ def quorum(data, threshold):
 # =============================================================================
 
 @ComparisonDecorator()
-def field_comparison(data, field_path, comparison_operator, value):
+def field_comparison(data, field_path, comparison_operator, value, **kwargs):
     """
     A generic comparison operator that compares a given key in the DataPolicyPair
     to the given value with the comparison operator.
@@ -248,8 +248,8 @@ def field_comparison(data, field_path, comparison_operator, value):
     else:
         data_value = data_value[field_path]
 
-    data['output'].append(
-        f"Comparing {data_value} from {field_path} with {value} using operator {comparison_operator}")
+    # data['output'].append(
+    #     f"Comparing {data_value} from {field_path} with {value} using operator {comparison_operator}")
 
     return comparison(data_value, value)
 

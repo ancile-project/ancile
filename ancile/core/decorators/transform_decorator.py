@@ -10,8 +10,7 @@ class TransformDecorator(BaseDecorator):
         super().__init__(scopes, is_collection)
         self.scopes.append('transform')
 
-    @staticmethod
-    def process_call(command, is_collection):
+    def process_call(self, command):
         logger.debug('Calling Transform Decorator')
 
         dp_pair = TransformDecorator.decorator_preamble(command.params)

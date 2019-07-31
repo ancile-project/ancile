@@ -4,7 +4,6 @@ from ancile.utils.errors import PolicyError, AncileException
 from ancile.core.primitives.data_policy_pair import DataPolicyPair
 import ancile.utils.time as ancile_web_time
 from functools import wraps
-from ancile.core.primitives.policy import Policy, intersect_list
 import logging
 logger = logging.getLogger(__name__)
 

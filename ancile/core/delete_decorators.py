@@ -116,7 +116,7 @@ def comparison_decorator(f):
 
         if isinstance(dependent, DataPolicyPair):
             dp_pair._resolve_private_data_keys(kwargs)
-            dependent._advance_policy_error('dependent_comparison', **kwargs,
+            dependent._advance_policy_error('_dependent_comparison', **kwargs,
                                             **dp_pair.metadata)
             dp_pair._advance_policy_error(f.__name__, **kwargs,
                                           **dependent.metadata)

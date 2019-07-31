@@ -30,11 +30,10 @@ class BaseDecorator(ABC):
         if args:
             raise ValueError("Please specify keyword arguments instead of positions.")
         command = Command(function=wrapped, scopes=self.scopes, params=kwargs)
-        return self.__class__.process_call(command, self.is_collection)
+        return self.process_call(command)
 
-    @staticmethod
     @abstractmethod
-    def process_call(command: Command, is_collection: bool):
+    def process_call(self, command: Command):
         pass
 
     @staticmethod

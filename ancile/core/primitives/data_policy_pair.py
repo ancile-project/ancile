@@ -28,7 +28,7 @@ class DataPolicyPair:
         self._uuid = uuid.uuid1().hex
         self._name = name
         self._username = username
-        self._data = None
+        self._data = dict()
         self._policy = Policy(policy)
         self._token = token
         self._encryption_keys = {}

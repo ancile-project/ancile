@@ -14,8 +14,7 @@ class ExternalDecorator(BaseDecorator):
         super().__init__(scopes, is_collection)
         self.scopes.append('fetch')
 
-    @staticmethod
-    def process_call(command, is_collection=False):
+    def process_call(self, command):
 
         user_specific = command.params.pop('user', False)
         data_source = inspect.getmodule(command.function).name

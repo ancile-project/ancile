@@ -1,5 +1,5 @@
+from __future__ import annotations
 from copy import deepcopy
-
 from ancile.core.primitives.policy_helpers.command import Command
 from ancile.core.primitives.policy_helpers.policy_parser import PolicyParser
 from ancile.core.primitives.policy_helpers.expressions import *
@@ -58,28 +58,14 @@ class Policy(object):
         else:
             return False
 
-def concat(p1: Policy, p2: Policy) -> Policy:
-    return Policy(['concat', p1._policy_expr, p2._policy_expr])
+    def concat(self, p: Policy) -> Policy:
+        policy_expr = ConcatExpression(self._policy_expr, p._policy_expr)
+        return Policy(policy_expr)
 
-def intersect(p1: Policy, p2: Policy) -> Policy:
-    return Policy(['intersect', p1._policy_expr, p2._policy_expr])
+    def intersect(self, p: Policy) -> Policy:
+        policy_expr = IntersectExpression(self._policy_expr, p._policy_expr)
+        return Policy(policy_expr)
 
-def intersect_list(policies, empty_policy=0) -> Policy:
-    """Given a list of policy objects, return the intersection of all policies"""
-    policy_box = iter(policies)
-
-    first = next(policy_box, None)
-    if first == None:
-        return Policy(empty_policy)
-
-    second = next(policy_box, None)
-    if second is None:
-        return Policy(first)
-
-    acc_policy = ['intersect', first._policy, second._policy]
-    for policy in policy_box:
-        acc_policy = ['intersect', acc_policy, policy._policy]
-    return Policy(acc_policy)
-
-def union(p1: Policy, p2: Policy) -> Policy:
-    return Policy(['union', p1._policy_expr, p2._policy_expr])
+    def union(self, p: Policy) -> Policy:
+        policy_expr = UnionExpression(self._policy_expr, p._policy_expr)
+        return Policy(policy_expr)

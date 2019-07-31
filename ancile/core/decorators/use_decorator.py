@@ -12,8 +12,7 @@ class UseDecorator(BaseDecorator):
         super().__init__(scopes, is_collection)
         self.scopes.append('return')
 
-    @staticmethod
-    def process_call(command, is_collection):
+    def process_call(self, command):
         logger.debug('Calling Use Decorator')
 
         dp_pair = UseDecorator.decorator_preamble(command.params)
