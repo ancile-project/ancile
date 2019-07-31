@@ -32,9 +32,9 @@ class User(AbstractUser):
 
 
 class AppManager(models.Manager):
-    def retrieve_app(self, coded_salt):
+    def retrieve_app_id(self, coded_salt):
         token_salt = decode(coded_salt, SECRET_KEY)["salt"]
-        return self.get(token_salt=token_salt)
+        return self.filter(token_salt=token_salt).values('id')[0]['id']
 
 
 class App(models.Model):
@@ -168,8 +168,8 @@ class PolicyTemplate(models.Model):
 
 
 class FunctionManager(models.Manager):
-    def get_app_module(self, app):
-        return "\n\n".join((fn.body for fn in self.filter(app=app)))
+    def get_app_module(self, app_id):
+        return "\n\n".join((fn.body for fn in self.filter(app_id=app_id)))
 
 
 class Function(models.Model):
