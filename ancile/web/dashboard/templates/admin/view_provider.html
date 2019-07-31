@@ -21,10 +21,10 @@
         {{ provider.display_name }}
       </td>
       <td>
-        <a href="/dashboard/admin/edit/provider/{{ provider.id }}"><i class="material-icons">edit</i></a>
+        <a href="/admin/edit/provider/{{ provider.id }}"><i class="material-icons">edit</i></a>
         <a href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons">delete</i></a>
          <div class="dropdown-menu" aria-labelledby="deleteUserDropdownButton">
-           <a class="dropdown-item" href="/dashboard/admin/delete/provider/{{ provider.id }}">Delete</a>
+           <a class="dropdown-item" href="/admin/delete/provider/{{ provider.id }}">Delete</a>
          </div>
       </td>
     </tr>
@@ -80,8 +80,8 @@
 </div>
 
 <div style="text-align: center;">
-<a href="/dashboard/admin/add/scope/{{ provider.id }}" class="btn btn-primary">Add Scope</a>
-<a href="/dashboard/admin/providers" class="btn btn-default">Back</a>
+<a href="/admin/add/scope/{{ provider.id }}" class="btn btn-primary">Add Scope</a>
+<a href="/admin/providers" class="btn btn-default">Back</a>
 </div>
 
   <div class="row">
@@ -121,10 +121,10 @@
                     {{ scope.description }}
                   </td>
                   <td>
-                    <a href="/dashboard/admin/edit/scope/{{ scope.id }}"><i class="material-icons">edit</i></a>
+                    <a href="/admin/edit/scope/{{ scope.id }}"><i class="material-icons">edit</i></a>
                     <a href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons">delete</i></a>
                      <div class="dropdown-menu" aria-labelledby="deleteTokenDropdownButton">
-                       <a class="dropdown-item" href="/dashboard/admin/delete/scope/{{ scope.id }}">Delete</a>
+                       <a class="dropdown-item" href="/admin/delete/scope/{{ scope.id }}">Delete</a>
                      </div>
                   </td>
                 </tr>

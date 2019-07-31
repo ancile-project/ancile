@@ -35,7 +35,7 @@
       <td>
         {% if usr.is_developer %}
         {% for app in usr.apps %}
-        <a href="/dashboard/admin/view/app/{{ app.id }}">{{ app.name }}</a>
+        <a href="/admin/view/app/{{ app.id }}">{{ app.name }}</a>
         {% endfor %}
         {% else %}
         <i class="material-icons">close</i>
@@ -49,10 +49,10 @@
         {% endif %}
       </td>
       <td>
-        <a href="/dashboard/admin/edit/user/{{ usr.id }}"><i class="material-icons">edit</i></a>
+        <a href="/admin/edit/user/{{ usr.id }}"><i class="material-icons">edit</i></a>
         <a href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons">delete</i></a>
          <div class="dropdown-menu" aria-labelledby="deleteUserDropdownButton">
-           <a class="dropdown-item" href="/dashboard/admin/delete/user/{{ usr.id }}">Delete</a>
+           <a class="dropdown-item" href="/admin/delete/user/{{ usr.id }}">Delete</a>
          </div>
       </td>
     </tr>
@@ -64,8 +64,8 @@
 {% block post_table %}
 
 <div style="text-align: center;">
-<a href="/dashboard/admin/add/policy/{{ usr.id }}" class="btn btn-primary{% if tokens.all %}"{% else %} disabled"{% endif %}>Add Policy</a>
-<a href="/dashboard/admin/users" class="btn btn-default">Back</a>
+<a href="/admin/add/policy/{{ usr.id }}" class="btn btn-primary{% if tokens.all %}"{% else %} disabled"{% endif %}>Add Policy</a>
+<a href="/admin/users" class="btn btn-default">Back</a>
 </div>
 
   <div class="row">
@@ -99,10 +99,10 @@
                     {{ token.expires_at }}
                   </td>
                   <td>
-                    <a href="/dashboard/admin/view/token/{{ token.id }}"><i class="material-icons">pageview</i></a>
+                    <a href="/admin/view/token/{{ token.id }}"><i class="material-icons">pageview</i></a>
                     <a href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons">delete</i></a>
                      <div class="dropdown-menu" aria-labelledby="deleteTokenDropdownButton">
-                       <a class="dropdown-item" href="/dashboard/admin/delete/token/{{ token.id }}">Delete</a>
+                       <a class="dropdown-item" href="/admin/delete/token/{{ token.id }}">Delete</a>
                      </div>
                   </td>
                 </tr>
@@ -156,11 +156,11 @@
                     {% endif %}
                   </td>
                   <td>
-                    <a href="/dashboard/admin/view/policy/{{ policy.id }}"><i class="material-icons">pageview</i></a>
-                    <a href="/dashboard/admin/edit/policy/{{ policy.id }}"><i class="material-icons">edit</i></a>
+                    <a href="/admin/view/policy/{{ policy.id }}"><i class="material-icons">pageview</i></a>
+                    <a href="/admin/edit/policy/{{ policy.id }}"><i class="material-icons">edit</i></a>
                     <a href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons">delete</i></a>
                      <div class="dropdown-menu" aria-labelledby="deletePolicyDropdownButton">
-                       <a class="dropdown-item" href="/dashboard/admin/delete/policy/{{ policy.id }}">Delete</a>
+                       <a class="dropdown-item" href="/admin/delete/policy/{{ policy.id }}">Delete</a>
                      </div>
                   </td>
                 </tr>

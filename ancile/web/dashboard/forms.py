@@ -40,7 +40,7 @@ class AdminAddGroupForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super(AdminAddGroupForm, self).__init__(*args, **kwargs)
-        choices = [(scope.value, scope.value) for scope in Scope.objects.all()]
+        choices = [(scope.value, scope.simple_name) for scope in Scope.objects.all()]
         self.fields['scopes'] = forms.MultipleChoiceField(label="Scopes", choices=choices)
 
 class AdminEditGroupForm(forms.Form):
@@ -50,7 +50,7 @@ class AdminEditGroupForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super(AdminEditGroupForm, self).__init__(*args, **kwargs)
-        choices = [(scope.value, scope.value) for scope in Scope.objects.all()]
+        choices = [(scope.value, scope.simple_name) for scope in Scope.objects.all()]
         self.fields['scopes'] = forms.MultipleChoiceField(label="Scopes", choices=choices)
 
 class AdminAddFunctionForm(forms.Form):
@@ -94,7 +94,7 @@ class AdminAddProviderForm(forms.Form):
     client_id = forms.CharField(label="Client ID")
     client_secret = forms.CharField(label="Client Secret")
     json = forms.CharField(label="Extra Paramaters", widget=forms.Textarea)
-    
+
 class AdminAddScopeForm(forms.Form):
     simple_name = forms.CharField(label="Display Name")
     value = forms.CharField(label="Value")
@@ -105,3 +105,31 @@ class AdminEditScopeForm(AdminAddScopeForm):
         super(AdminEditScopeForm, self).__init__(*args, **kwargs)
         provider_choices = [(provider.path_name, provider.display_name) for provider in DataProvider.objects.all()]
         self.fields['provider'] = forms.ChoiceField(label="Provider", choices=provider_choices)
+
+class DevEditAppForm(forms.Form):
+    name = forms.CharField(label="Name")
+    description = forms.CharField(label="Description")
+
+    def __init__(self, *args, **kwargs):
+        super(DevEditAppForm, self).__init__(*args, **kwargs)
+        choices = [(user.username, user.username) for user in User.objects.all() if user.is_developer]
+        self.fields['developers'] = forms.MultipleChoiceField(label="Developers", choices=choices)
+
+
+class DevEditGroupForm(forms.Form):
+    name = forms.CharField(label="Name")
+    description = forms.CharField(label="Description")
+
+    def __init__(self, *args, **kwargs):
+        super(DevEditGroupForm, self).__init__(*args, **kwargs)
+        choices = [(scope.value, scope.simple_name) for scope in Scope.objects.all()]
+        self.fields['scopes'] = forms.MultipleChoiceField(label="Scopes", choices=choices)
+
+class DevEditPolicyTemplateForm(forms.Form):
+    text = forms.CharField(label="Policy", widget=forms.Textarea)
+
+    def __init__(self, *args, **kwargs):
+        super(DevEditPolicyTemplateForm, self).__init__(*args, **kwargs)
+        provider_choices = [(provider.path_name, provider.display_name) for provider in DataProvider.objects.all()]
+        self.fields['provider'] = forms.ChoiceField(label="Provider", choices=provider_choices)
+

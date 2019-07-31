@@ -55,8 +55,19 @@ urlpatterns = [
     path('admin/edit/policy/template/<int:policy_id>', views.admin_edit_policy_template),
 
     path('dev', views.dev_console),
+
     path('dev/delete/app/<int:app_id>', views.dev_delete_app),
     path('dev/view/app/<int:app_id>', views.dev_view_app),
-    path('dev/add/app/<int:app_id>', views.dev_add_app),
+    path('dev/add/app', views.dev_add_app),
     path('dev/edit/app/<int:app_id>', views.dev_edit_app),
+
+    path('dev/delete/group/<int:group_id>', views.dev_delete_group),
+    path('dev/view/group/<int:group_id>', views.dev_view_group),
+    path('dev/add/group/<int:app_id>', views.dev_add_group),
+    path('dev/edit/group/<int:group_id>', views.dev_edit_group),
+
+    path('dev/delete/policy/template/<int:policy_id>', views.dev_delete_policy),
+    path('dev/view/policy/template/<int:policy_id>', views.dev_view_policy),
+    path('dev/add/policy/template/<int:group_id>', views.dev_add_policy),
+    path('dev/edit/policy/template/<int:policy_id>', views.dev_edit_policy),
 ]
