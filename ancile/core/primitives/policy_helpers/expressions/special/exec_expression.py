@@ -35,7 +35,9 @@ class ExecExpression(BaseExpression):
         we accept any value for the parameter.
 
         """
-        if self.policy_command == command.function_name or \
+        if self.policy_command == 'ANYF':
+            return ConstantExpression(Constants.ONE)
+        elif self.policy_command == command.function_name or \
                 self.policy_command in command.scopes:
 
             for key, value in command.params.items():

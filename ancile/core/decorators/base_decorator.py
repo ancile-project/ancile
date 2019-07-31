@@ -15,7 +15,7 @@ class BaseDecorator(ABC):
         if args:
             raise ValueError("Please specify keyword arguments instead of positions.")
         command = Command(function=wrapped, scopes=self.scopes, params=kwargs)
-        return BaseDecorator.process_call(command, self.is_collection)
+        return self.__class__.process_call(command, self.is_collection)
 
     @staticmethod
     @abstractmethod
@@ -30,8 +30,8 @@ class BaseDecorator(ABC):
             raise ValueError("You need to provide a Data object. Use get_data to get it.")
 
     @staticmethod
-    def decorator_preamble(args, kwargs):
+    def decorator_preamble(params):
 
-        dp_pair = kwargs.get('data', False)
+        dp_pair = params.get('data', False)
         BaseDecorator.check_data(dp_pair)
         return dp_pair

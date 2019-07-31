@@ -20,7 +20,7 @@ class StarExpression(UnaryExpression):
         """
         self.expression = self.expression.simplify()
 
-        return ConcatExpression(self.expression.d_step(command), self)
+        return ConcatExpression(self.expression.d_step(command), self).simplify()
 
     def e_step(self):
         """
@@ -30,4 +30,4 @@ class StarExpression(UnaryExpression):
         return Constants.ONE
 
     def simplify(self):
-        pass
+        return self

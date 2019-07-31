@@ -28,4 +28,4 @@ class Command:
         """
         Call the function
         """
-        return self.function(kwargs=self.params)
+        return self.function(**self.params)

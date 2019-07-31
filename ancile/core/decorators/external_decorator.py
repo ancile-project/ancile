@@ -2,15 +2,15 @@ import wrapt
 import logging
 import copy
 import inspect
-
+from ancile.core.decorators import *
 from ancile.core.user_secrets import UserSecrets
 
 logger = logging.getLogger(__name__)
-from ancile.core.decorators import *
 
 
 class ExternalDecorator(BaseDecorator):
 
+    @staticmethod
     def process_call(command, is_collection=False):
 
         user_specific = command.params.pop('user', False)

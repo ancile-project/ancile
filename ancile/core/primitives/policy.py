@@ -13,6 +13,8 @@ class Policy(object):
             self._policy_expr = PolicyParser.parse_it(initial_policy)
         elif isinstance(initial_policy, BaseExpression):
             self._policy_expr = deepcopy(initial_policy)
+        elif isinstance(initial_policy, Policy):
+            self._policy_expr = deepcopy(initial_policy._policy_expr)
         else:
             raise ValueError(f'You need to supply either a string or object of '
                              f'class BaseExpression. '

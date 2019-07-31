@@ -5,13 +5,12 @@ from ancile.core.primitives.policy_helpers.expressions import *
 
 
 class BaseExpression(ABC):
-
-    operation = None
-
     """
     An abstract class for all Policy expressions.
     It only has d_step, e_step, and simplify.
     """
+
+    operation = None
 
     @abstractmethod
     def d_step(self, command: Command) -> BaseExpression:

@@ -1,3 +1,5 @@
+from copy import copy
+
 from ancile.core.primitives.policy_helpers.command import Command
 from ancile.utils.errors import AncileException, PolicyError
 from ancile.core.primitives.policy import Policy
@@ -97,7 +99,7 @@ class DataPolicyPair:
         return self._policy.advance_policy(command, update)
 
     def _advance_policy_error(self, command):
-        previous_policy = self._policy
+        previous_policy = copy(self._policy)
         self._advance_policy(command, update=True)
         if not self._policy:
             raise PolicyError(message=f'Cannot advance policy: {previous_policy} with policy_command: {command}')
@@ -138,7 +140,7 @@ class DataPolicyPair:
         return command.call()
 
     def _call_collection(self, func, *args, **kwargs):
-        return self._call(func, *args, scopes='collection', **kwargs)
+        raise NotImplemented
 
     def _resolve_private_data_keys(self, kwargs):
         for key, value in kwargs.items():
