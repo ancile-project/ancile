@@ -1,9 +1,9 @@
-from ancile.core.decorators import transform_decorator, aggregate_decorator, \
-    external_request_decorator, reduction_decorator
+from ancile.core.decorators import *
+
 
 name = 'test'
 
-@external_request_decorator()
+@ExternalDecorator()
 def get_split_train_mnist( data, part, split, token=None, user=None, name=None):
     import torchvision
     from torchvision.transforms import transforms
@@ -27,7 +27,7 @@ def get_split_train_mnist( data, part, split, token=None, user=None, name=None):
     return True
 
 
-@aggregate_decorator()
+@AggregateDecorator()
 def aggregate_train_dataset(data):
     import torch
 
@@ -43,7 +43,7 @@ def aggregate_train_dataset(data):
     data['output'].append(f'Aggregated datasets.')
     return True
 
-@transform_decorator
+@TransformDecorator()
 def get_loader(data, dataset_name, batch_size):
     import torch
 
@@ -53,7 +53,7 @@ def get_loader(data, dataset_name, batch_size):
     data['output'].append(f'added {dataset_name} dataset.')
     return True
 
-@external_request_decorator()
+@ExternalDecorator()
 def get_test_mnist(data, token=None):
     import torchvision
     from torchvision.transforms import transforms
@@ -67,7 +67,7 @@ def get_test_mnist(data, token=None):
     return True
 
 
-@transform_decorator
+@TransformDecorator()
 def create_model(data):
     import torch.nn as nn
     import torch.nn.functional as F
@@ -99,7 +99,7 @@ def create_model(data):
     return True
 
 
-@transform_decorator
+@TransformDecorator()
 def sgd_optimizer(data, lr, momentum):
     import torch.optim as optim
     model = data['model']
@@ -109,7 +109,8 @@ def sgd_optimizer(data, lr, momentum):
 
     return True
 
-@transform_decorator
+
+@TransformDecorator()
 def nll_loss(data):
     import torch
     import torch.nn.functional as F
@@ -120,7 +121,8 @@ def nll_loss(data):
 
     return True
 
-@transform_decorator
+
+@TransformDecorator()
 def train_one_epoch(data, epoch, log_interval=10):
     model = data['model']
     train_loader = data['train_loader']
@@ -142,7 +144,7 @@ def train_one_epoch(data, epoch, log_interval=10):
 
             data['output'].append(out)
 
-@transform_decorator
+@TransformDecorator()
 def test(data, epoch):
     import torch
 
@@ -171,7 +173,7 @@ def test(data, epoch):
     return True
 
 
-@transform_decorator
+@TransformDecorator()
 def get_prediction(data, image_id=1):
     import torch
 
@@ -187,12 +189,12 @@ def get_prediction(data, image_id=1):
     data['prediction'] = {'confidence': confidence, 'label': label}
 
 
-@transform_decorator
+@TransformDecorator()
 def pickle_model(data):
     data['model'] = data['model'].state_dict()
 
 
-@transform_decorator
+@TransformDecorator()
 def prepare_for_json(data):
     js = dict()
     for name, value in  data['model'].state_dict().items():
@@ -233,7 +235,7 @@ def make_dataset(collection, batch_size=20):
     return data
 
 
-@reduction_decorator
+@ReductionDecorator()
 def train(collection, epochs, batch_size, bptt, lr, log_interval, clip):
     from ancile.lib.dl.helpers import train_helper, test, batchify
     from ancile.lib.dl.model import RNNModel
@@ -258,7 +260,7 @@ def train(collection, epochs, batch_size, bptt, lr, log_interval, clip):
     return data
 
 
-@transform_decorator
+@ReductionDecorator()
 def train_dp(data, epochs, batch_size, bptt, lr, log_interval, sigma, S):
     from ancile.lib.dl.helpers import train_dp_helper, test, batchify
     from ancile.lib.dl.model import RNNModel
@@ -290,7 +292,7 @@ def train_dp(data, epochs, batch_size, bptt, lr, log_interval, sigma, S):
     return data
 
 
-@aggregate_decorator(reduce=True)
+@AggregateDecorator(reduce=True)
 def serve_model(data, bptt, batch_size):
     from ancile.lib.dl.helpers import serve_helper
     dataset, model = data['aggregated']

@@ -1,3 +1,9 @@
+import traceback
+import logging
+import inspect
+from ancile.utils.errors import AncileException
+logger = logging.getLogger(__name__)
+
 
 class Command:
     """
@@ -20,6 +26,9 @@ class Command:
         self.scopes = scopes if scopes is not None else list()
         self.params = params if params is not None else dict()
 
+        data_source = inspect.getmodule(function).name
+        self.scopes.append(data_source)
+
     def __repr__(self):
 
         return f'<? COMMAND: function: {self.function_name}, scopes: {self.scopes}, params: {self.params}>'
@@ -28,4 +37,10 @@ class Command:
         """
         Call the function
         """
-        return self.function(**self.params)
+        try:
+            result = self.function(**self.params)
+            return result
+        except:
+            error = f"Error executing function: {self.function_name}. Log: {traceback.format_exc()}"
+            logger.error(error)
+            raise AncileException(error)

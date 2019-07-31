@@ -10,6 +10,10 @@ logger = logging.getLogger(__name__)
 
 class ExternalDecorator(BaseDecorator):
 
+    def __init__(self, scopes=None, is_collection=False):
+        super().__init__(scopes, is_collection)
+        self.scopes.append('fetch')
+
     @staticmethod
     def process_call(command, is_collection=False):
 

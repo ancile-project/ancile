@@ -6,6 +6,10 @@ from ancile.core.decorators import *
 
 class TransformDecorator(BaseDecorator):
 
+    def __init__(self, scopes=None, is_collection=False):
+        super().__init__(scopes, is_collection)
+        self.scopes.append('transform')
+
     @staticmethod
     def process_call(command, is_collection):
         logger.debug('Calling Transform Decorator')

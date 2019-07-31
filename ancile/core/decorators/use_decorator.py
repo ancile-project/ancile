@@ -1,13 +1,26 @@
 import wrapt
 import logging
+import copy
 logger = logging.getLogger(__name__)
 from ancile.core.decorators import *
+import ancile.core.advanced.storage as storage
 
 
 class UseDecorator(BaseDecorator):
 
-    @wrapt.decorator
+    def __init__(self, scopes=None, is_collection=False):
+        super().__init__(scopes, is_collection)
+        self.scopes.append('ret')
+
+    @staticmethod
     def process_call(command, is_collection):
         logger.debug('Calling Use Decorator')
 
-        return True
+        dp_pair = UseDecorator.decorator_preamble(command.params)
+        new_dp_pair = copy.copy(dp_pair)
+        ret = new_dp_pair._use_method(command)
+
+        # @TODO: fix later
+        # if new_dp_pair._was_loaded:
+        #     storage.del_key(dp_pair._load_key)
+        return ret

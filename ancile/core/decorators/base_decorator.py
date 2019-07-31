@@ -6,9 +6,9 @@ from ancile.core.primitives.policy_helpers.command import Command
 
 class BaseDecorator(ABC):
 
-    def __init__(self, scopes, is_collection=False):
+    def __init__(self, scopes=None, is_collection=False):
         self.is_collection = is_collection
-        self.scopes = scopes
+        self.scopes = scopes if scopes else list()
 
     @wrapt.decorator
     def __call__(self, wrapped, _, args, kwargs):

@@ -1,9 +1,9 @@
-from ancile.core.decorators import external_request_decorator
+from ancile.core.decorators import *
 from ancile.lib.general import get_token
 
 name="azure"
 
-@external_request_decorator()
+@ExternalDecorator()
 def get_available_rooms(floor, user):
     import requests
 
@@ -29,7 +29,7 @@ def get_available_rooms(floor, user):
 
     return data
 
-@external_request_decorator()
+@ExternalDecorator()
 def book_room(room, user):
     import requests
     import json
