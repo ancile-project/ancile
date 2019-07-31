@@ -1,0 +1,26 @@
+{% extends "base_dashboard.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+
+
+  <div class="col-md-6" style="margin: auto;">
+    <div class="card">
+        <div class="card-header card-header-danger">
+            <h4 class="card-title">{% block form_title %}{{ form_title }}{% endblock%}</h4>
+            <p class="category"></p>
+        </div>
+        <div class="card-body">
+            <form action={{ redirect }} method="post" style="text-align: center; width: 50%; margin: auto;">
+                {% csrf_token %}
+                {{ form|crispy }}
+                <br>
+                <a class="btn btn-default" href={{ back }}>Back</a>
+                <input class="btn btn-primary" type="submit" value="Submit">
+            </form>
+        </div>
+    </div>
+  </div>
+
+
+{% endblock %}

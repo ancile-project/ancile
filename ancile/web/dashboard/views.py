@@ -137,7 +137,11 @@ def admin_add_policy(request, user_id):
         form = AdminAddPolicyForm(initial={})
         form.fields['provider'].choices=set([(token.provider.path_name, token.provider.display_name) for token in Token.objects.filter(user=user)])
 
-    return render(request, 'admin/add_policy.html', {"user_id" : user_id, "form" : form})
+    return render(request, 'admin/form.html', {"redirect" : "/dashboard/admin/add/policy/" + str(user_id),
+                                                "back" : "/dashboard/admin/view/user/" + str(user_id),
+                                                "title" : "Add Policy",
+                                                "form_title" : "Add Policy",
+                                                "form" : form})
 
 @login_required
 @user_is_admin
@@ -156,7 +160,11 @@ def admin_edit_policy(request, policy_id):
     else:
         form = AdminEditPolicyForm(initial={"text" : policy.text, "active" : policy.active})
 
-    return render(request, 'admin/edit_policy.html', {"policy_id" : policy_id, "form" : form})
+    return render(request, 'admin/form.html', {"redirect" : "/dashboard/admin/edit/policy/" + str(policy_id),
+                                                "back" : "/dashboard/admin/view/user/" + str(user_id),
+                                                "title" : "Edit Policy",
+                                                "form_title" : "Edit Policy",
+                                                "form" : form})
 
 @login_required
 @user_is_admin
@@ -186,7 +194,11 @@ def admin_edit_user(request, user_id):
                                             "is_admin" : user.is_superuser,
                                             "is_developer" : user.is_developer})
 
-    return render(request, 'admin/edit_user.html', {"user_id" : user_id, "form" : form})
+    return render(request, 'admin/form.html', {"redirect" : "/dashboard/admin/edit/user/" + str(user_id),
+                                                "back" : "/dashboard/admin/view/user/" + str(user_id),
+                                                "title" : "Edit User",
+                                                "form_title" : "Edit User",
+                                                "user_id" : user_id, "form" : form})
 
 @login_required
 @user_is_admin
@@ -230,7 +242,12 @@ def admin_edit_app(request, app_id):
                                             "description" : app.description,
                                             "app_id" : app_id})
 
-    return render(request, 'admin/edit_app.html', {"app_id" : app_id, "form" : form})
+    return render(request, 'admin/form.html', {"redirect" : "/dashboard/admin/edit/app/" + str(app_id),
+                                                "back" : "/dashboard/admin/view/app/" + str(app_id),
+                                                "title" : "Edit App",
+                                                "form_title" : "Edit App",
+                                                "app_id" : app_id,
+                                                "form" : form})
 
 @login_required
 @user_is_admin
@@ -270,7 +287,11 @@ def admin_add_group(request, app_id):
     else:
         form = AdminEditGroupForm()
 
-    return render(request, 'admin/add_group.html', {"app_id" : app_id, "form" : form})
+    return render(request, 'admin/form.html', {"redirect" : "/dashboard/admin/add/group/" + str(app_id),
+                                                "back" : "/dashboard/admin/view/app/" + str(app_id),
+                                                "title" : "Add Group",
+                                                "form_title" : "Add Group",
+                                                "form" : form})
 
 @login_required
 @user_is_admin
@@ -280,13 +301,15 @@ def admin_edit_group(request, group_id):
 
     if request.method == "POST":
         form = AdminEditGroupForm(request.POST)
+        print(group)
 
         if form.is_valid():
             group.name = form.cleaned_data['name']
             group.description = form.cleaned_data['description']
             group.scopes.clear()
             group.scopes.set([Scope.objects.get(value=scp) for scp in form.cleaned_data['scopes']])
-            approved = True if form.cleaned_data['approved'] else False
+            group.approved = True if form.cleaned_data['approved'] else False
+            print(group.approved)
             group.save()
             return redirect("/dashboard/admin/view/group/" + str(group_id))
     else:
@@ -295,7 +318,11 @@ def admin_edit_group(request, group_id):
                                             "approved" : group.approved,
                                             "scopes" : [scp.value for scp in group.scopes.all()]})
 
-    return render(request, 'admin/edit_group.html', {"group_id" : group_id, "form" : form})
+    return render(request, 'admin/form.html', {"redirect" : "/dashboard/admin/edit/group/" + str(group_id),
+                                                "back" : "/dashboard/admin/view/group/" + str(group_id),
+                                                "title" : "Edit Group",
+                                                "form_ title" : "Edit Group",
+                                                 "form" : form})
 
 @login_required
 @user_is_admin
@@ -314,6 +341,7 @@ def admin_view_function(request, function_id):
 @login_required
 @user_is_admin
 def admin_add_function(request, app_id):
+    print(app_id)
     if request.method == "POST":
         form = AdminAddFunctionForm(request.POST)
 
@@ -329,7 +357,11 @@ def admin_add_function(request, app_id):
     else:
         form = AdminAddFunctionForm()
 
-    return render(request, 'admin/add_function.html', {"app_id" : app_id, "form" : form})
+    return render(request, 'admin/form.html', {"redirect" : "/dashboard/admin/add/function/" + str(app_id),
+                                                "back" : "/dashboard/admin/view/app/" + str(app_id),
+                                                "title" : "Add Function",
+                                                "form_title" : "Add Function",
+                                                "form" : form})
 
 @login_required
 @user_is_admin
@@ -354,7 +386,11 @@ def admin_edit_function(request, function_id):
                                                 "app_id" : function.app.id,
                                                 "body" : function.body})
 
-    return render(request, 'admin/edit_function.html', {"app_id" : function.app.id, "form" : form})
+    return render(request, 'admin/form.html', {"redirect" : "/dashboard/admin/edit/function/" + str(function_id),
+                                                "back" : "/dashboard/admin/view/app/" + str(function.app.id),
+                                                "title" : "Edit Function",
+                                                "form_title" : "Edit Function",
+                                                "form" : form})
 
 @login_required
 @user_is_admin
@@ -387,7 +423,11 @@ def admin_add_policy_template(request, group_id):
     else:
         form = AdminAddPolicyTemplateForm()
 
-    return render(request, 'admin/add_policy_template.html', {"group_id" : group_id, "form" : form})
+    return render(request, 'admin/form.html', {"redirect" : "/dashboard/admin/add/policy/template/" + str(group_id),
+                                                "back" : "/dashboard/admin/view/group/" + str(group_id),
+                                                "title" : "Add Policy",
+                                                "form_title" : "Add Policy",
+                                                "form" : form})
 
 @login_required
 @user_is_admin
@@ -406,5 +446,9 @@ def admin_edit_policy_template(request, policy_id):
     else:
         form = AdminEditPolicyTemplateForm(initial={"text" : policy.text, "provider" : policy.provider.path_name})
 
-    return render(request, 'admin/edit_policy_template.html', {"policy_id" : policy_id, "form" : form})
+    return render(request, 'admin/form.html', {"redirect" : "/dashboard/admin/edit/policy/template/" + str(policy_id),
+                                                "back" : "/dashboard/admin/view/group/" + str(group_id),
+                                                "title" : "Edit Policy",
+                                                "form_title" : "Edit Policy",
+                                                "form" : form})
 
