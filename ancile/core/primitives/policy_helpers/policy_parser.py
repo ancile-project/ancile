@@ -67,7 +67,13 @@ class PolicyParser(Parser):
 
     @_('NUMBER')
     def policy(self, p):
-        return int(p.NUMBER)
+        val = int(p.NUMBER)
+        if val == 0:
+            return ConstantExpression(Constants.ZERO)
+        elif val == 1:
+            return ConstantExpression(Constants.ONE)
+        else:
+            raise ParseError(f'Provided invalid value: {val}')
 
     @_('TEXT')
     def policy(self, p):

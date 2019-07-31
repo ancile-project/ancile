@@ -1,4 +1,3 @@
-from ancile.core.advanced.storage import _store, _load, gen_key, del_key
 from ancile.core.user_secrets import UserSecrets
 from ancile.core.primitives.data_policy_pair import DataPolicyPair
 from ancile.core.primitives.policy_helpers.private_data import PrivateData
@@ -24,18 +23,18 @@ def gen_module_namespace():
     return module_namespace
 
 
-def assemble_locals(redis, result, user_specific, app_id, app_module=None):
+def assemble_locals(storage, result, user_specific, app_id, app_module=None):
     lcls = gen_module_namespace()
 
     def user(name: str) -> UserSecrets:
         return user_specific[name]
 
     def store(obj, name):
-        key = gen_key()
-        _store(obj, f'{app_id}:{key}', redis)
+        key = storage.gen_key()
+        storage._store(obj, f'{app_id}:{key}')
         result._stored_keys[name] = key
         if isinstance(obj, DataPolicyPair) and obj._was_loaded:
-            del_key(obj._load_key, redis)
+            storage.del_key(obj._load_key)
 
     def encrypt(obj, name):
         key = gen_key()
@@ -47,7 +46,7 @@ def assemble_locals(redis, result, user_specific, app_id, app_module=None):
         return Collection()
 
     def load(key):
-        return _load(f'{app_id}:{key}', redis)
+        return storage._load(f'{app_id}:{key}')
 
     lcls['result'] = result
     lcls['store'] = store

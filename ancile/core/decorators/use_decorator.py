@@ -10,7 +10,7 @@ class UseDecorator(BaseDecorator):
 
     def __init__(self, scopes=None, is_collection=False):
         super().__init__(scopes, is_collection)
-        self.scopes.append('ret')
+        self.scopes.append('return')
 
     @staticmethod
     def process_call(command, is_collection):

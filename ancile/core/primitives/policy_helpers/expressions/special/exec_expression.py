@@ -6,7 +6,7 @@ class ExecExpression(BaseExpression):
     def __init__(self, command: str, params=None):
         super().__init__()
         self.policy_command = command
-        self.params = params
+        self.params = params if params else dict()
 
     def __repr__(self):
         if self.params:
@@ -40,7 +40,7 @@ class ExecExpression(BaseExpression):
         elif self.policy_command == command.function_name or \
                 self.policy_command in command.scopes:
 
-            for key, value in command.params.items():
+            for key, value in self.params.items():
                 if key == 'data':
                     continue
                 proposed_value = command.params.get(key, None)

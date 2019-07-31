@@ -34,7 +34,7 @@ class IntersectExpression(BinaryExpression):
 
     def e_step(self):
         """
-        E(P1 + P2, C) = E(P1) + E(P2)
+        E(P1 & P2, C) = E(P1) AND E(P2)
         :return:
         """
 
@@ -52,10 +52,8 @@ class IntersectExpression(BinaryExpression):
 
         if self.l_expr == self.r_expr:
             return self.l_expr
-        elif self.l_expr == ConstantExpression(Constants.ZERO):
-            return self.r_expr
-        elif self.r_expr == ConstantExpression(Constants.ZERO):
-            return self.l_expr
+        elif self.l_expr == ConstantExpression(Constants.ZERO) or self.r_expr == ConstantExpression(Constants.ZERO):
+            return ConstantExpression(Constants.ZERO)
         elif self.l_expr == ConstantExpression(Constants.ONE) and isinstance(self.r_expr, StarExpression):
             return self.r_expr
         elif self.r_expr == ConstantExpression(Constants.ONE) and isinstance(self.l_expr, StarExpression):

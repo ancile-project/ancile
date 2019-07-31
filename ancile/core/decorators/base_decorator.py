@@ -18,6 +18,10 @@ class BaseDecorator(ABC):
         :param is_collection: not implemented, but can be a flag that the input
         is a collection
         """
+        if callable(scopes):
+            raise ValueError(f'You probably defined the decorator without '
+                             f'parenthesis. Check function: {scopes}. '
+                             f'Try: {self.__class__.__name__}()')
         self.is_collection = is_collection
         self.scopes = scopes if scopes else list()
 
@@ -38,7 +42,8 @@ class BaseDecorator(ABC):
         from ancile.core.primitives import DataPolicyPair
 
         if not isinstance(dp_pair, DataPolicyPair):
-            raise ValueError("You need to provide a Data object. Use get_data to get it.")
+            raise ValueError(f"You need to provide a Data object. "
+                             f"Use get_data to get it. Received: {dp_pair}")
 
     @staticmethod
     def decorator_preamble(params):

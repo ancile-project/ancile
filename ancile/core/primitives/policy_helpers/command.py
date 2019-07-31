@@ -25,9 +25,9 @@ class Command:
         self.function_name = function.__name__
         self.scopes = scopes if scopes is not None else list()
         self.params = params if params is not None else dict()
-
-        data_source = inspect.getmodule(function).name
-        self.scopes.append(data_source)
+        module = inspect.getmodule(function)
+        if hasattr(module, 'name'):
+            self.scopes.append(module.name)
 
     def __repr__(self):
 
@@ -41,6 +41,6 @@ class Command:
             result = self.function(**self.params)
             return result
         except:
-            error = f"Error executing function: {self.function_name}. Log: {traceback.format_exc()}"
+            error = f"Error executing function: {self.function_name}(). Log: {traceback.format_exc()}"
             logger.error(error)
             raise AncileException(error)

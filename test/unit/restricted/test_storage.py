@@ -24,7 +24,7 @@ class StorageTest(unittest.TestCase):
         mock_get.side_effect = get
         mock_set.side_effect = m_set
 
-        local = assemble_locals(Result(), None, -1)
+        local = assemble_locals(None, Result(), None, -1)
         encrypt = local['encrypt']
         result = local['result']
         load = local['load']

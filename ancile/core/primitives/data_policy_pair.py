@@ -132,6 +132,12 @@ class DataPolicyPair:
         return command.call()
 
     def _use_method(self, command):
+        """
+        advance the policy first with return command and then check if it has
+        finished.
+
+        """
+        self._advance_policy_error(command)
         if not self._policy.check_finished():
             raise PolicyError(f'The policy has not finished: {self._policy}. E-step failed.')
         command.params['encryption_keys'] = self._encryption_keys
