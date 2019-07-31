@@ -37,7 +37,7 @@ def assemble_locals(storage, result, user_specific, app_id, app_module=None):
             storage.del_key(obj._load_key)
 
     def encrypt(obj, name):
-        key = gen_key()
+        key = storage.gen_key()
         encrypted_data = encrypt(obj, f'{app_id}:{key}')
         result._stored_keys[name] = key
         result._encrypted_data[name] = encrypted_data
