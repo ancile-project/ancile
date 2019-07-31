@@ -1,0 +1,45 @@
+version: '3'
+
+services:
+  ancile:
+    build: .
+    volumes:
+      - .:/opt/services/ancile/src
+      - static_volume:/opt/services/ancile/src/ancile/web/static
+    networks:
+      - nginx_network
+      - ancile_db_network
+    depends_on:
+      - ancile_db
+  nginx:
+    image: nginx:1.13
+    ports: 
+      - 8000:80
+    volumes:
+      - ./config/nginx/conf.d:/etc/nginx/conf.d
+      - static_volume:/opt/services/ancile/src/ancile/web/static
+    depends_on:
+      - ancile
+    networks:
+      - nginx_network
+
+  ancile_db:
+    image: postgres
+    ports:
+      - "5432"
+    env_file:
+      - config/db/postgres.env
+    networks:
+      - ancile_db_network
+    volumes:
+      - ancile_db_volume:/var/lib/postgresql/data
+
+networks:
+  nginx_network:
+    driver: bridge
+  ancile_db_network:
+    driver: bridge
+
+volumes:
+  ancile_db_volume:
+  static_volume:
