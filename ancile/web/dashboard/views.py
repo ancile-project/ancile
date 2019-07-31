@@ -5,8 +5,14 @@ from django.contrib.auth.decorators import login_required
 from ancile.web.dashboard.models import *
 from ancile.web.dashboard.forms import *
 from ancile.web.dashboard.decorators import *
+from django.urls import reverse_lazy
+from django.views import generic
 
 # Create your views here.
+class SignUp(generic.CreateView):
+    form_class = UserRegistrationForm
+    success_url = reverse_lazy('login')
+    template_name = 'signup.html'
 
 @login_required
 def dashboard(request):

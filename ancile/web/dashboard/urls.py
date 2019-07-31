@@ -3,6 +3,7 @@ import ancile.web.dashboard.views as views
 
 urlpatterns = [
     path('', views.dashboard),
+    path('register', views.SignUp.as_view(),),
     path('policies', views.policies),
     path('providers', views.providers),
     path('apps', views.apps),
