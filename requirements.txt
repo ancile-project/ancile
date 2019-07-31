@@ -5,3 +5,4 @@ requests-oauthlib
 pyjwt
 bcrypt
 pyyaml
+django-crispy-forms
