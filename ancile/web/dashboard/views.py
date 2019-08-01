@@ -491,7 +491,7 @@ def admin_add_provider(request):
                                     client_secret=form.cleaned_data['client_secret'],
                                     extra_params=form.cleaned_data['json'])
             provider.save()
-            return redirect("/admin/providers")
+            return redirect("/admin/view/provider/" + str(provider.id))
     else:
         form = AdminAddProviderForm(initial={})
 
@@ -634,8 +634,8 @@ def dev_add_app(request):
     else:
         form = DevEditAppForm(initial={"developers" : [request.user.username]})
 
-    return render(request, 'dev/form.html', {"redirect" : "/dashboard/dev/add/app",
-                                                "back" : "/dashboard/dev",
+    return render(request, 'dev/form.html', {"redirect" : "/dev/add/app",
+                                                "back" : "/dev",
                                                 "title" : "Create App",
                                                 "form_title" : "Create App",
                                                 "form" : form})
