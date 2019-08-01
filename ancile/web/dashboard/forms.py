@@ -138,17 +138,11 @@ class DevEditPolicyTemplateForm(forms.Form):
 class UserRegistrationForm(forms.ModelForm):
     password1 = forms.CharField(label='Password', widget=forms.PasswordInput)
     password2 = forms.CharField(label='Password confirmation', widget=forms.PasswordInput)
+    first_name = forms.CharField(label="First Name", widget=forms.TextInput, required=True)
+    last_name = forms.CharField(label="Last Name", widget=forms.TextInput, required=True)
     class Meta:
         model = get_user_model()
-        fields = ("username", "email", "first_name", "last_name", )
-
-    def clean_username(self):
-        username = self.cleaned_data["username"]
-        try:
-            get_user_model().objects.get(username=username)
-        except get_user_model().DoesNotExist:
-            return username
-        raise forms.ValidationError("Username already exists.")
+        fields = ("username", "email")
 
     def clean_password2(self):
         # Check that the two password entries match
@@ -157,26 +151,6 @@ class UserRegistrationForm(forms.ModelForm):
         if password1 and password2 and password1 != password2:
             raise forms.ValidationError("Passwords don't match")
         return password2
-
-    def clean_email(self):
-        email = self.cleaned_data["email"]
-        if not email:
-            raise forms.ValidationError("All fields are required.")
-        try:
-            get_user_model().objects.get(email=email)
-        except get_user_model().DoesNotExist:
-            return email
-        raise forms.ValidationError("Email already exists.")
-
-    def clean_first_name(self):
-        first_name = self.cleaned_data["first_name"]
-        if not first_name:
-            raise forms.ValidationError("All fields are required.")
-
-    def clean_last_name(self):
-        last_name = self.cleaned_data["last_name"]
-        if not last_name:
-            raise forms.ValidationError("All fields are required.")
 
     def save(self, commit=True):
         # Save the provided password in hashed format

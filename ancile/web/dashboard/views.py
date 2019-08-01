@@ -7,12 +7,14 @@ from ancile.web.dashboard.forms import *
 from ancile.web.dashboard.decorators import *
 from django.urls import reverse_lazy
 from django.views import generic
+from django.template import RequestContext
 
 # Create your views here.
 class SignUp(generic.CreateView):
     form_class = UserRegistrationForm
     success_url = reverse_lazy('login')
     template_name = 'register.html'
+
 
 def dashboard(request):
     return render(request, "dashboard.html", {})

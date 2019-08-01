@@ -15,6 +15,7 @@ import json
 
 class User(AbstractUser):
     is_developer = models.BooleanField(default=False)
+    email = models.EmailField(unique=True)
 
     @property
     def apps(self):
