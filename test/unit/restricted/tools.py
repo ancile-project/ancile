@@ -1,34 +1,37 @@
 from ancile.core.primitives.policy_helpers.policy_parser import PolicyParser
-from ancile.core.primitives.data_policy_pair import DataPolicyPair
-from ancile.core.decorators import transform_decorator, use_type_decorator
+from ancile.core.decorators import *
+from ancile.core.primitives import *
 from RestrictedPython import compile_restricted_exec, safe_builtins
 from ancile.utils.errors import PolicyError
 from ancile.core.context_building import gen_module_namespace
-from ancile.core.primitives.collection import Collection
 
+import traceback
 
 def get_dummy_pair(input_policy: str, id_num) -> DataPolicyPair:
     policy = PolicyParser.parse_it(input_policy)
-    return DataPolicyPair(policy, None, str(id_num), str(id_num), None)
+    dp = DataPolicyPair(policy, None, str(id_num), str(id_num), None)
+    dp._data = dict()
+    return dp
 
 def gen_dummy_fn(name):
+    @TransformDecorator()
     def fn(**kwargs):
         pass
     fn.__name__ = name
-    return transform_decorator(fn)
+    return fn
 
 
-@use_type_decorator
+@UseDecorator()
 def ret(**kwargs):
     pass
 
-@transform_decorator
+@TransformDecorator()
 def edit(data, key, value):
     data[key] = value
 
     return data
 
-@transform_decorator
+@TransformDecorator()
 def double(data, key):
     data[key] *= 2
 
@@ -55,11 +58,12 @@ def run_test(program: str, *input_policies) -> bool:
         try:
             compile_results = compile_restricted_exec(program)
             if compile_results.errors:
-                raise Exception
+                raise Exception(compile_results.errors)
             else:
                 exec(compile_results.code, glbls, lcls)
 
                 return True
 
-        except PolicyError as e:
+        except:
+            print(traceback.format_exc())
             return False

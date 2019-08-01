@@ -1,7 +1,4 @@
 
-
-
-
 class SetCell(object):
     def __init__(self, name, in_objects, invert):
         self._set = set(in_objects)
@@ -20,12 +17,12 @@ class SetCell(object):
 
     def __repr__(self):
         inv_str = ' ' if not self._invert_flag else ' not '
-        return f'<? SetCell: {self._name}{inv_str}in {self._set} ?>'
+        return f'{self._name}{inv_str}in {self._set}'
 
     def __eq__(self, other):
         if self is other:
             return True
-        elif not isinstance(other, SetCell):
+        elif not isinstance(other, self.__class__):
             return False
         else:
             return self._name == other._name and                              \
