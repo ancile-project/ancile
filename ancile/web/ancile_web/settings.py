@@ -165,12 +165,12 @@ if config.ENABLE_LOGGING:
                 "handlers": ["file", "console"],
                 "level": "INFO"
             },
-            "dashboard": {
-                "level": "INFO",
-                "propagate": False,
+            "ancile.core": {
+                "level": "DEBUG",
+                "propagate": True,
                 "handlers": ["file", "console"],
             },
-            "api": {"level": "DEBUG", "propagate": False, "handlers": ["file", "console"]},
+            "api": {"level": "INFO", "propagate": False, "handlers": ["file", "console"]},
             "oauth": {"level": "INFO", "propagate": False, "handlers": ["file", "console"]},
         },
     }
