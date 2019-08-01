@@ -11,6 +11,8 @@ class Policy(object):
     def __init__(self, initial_policy):
         if isinstance(initial_policy, str):
             self._policy_expr = PolicyParser.parse_it(initial_policy)
+        elif isinstance(initial_policy, list):
+            self._policy_expr = IntersectExpression.assemble_from_list((PolicyParser.parse_it(pol) for pol in initial_policy))
         elif isinstance(initial_policy, BaseExpression):
             self._policy_expr = deepcopy(initial_policy)
         elif isinstance(initial_policy, Policy):

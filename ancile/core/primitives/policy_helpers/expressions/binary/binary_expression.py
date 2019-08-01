@@ -38,7 +38,7 @@ class BinaryExpression(BaseExpression, ABC):
 
         r_expr = next(expr_box, None)
         if r_expr is None:
-            return empty_expr
+            return l_expr
 
         assembled_expr = cls(l_expr, r_expr)
         for expr in expr_box:
