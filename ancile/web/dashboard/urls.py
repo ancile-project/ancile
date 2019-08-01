@@ -9,6 +9,8 @@ urlpatterns = [
     path('providers', views.providers),
     path('apps', views.apps),
     path('settings', login_required(views.Settings.as_view())),
+
+    path('admin', views.admin_console),
     path('admin/users', views.admin_users),
     path('admin/tokens', views.admin_tokens),
     path('admin/apps', views.admin_apps),
@@ -20,6 +22,7 @@ urlpatterns = [
     path('admin/delete/user/<int:user_id>', views.admin_delete_user),
     path('admin/view/user/<int:user_id>', views.admin_view_user),
     path('admin/edit/user/<int:user_id>', views.admin_edit_user),
+    path('admin/approve/user/<int:user_id>', views.admin_approve_user),
 
     path('admin/delete/token/<int:token_id>', views.admin_delete_token),
     path('admin/view/token/<int:token_id>', views.admin_view_token),
@@ -46,11 +49,13 @@ urlpatterns = [
     path('admin/view/group/<int:group_id>', views.admin_view_group),
     path('admin/add/group/<int:app_id>', views.admin_add_group),
     path('admin/edit/group/<int:group_id>', views.admin_edit_group),
+    path('admin/approve/group/<int:group_id>', views.admin_approve_group),
 
     path('admin/delete/function/<int:function_id>', views.admin_delete_function),
     path('admin/view/function/<int:function_id>', views.admin_view_function),
     path('admin/add/function/<int:app_id>', views.admin_add_function),
     path('admin/edit/function/<int:function_id>', views.admin_edit_function),
+    path('admin/approve/function/<int:function_id>', views.admin_approve_function),
 
     path('admin/delete/policy/template/<int:policy_id>', views.admin_delete_policy_template),
     path('admin/view/policy/template/<int:policy_id>', views.admin_view_policy_template),

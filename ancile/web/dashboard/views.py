@@ -48,6 +48,15 @@ def apps(request):
 
 @login_required
 @user_is_admin
+def admin_console(request):
+    return render(request,
+                    "admin/console.html",
+                    {"functions" : Function.objects.filter(approved=False),
+                    "groups" : PermissionGroup.objects.filter(approved=False),
+                    "devs" : [x.user for x in PendingDeveloper.objects.all()]})
+
+@login_required
+@user_is_admin
 def admin_users(request):
     users = User.objects.all()
     return render(request, "admin/users.html", {"users" : users})
@@ -218,6 +227,14 @@ def admin_edit_user(request, user_id):
 
 @login_required
 @user_is_admin
+def admin_approve_user(request, user_id):
+    user = User.objects.get(pk=user_id)
+    user.is_developer = True
+    user.save()
+    return redirect("/admin")
+
+@login_required
+@user_is_admin
 def admin_delete_app(request, app_id):
     app = App.objects.get(pk=app_id)
     app.delete()
@@ -342,6 +359,14 @@ def admin_edit_group(request, group_id):
 
 @login_required
 @user_is_admin
+def admin_approve_group(request, group_id):
+    group = PermissionGroup.objects.get(pk=group_id)
+    group.approvedr = True
+    group.save()
+    return redirect("/admin")
+
+@login_required
+@user_is_admin
 def admin_delete_function(request, function_id):
     function = Function.objects.get(pk=function_id)
     app = App.objects.get(id=function.app.id)
@@ -408,6 +433,14 @@ def admin_edit_function(request, function_id):
                                                         "form_title" : "Edit Function",
                                                         "body" : function.body,
                                                         "form" : form})
+
+@login_required
+@user_is_admin
+def admin_approve_function(request, function_id):
+    function = Function.objects.get(pk=function_id)
+    function.approved = True
+    function.save()
+    return redirect("/admin")
 
 @login_required
 @user_is_admin
