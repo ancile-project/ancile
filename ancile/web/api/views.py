@@ -1,19 +1,22 @@
 import json
 from django.shortcuts import render
-# from ancile.core.core import execute
+from ancile.core.core import execute
 from django.http import HttpResponse, Http404, JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth.decorators import login_required
 from ancile.web.api.queries import get_app_id, get_user_bundle, get_app_module
 from ancile.web.dashboard.models import User, Token, PermissionGroup, DataProvider, App, PolicyTemplate, Policy, Scope
 import traceback
+from django.views.decorators.csrf import csrf_exempt
 
+@csrf_exempt
 @require_http_methods(["POST"])
 def execute_api(request):
+    body = json.loads(request.body)
     try:
-        token = request.POST["token"]
-        users = request.POST["users"]
-        program = request.POST["program"]
+        token = body["token"]
+        users = body["users"]
+        program = body["program"]
     except KeyError:
         return JsonResponse({"status": "error",
                              "error": "Missing one or more required paramters: (token, users, program)"})
@@ -29,12 +32,12 @@ def execute_api(request):
         return JsonResponse({"status": "error",
                              "error": "Problem in retreiving user information"})
 
-    # res = execute(user_info=user_info,
-    #               program=program,
-    #               app_id=app_id,
-    #               app_module=get_app_module(app_id))
-    
-    # return JsonResponse(res)
+    res = execute(user_info=user_info,
+                  program=program,
+                  app_id=app_id,
+                  app_module=get_app_module(app_id))
+
+    return JsonResponse(res)
 
 
 
@@ -68,7 +71,7 @@ def add_predefined_policy_to_user(request):
 
         needed_policies = PolicyTemplate.objects.filter(group=perm_group,
                                                           app=app)
-        
+
         new_policies = []
 
         for policy in needed_policies:
@@ -84,7 +87,7 @@ def add_predefined_policy_to_user(request):
             )
 
             new_policies.append(new_policy)
-        
+
         for policy in new_policies:
             policy.save()
 

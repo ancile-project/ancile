@@ -9,3 +9,9 @@ django-crispy-forms
 redis
 dill
 wrapt
+sly
+tzlocal
+cryptography
+restrictedpython
+geopy
+numpy

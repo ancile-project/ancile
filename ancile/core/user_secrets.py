@@ -34,7 +34,7 @@ class UserSecrets:
             return dp_pair
         if self._user_policies.get(data_source, False):
             policy = self._user_policies[data_source]
-            token = self._user_tokens[data_source]['access_token']
+            token = self._user_tokens[data_source]
             dp_name = name if name else data_source
             dp_pair = DataPolicyPair(policy, token, dp_name, 
                                     self._username, self._user_private_data,
