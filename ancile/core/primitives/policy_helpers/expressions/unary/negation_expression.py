@@ -31,4 +31,4 @@ class NegationExpression(UnaryExpression):
         return -self.expression.e_step()
 
     def simplify(self):
-        pass
+        return NegationExpression(self.expression.simplify())
