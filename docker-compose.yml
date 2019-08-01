@@ -1,6 +1,8 @@
 version: '3'
 
 services:
+
+
   ancile:
     build: .
     volumes:
@@ -11,6 +13,8 @@ services:
       - ancile_db_network
     depends_on:
       - ancile_db
+
+
   nginx:
     image: nginx:1.13
     ports: 
@@ -23,6 +27,7 @@ services:
     networks:
       - nginx_network
 
+
   ancile_db:
     image: postgres
     ports:
@@ -33,6 +38,10 @@ services:
       - ancile_db_network
     volumes:
       - ancile_db_volume:/var/lib/postgresql/data
+
+
+  redis:
+    image: redis:alpine
 
 networks:
   nginx_network:
