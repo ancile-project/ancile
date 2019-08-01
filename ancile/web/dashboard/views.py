@@ -15,6 +15,15 @@ class SignUp(generic.CreateView):
     success_url = reverse_lazy('login')
     template_name = 'register.html'
 
+class Settings(generic.CreateView):
+    form_class = UserSettingsForm
+    success_url = "/settings"
+    template_name = 'settings.html'
+
+    def get_form_kwargs(self):
+        kwargs = super(Settings, self).get_form_kwargs()
+        kwargs.update({'request': self.request})
+        return kwargs
 
 def dashboard(request):
     return render(request, "dashboard.html", {})

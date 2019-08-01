@@ -4,6 +4,8 @@
 {% block register_active %}active{% endblock%}
 {% block content %}
 
+{% for error in form.errors %}
+{% endfor %}
 
 <div class="card" style="max-width: 400px; margin: 0 auto;">
     <div class="card-header card-header-text card-header-primary" style="margin:0 auto;">

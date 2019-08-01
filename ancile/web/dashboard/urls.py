@@ -1,5 +1,6 @@
 from django.urls import  path
 import ancile.web.dashboard.views as views
+from django.contrib.auth.decorators import login_required
 
 urlpatterns = [
     path('', views.dashboard),
@@ -7,6 +8,7 @@ urlpatterns = [
     path('policies', views.policies),
     path('providers', views.providers),
     path('apps', views.apps),
+    path('settings', login_required(views.Settings.as_view())),
     path('admin/users', views.admin_users),
     path('admin/tokens', views.admin_tokens),
     path('admin/apps', views.admin_apps),

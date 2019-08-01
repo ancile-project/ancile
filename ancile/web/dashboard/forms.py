@@ -1,6 +1,6 @@
 from django import forms
 from ancile.web.dashboard.models import *
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, authenticate
 from django.contrib.auth.forms import UserCreationForm
 
 class AdminAddPolicyForm(forms.Form):
@@ -160,6 +160,58 @@ class UserRegistrationForm(forms.ModelForm):
         # Save the provided password in hashed format
         user = super().save(commit=False)
         user.set_password(self.cleaned_data["password1"])
+        if commit:
+            user.save()
+        return user
+
+class UserSettingsForm(forms.ModelForm):
+    old_password = forms.CharField(label='Current password', widget=forms.PasswordInput, required=False)
+    new_password = forms.CharField(label='New password', widget=forms.PasswordInput, required=False)
+    new_password_confirm = forms.CharField(label='New password confirmation', widget=forms.PasswordInput, required=False)
+    email = forms.CharField(label='Email', widget=forms.Textarea, required=True)
+    class Meta:
+        model = get_user_model()
+        fields = ("first_name", "last_name", )
+    
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request')
+        super(UserSettingsForm, self).__init__(*args, **kwargs)
+    
+    def clean_email(self):
+        email = self.cleaned_data["email"]
+
+        if email == self.request.user.email:
+            return email
+        elif User.objects.filter(email=email):
+            raise forms.ValidationError("* User with this email already exists.")
+        return email
+
+    def clean_new_password_confirm(self):
+        # Check that the two password entries match
+        old_password = self.cleaned_data.get("old_password")
+        new_password = self.cleaned_data.get("new_password")
+        new_password_confirm = self.cleaned_data.get("new_password_confirm")
+
+        if old_password:
+            if authenticate(username=self.request.user, password=old_password):
+                if new_password or new_password_confirm: 
+                    if new_password != new_password_confirm:
+                        raise forms.ValidationError("Passwords don't match.")
+                    return new_password_confirm
+                elif not new_password and not new_password_confirm:
+                    raise forms.ValidationError("New password can't be blank.")
+            raise forms.ValidationError("Old password is not valid.")
+        return ""
+    
+    def save(self, commit=True):
+        # Save the provided password in hashed format
+        user = self.request.user
+        user.first_name = self.cleaned_data["first_name"]
+        user.last_name = self.cleaned_data["last_name"]
+        if user.email != self.cleaned_data["email"]:
+            user.email = self.cleaned_data["email"]
+        if self.cleaned_data["new_password_confirm"]:
+            user.set_password(self.cleaned_data["new_password_confirm"])
         if commit:
             user.save()
         return user
