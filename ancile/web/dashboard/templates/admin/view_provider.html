@@ -32,36 +32,35 @@
 {% endblock %}
 
 {% block post_table %}
-<div class="row">
-  <div class="col-md-4" style="margin: auto;">
-    <div class="card">
+    <div class="card" style="max-width:700px;margin-right:auto; margin-left: auto;">
       <div class="card-header">
         <h4 class="card-title">Provider Info</h4>
       </div>
+
       <div class="card-body">
-        <table style="margin: auto;" cellpadding="10">
-            <tr>
-            <th>Client ID</th>
-            <td>{{ provider.client_id }}</td>
-            <tr>
-            <tr>
-            <th>Client Secret</th>
-            <td>{{ provider.client_secret }}</td>
-            <tr>
-            <tr>
-            <th>Access Token URL</th>
-            <td>{{ provider.access_token_url }}</td>
-            <tr>
-            <tr>
-            <th>Authorize URL</th>
-            <td>{{ provider.auth_url }}</td>
-            <tr>
-        </table>
+        <div class="table-responsive">
+          <table style="margin: auto;" cellpadding="10">
+              <tr>
+                <th>Client ID</th>
+                <td>{{ provider.client_id }}</td>
+              </tr>
+              <tr>
+                <th>Client Secret</th>
+                <td>{{ provider.client_secret }}</td>
+              </tr>
+              <tr>
+                <th>Access Token URL</th>
+                <td>{{ provider.access_token_url }}</td>
+              </tr>
+              <tr>
+                <th>Authorize URL</th>
+                <td>{{ provider.auth_url }}</td>
+              </tr>
+          </table>
+        </div>
       </div>
     </div>
-  </div>
-  <div class="col-md-4" style="margin: auto;">
-    <div class="card">
+    <div class="card" style="max-width:700px;margin-right:auto; margin-left: auto;">
       <div class="card-header">
         <h4 class="card-title">Extra Parameters</h4>
       </div>
@@ -76,22 +75,17 @@
         </table>
       </div>
     </div>
-  </div>
-</div>
 
-<div style="text-align: center;">
-<a href="/admin/add/scope/{{ provider.id }}" class="btn btn-primary">Add Scope</a>
-<a href="/admin/providers" class="btn btn-default">Back</a>
-</div>
 
   <div class="row">
     <div class="col-md-12">
-      <div class="card">
+      <div class="card" style="max-width:700px;margin-right:auto; margin-left: auto;">
         <div class="card-header card-header-primary">
           <h4 class="card-title ">Scopes</h4>
           <p class="card-category"></p>
         </div>
         <div class="card-body">
+            <a href="/admin/add/scope/{{ provider.id }}" class="btn btn-primary btn-round"><i class="material-icons">add</i>Add Scope</a>
           <div class="table-responsive">
             <table class="table">
               <thead class="text-primary">
