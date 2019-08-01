@@ -13,7 +13,7 @@ database:
     ENGINE: "django.db.backends.postgresql"
     USER: "postgres"
     PASSWORD: "postgres"
-    HOST: "ancile_db"
+    HOST: "db"
     PORT: "5432"
     NAME: "ancile_db"
 

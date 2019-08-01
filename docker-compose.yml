@@ -10,9 +10,9 @@ services:
       - static_volume:/opt/services/ancile/ancile/web/static
     networks:
       - nginx_network
-      - ancile_db_network
+      - db_network
     depends_on:
-      - ancile_db
+      - db
   
   nginx:
     image: nginx:1.13
@@ -27,16 +27,16 @@ services:
       - nginx_network
 
 
-  ancile_db:
+  db:
     image: postgres
     ports:
       - "5432"
     env_file:
       - docker/db/postgres.env
     networks:
-      - ancile_db_network
+      - db_network
     volumes:
-      - ancile_db_volume:/var/lib/postgresql/data
+      - db_volume:/var/lib/postgresql/data
 
 
   redis:
@@ -45,9 +45,9 @@ services:
 networks:
   nginx_network:
     driver: bridge
-  ancile_db_network:
+  db_network:
     driver: bridge
 
 volumes:
-  ancile_db_volume:
+  db_volume:
   static_volume:
