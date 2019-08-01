@@ -61,7 +61,7 @@ class ComparisonTests(unittest.TestCase):
                    '.((_enforce_comparison(result=True).ret) + '
                    '(_enforce_comparison(result=False).test.ret))'
                   )
-        policy1 = ('edit.dependent_comparison(field_path="a", '
+        policy1 = ('edit._dependent_comparison(field_path="a", '
                    'comparison_operator="eq", value=4, username="0", name="0")'
                   )
         program = ("dp0=edit(data=dp0, key='b', value=3)\n"
@@ -80,7 +80,7 @@ class ComparisonTests(unittest.TestCase):
                    '.((_enforce_comparison(result=True).ret) + '
                    '(_enforce_comparison(result=False).test.ret))'
                   )
-        policy1 = ('edit.dependent_comparison(field_path="a", '
+        policy1 = ('edit._dependent_comparison(field_path="a", '
                    'comparison_operator="eq", value=4, username="0", name="0")'
                   )
         program = ("dp0=edit(data=dp0, key='b', value=3)\n"
@@ -100,7 +100,7 @@ class ComparisonTests(unittest.TestCase):
                    '.((_enforce_comparison(result=True).ret) + '
                    '(_enforce_comparison(result=False).test.ret))'
                   )
-        policy1 = ('edit.dependent_comparison(field_path="a", '
+        policy1 = ('edit._dependent_comparison(field_path="a", '
                    'comparison_operator="eq", value=4, username="0", name="0")'
                    '.ret'
                   )
@@ -121,7 +121,7 @@ class ComparisonTests(unittest.TestCase):
                    '.((_enforce_comparison(result=True).ret) + '
                    '(_enforce_comparison(result=False).test.ret))'
                   )
-        policy1 = ('edit.dependent_comparison(field_path="a", '
+        policy1 = ('edit._dependent_comparison(field_path="a", '
                    'comparison_operator="eq", value=4, username="0", name="0")'
                   )
         program = ("dp0=edit(data=dp0, key='b', value=3)\n"
@@ -138,7 +138,7 @@ class ComparisonTests(unittest.TestCase):
                    '.((_enforce_comparison(result=True).ret) + '
                    '(_enforce_comparison(result=False).test.ret))'
                   )
-        policy1 = ('edit.dependent_comparison(field_path="a", '
+        policy1 = ('edit._dependent_comparison(field_path="a", '
                    'comparison_operator="eq", value=4, username="0", name="0")'
                   )
         program = ("dp0=edit(data=dp0, key='b', value=3)\n"
@@ -155,7 +155,7 @@ class ComparisonTests(unittest.TestCase):
                    '.((_enforce_comparison(result=True).ret) + '
                    '(_enforce_comparison(result=False).test.ret))'
                   )
-        policy1 = ('edit.dependent_comparison(field_path="a", '
+        policy1 = ('edit._dependent_comparison(field_path="a", '
                    'comparison_operator="eq", value=4, username="0", name="0")'
                   )
         program = ("dp0=edit(data=dp0, key='b', value=3)\n"

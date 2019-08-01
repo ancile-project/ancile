@@ -1,10 +1,11 @@
-from ancile.core.decorators import transform_decorator, external_request_decorator
+from ancile.core.decorators import *
 from ancile.lib.general import get_token
 from ancile.utils.errors import AncileException
 
 name="location"
 
-@external_request_decorator()
+
+@ExternalDecorator()
 def fetch_location(user, device_type=None):
     import requests
     import datetime
@@ -32,7 +33,8 @@ def fetch_location(user, device_type=None):
 
     return data
 
-@external_request_decorator(split_to_collection=True)
+
+@ExternalDecorator(is_collection=True)
 def preload_location(user, path=None):
     import json
 
@@ -44,7 +46,7 @@ def preload_location(user, path=None):
     return data
 
 
-@external_request_decorator()
+@ExternalDecorator()
 def fetch_history_location(data, token=None, fr=None, to=None, device_type=None):
     import requests
     import datetime
@@ -71,14 +73,16 @@ def fetch_history_location(data, token=None, fr=None, to=None, device_type=None)
 
     return True
 
-@transform_decorator
+
+@TransformDecorator()
 def test_transform(data):
     import time
 
     data['test_transform_' + str(time.time())] = True
     return True
 
-@transform_decorator
+
+@TransformDecorator()
 def fuzz_location(data, mean, std):
     import numpy as np
 

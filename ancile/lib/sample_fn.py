@@ -2,7 +2,7 @@
 This module defines Ancile fake test functions that have no impact on data, but
 can be used for testing purposes.
 """
-from ancile.core.decorators import transform_decorator
+from ancile.core.decorators import *
 
 
 # This currently won't work because of how DPPs are created normally and how
@@ -17,7 +17,7 @@ from ancile.core.decorators import transform_decorator
 #     return data
 
 
-@transform_decorator
+@TransformDecorator()
 def test_transform(data):
     import time
     data['output'].append('Test Transform.')
@@ -27,7 +27,7 @@ def test_transform(data):
         data['test_transform'] = [str(time.time())]
 
 
-@transform_decorator
+@TransformDecorator()
 def test_transform_param(data, param):
     import time
     data['output'].append('Test Transform with Param.')

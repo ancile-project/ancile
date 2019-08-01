@@ -8,3 +8,4 @@ pyyaml
 django-crispy-forms
 redis
 dill
+wrapt

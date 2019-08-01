@@ -1,11 +1,12 @@
-from ancile.core.decorators import transform_decorator, external_request_decorator
+from ancile.core.decorators import *
 from ancile.lib.general import get_token
 from ancile.utils.errors import AncileException
 import requests
 
 name = 'rdl'
 
-@external_request_decorator()
+
+@ExternalDecorator()
 def test_fetch(user=None, **kwargs):
     data = {'output': []}
     token = get_token(user)
@@ -14,7 +15,8 @@ def test_fetch(user=None, **kwargs):
 
     return data
 
-@external_request_decorator()
+
+@ExternalDecorator()
 def rdl_fetch(user=None, **kwargs):
     data = {'output': []}
     token = get_token(user)
@@ -31,7 +33,7 @@ def rdl_fetch(user=None, **kwargs):
 
     return data
 
-@transform_decorator
+@TransformDecorator()
 def test_transform(data):
     import time
     data['output'].append('Test Transform.')
@@ -43,7 +45,7 @@ def test_transform(data):
     return True
 
 
-@transform_decorator
+@TransformDecorator()
 def test_transform_param(data, param):
     import time
     data['output'].append('Test Transform with Param.')

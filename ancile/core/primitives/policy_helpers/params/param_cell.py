@@ -20,12 +20,12 @@ class ParamCell(object):
     def __repr__(self):
         val_str = str(self.value) if not isinstance(self.value, str) \
                                   else f'"{self.value}"'
-        return f'<ParamCell: {self.name} {self.op} {val_str}>'
+        return f'{self.name} {self.op.__name__} {val_str}'
 
     def __eq__(self, other):
         if self is other:
             return True
-        elif not isinstance(other, ParamCell):
+        elif not isinstance(other, self.__class__):
             return False
         else:
             return self.name == other.name and                                \

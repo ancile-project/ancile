@@ -1,8 +1,8 @@
+from ancile.core.primitives.policy_helpers.expressions import IntersectExpression
+from ancile.core.primitives.policy_helpers.policy_parser import PolicyParser
 from ancile.utils.errors import PolicyError, AncileException
-from ancile.core.primitives.data_policy_pair import DataPolicyPair
 import ancile.utils.time as ancile_web_time
-from functools import wraps
-from ancile.core.primitives.policy import Policy, intersect_list
+from ancile.core.primitives import *
 import logging
 logger = logging.getLogger(__name__)
 
@@ -19,7 +19,7 @@ class Collection(object):
     def __repr__(self):
         return f"<Collection size:{len(self)}. The policy: {self.get_collection_policy()}>"
 
-    def get_collection_policy(self):
+    def get_collection_policy(self) -> Policy:
         """
         Return the policy resulting from the intersection of all policies in
         the collection.
@@ -31,20 +31,20 @@ class Collection(object):
         :return: A Policy object representing the synthesized policy on the
                  collection.
         """
-        return intersect_list((dp._policy for dp in self._data_points),
-                              empty_policy='ANYF*')
+        policy_expr =  IntersectExpression.assemble_from_list((dp._policy._policy_expr for dp in self._data_points),
+                              empty_expr=PolicyParser.parse_it('ANYF*'))
 
+        return Policy(policy_expr)
 
-    def _check_collection_policy(self, command, **kwargs) -> bool:
+    def _check_collection_policy(self, command: Command, update=True) -> bool:
         """
-        Check if the collection policy allows the given command.
+        Check if the collection policy allows the given policy_command.
 
-        :param str command: The name of the command.
-        :return: T if the command is allowed, False otherwise
+        :param str command: The name of the policy_command.
+        :return: T if the policy_command is allowed, False otherwise
         """
         collection_policy = self.get_collection_policy()
-        return collection_policy.check_allowed(command, **kwargs)
-
+        return collection_policy.advance_policy(command, update)
 
     def _advance_collection_policy(self, command, **kwargs):
         """
@@ -55,12 +55,11 @@ class Collection(object):
         :param command:
         :return:
         """
-        if self._check_collection_policy(command, **kwargs):
+        if self._check_collection_policy(command, update=False):
             for dpp in self._data_points:
                 dpp._advance_policy_error(command, **kwargs)
         else:
-            raise PolicyError(f"Collection does not allow the command: {command} with arguments {kwargs}")
-
+            raise PolicyError(f"Collection does not allow the policy_command: {command} with arguments {kwargs}")
 
     def add_to_collection(self, data: DataPolicyPair):
         """
@@ -69,7 +68,7 @@ class Collection(object):
         :param data:
         :return:
         """
-        command = 'add_to_collection'
+        command = Command(self.add_to_collection)
         data._advance_policy_error(command)
         self._advance_collection_policy(command)
         self._data_points.append(data)
@@ -129,8 +128,8 @@ class Collection(object):
         new_data_points = list()
 
         for dpp in self._data_points:
-            peek_next_policy = dpp._policy.d_step('filter_keep')
-            if peek_next_policy.d_step(command):
+            peek_next_policy = dpp._policy.d_step('filter_keep', None)
+            if peek_next_policy.d_step(command, None):
                 dpp._advance_policy_error('filter_keep')
                 new_data_points.append(dpp)
             else:
