@@ -138,11 +138,15 @@ class DevEditPolicyTemplateForm(forms.Form):
 class UserRegistrationForm(forms.ModelForm):
     password1 = forms.CharField(label='Password', widget=forms.PasswordInput)
     password2 = forms.CharField(label='Password confirmation', widget=forms.PasswordInput)
-    first_name = forms.CharField(label="First Name", widget=forms.TextInput, required=True)
-    last_name = forms.CharField(label="Last Name", widget=forms.TextInput, required=True)
     class Meta:
         model = get_user_model()
-        fields = ("username", "email")
+        fields = ("username", "email", "first_name", "last_name", )
+
+    def __init__(self, *args, **kwargs):
+        super(UserRegistrationForm, self).__init__(*args, **kwargs)
+
+        for key in self.fields:
+            self.fields[key].required = True
 
     def clean_password2(self):
         # Check that the two password entries match
