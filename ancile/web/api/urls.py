@@ -3,6 +3,7 @@ import ancile.web.api.views as views
 
 urlpatterns = [
     path('run', views.execute_api),
+    path('browser_run', views.browser_execute),
     path('parse_policy', views.parse_policy),
     path('app/permissions', views.check_permission_group),
     path('app/add', views.add_predefined_policy_to_user),

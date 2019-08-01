@@ -41,6 +41,31 @@ def execute_api(request):
     return JsonResponse(res)
 
 
+@require_http_methods(["POST"])
+@login_required
+def browser_execute(request):
+    user = request.user
+
+    app_id = request.POST['app_id']
+
+    if App.objects.filter(id=app_id, developers=user).exists():
+        users = request.POST["users"]
+        program = request.POST["program"]
+        try:
+            user_info = [get_user_bundle(user, app_id) for user in users]
+        except Exception:
+            return JsonResponse({"status": "error",
+                                 "error": "Problem in retreiving user information"})
+        res = execute(user_info=user_info,
+                    program=program,
+                    app_id=app_id,
+                    app_module=get_app_module(app_id))
+
+        return JsonResponse(res)
+    else:
+        return JsonResponse({"status": "error",
+                             "error": "You are not a developer for this app"})
+
 
 @login_required
 @require_http_methods(["POST"])
