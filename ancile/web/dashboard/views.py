@@ -381,7 +381,7 @@ def admin_edit_group(request, group_id):
 @user_is_admin
 def admin_approve_group(request, group_id):
     group = PermissionGroup.objects.get(pk=group_id)
-    group.approvedr = True
+    group.approved = True
     group.save()
     return redirect("/admin")
 
