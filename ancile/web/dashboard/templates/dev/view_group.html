@@ -51,10 +51,10 @@
         {% endif %}
       </td>
       <td>
-        <a href="/dashboard/dev/edit/group/{{ group.id }}"><i class="material-icons">edit</i></a>
+        <a href="/dev/edit/group/{{ group.id }}"><i class="material-icons">edit</i></a>
         <a href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons">delete</i></a>
          <div class="dropdown-menu" aria-labelledby="deleteUserDropdownButton">
-           <a class="dropdown-item" href="/dashboard/dev/delete/group/{{ group.id }}">Delete</a>
+           <a class="dropdown-item" href="/dev/delete/group/{{ group.id }}">Delete</a>
          </div>
       </td>
     </tr>
@@ -66,8 +66,8 @@
 {% block post_table %}
 
 <div style="text-align: center;">
-<a href="/dashboard/dev/add/policy/template/{{ group.id }}" class="btn btn-primary">Add Policy</a>
-<a href="/dashboard/dev/view/app/{{ group.app.id }}" class="btn btn-default">Back</a>
+<a href="/dev/add/policy/template/{{ group.id }}" class="btn btn-primary">Add Policy</a>
+<a href="/dev/view/app/{{ group.app.id }}" class="btn btn-default">Back</a>
 </div>
 
   <div class="row">
@@ -95,11 +95,11 @@
                     {{ policy.provider.display_name }}
                   </td>
                   <td>
-                    <a href="/dashboard/dev/edit/policy/template/{{ policy.id }}"><i class="material-icons">edit</i></a>
-                    <a href="/dashboard/dev/view/policy/template/{{ policy.id }}"><i class="material-icons">pageview</i></a>
+                    <a href="/dev/edit/policy/template/{{ policy.id }}"><i class="material-icons">edit</i></a>
+                    <a href="/dev/view/policy/template/{{ policy.id }}"><i class="material-icons">pageview</i></a>
                     <a href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons">delete</i></a>
                      <div class="dropdown-menu" aria-labelledby="deleteTokenDropdownButton">
-                       <a class="dropdown-item" href="/dashboard/dev/delete/policy/template/{{ policy.id }}">Delete</a>
+                       <a class="dropdown-item" href="/dev/delete/policy/template/{{ policy.id }}">Delete</a>
                      </div>
                   </td>
                 </tr>

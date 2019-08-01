@@ -709,7 +709,7 @@ def dev_add_group(request, app_id):
             form = DevEditGroupForm()
 
         return render(request, 'dev/form.html', {"redirect" : "/dev/add/group/" + str(app_id),
-                                                    "back" : "/dev/view/app" + str(app_id),
+                                                    "back" : "/dev/view/app/" + str(app_id),
                                                     "title" : "Add Group",
                                                     "form_title" : "Add Group",
                                                     "form" : form})
