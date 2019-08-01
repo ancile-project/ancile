@@ -7,21 +7,20 @@ services:
     build: .
     volumes:
       - .:/opt/services/ancile/src
-      - static_volume:/opt/services/ancile/src/ancile/web/static
+      - static_volume:/opt/services/ancile/ancile/web/static
     networks:
       - nginx_network
       - ancile_db_network
     depends_on:
       - ancile_db
-
-
+  
   nginx:
     image: nginx:1.13
     ports: 
       - 8000:80
     volumes:
       - ./config/nginx/conf.d:/etc/nginx/conf.d
-      - static_volume:/opt/services/ancile/src/ancile/web/static
+      - static_volume:/opt/services/ancile/ancile/web/static
     depends_on:
       - ancile
     networks:
