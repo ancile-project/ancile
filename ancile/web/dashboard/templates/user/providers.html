@@ -5,8 +5,10 @@
 {% block table_title %} Providers {% endblock %}
 {% block table_sub %} These are the data sources that apps have access to. {% endblock %}
 
+{% block buttons %}
+<button type="button" class="btn btn-primary btn-round" data-toggle="modal" data-target="#addProviderModal"><i class="material-icons">add</i>Add Provider</button>
+{% endblock %}
 {% block table_content %}
-{% if tokens %}
   <thead class=" text-primary">
     <th>
       Data Provider
@@ -49,8 +51,6 @@
     <div class="alert alert-danger" id="delete-fail" role="alert" style="display:none;">
       Error.
     </div>
-{% endif %}
-<button type="button" class="btn btn-primary btn-round" data-toggle="modal" data-target="#addProviderModal"><i class="material-icons">add</i>Add Provider</button>
 {% endblock %}
 {% block post_table %}
 <div id="addProviderModal" class="modal" tabindex="-1" role="dialog">

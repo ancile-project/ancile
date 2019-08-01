@@ -4,11 +4,12 @@
 {% block apps_active %}active{% endblock %}
 {% block table_title %} Apps {% endblock %}
 {% block table_sub %} These are the apps that are using your data. {% endblock %}
-{% block table_content %}
+{% block buttons %}
 <button class="btn btn-primary btn-round" data-toggle="modal" data-target="#addApp">
     <i class="material-icons">add</i> New App
   </button>
-{% if apps %}
+{% endblock %}
+{% block table_content %}
   <thead class=" text-primary">
     <th>
       App
@@ -35,7 +36,6 @@
     </tr>
     {% endfor %}
   </tbody>
-  {% endif %}
   {% endblock %}
   {% block post_table %}
   <div class="modal fade" id="addApp" tabindex="-1" role="dialog">

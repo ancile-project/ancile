@@ -5,7 +5,9 @@
 {% block table_title %} Providers {% endblock %}
 {% block table_sub %} These are the data providers your users are able to register with. {% endblock %}
 
-
+{% block buttons %}
+<a href="/admin/add/provider" class="btn btn-primary btn-round">Add Provider</a>
+{% endblock %}
 {% block table_content %}
   <thead class="text-primary">
     <th>
@@ -34,6 +36,5 @@
 {% block post_table %}
 
 <div style="text-align: center;">
-<a href="/admin/add/provider" class="btn btn-primary">Add Provider</a>
 </div>
 {% endblock %}

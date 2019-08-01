@@ -11,8 +11,9 @@
           <p class="card-category">{% block table_sub %}{% endblock %}</p>
         </div>
         <div class="card-body">
+          {% block buttons %}{% endblock %}
           <div class="table-responsive">
-            <table class="table">
+            <table class="table" id="main-table">
             {% block table_content %}{% endblock %}
             </table>
           </div>
@@ -20,7 +21,9 @@
       </div>
     </div>
 </div>
+<script>
+(()=>{let table=document.getElementById("main-table");if(table.rows.length<=1){table.style.display="none"}})();
+</script>
 
 {% block post_table %}{% endblock %}
-
 {% endblock %}
