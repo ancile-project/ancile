@@ -113,6 +113,7 @@ def event_occurring(data, event_title=None):
     events = data.get('events')
     result = event_title in [event['summary'] for event in events]
     data['event_occurring'] = result
+    return data
 
 
 @TransformDecorator()
@@ -127,3 +128,4 @@ def no_events_occurring(data):
     """
     events = data.get('events')
     data['no_events_occurring'] = len(events) == 0
+    return data

@@ -64,11 +64,12 @@ def double(data, key):
     :return: The data with the field doubled
     """
     data[key] *= 2
+    return data
 
 @TransformDecorator()
 def counter(data: dict):
     """
-    Create or increment a counter.
+    Create or increment a counter.@Transform
 
     :param data: The DataPolicyPair's internal data field.
     :return: The data with the field 'counter' incremented. If it does not exist
@@ -77,6 +78,7 @@ def counter(data: dict):
     if data.get('counter', False):
         data['counter'] = 0
     data['counter'] += 1
+    return data
 
 
 # =============================================================================
@@ -95,6 +97,7 @@ def keep_keys(data, keys):
     dropped = set(data.keys()) - set(keys)
     for key in dropped:
         del data[key]
+    return data
 
 @TransformDecorator()
 def keep_path_keys(data, path, keys):
@@ -110,6 +113,7 @@ def keep_path_keys(data, path, keys):
     dropped = set(data[path].keys()) - set(keys)
     for key in dropped:
         del data[path][key]
+    return data
 
 @TransformDecorator()
 def drop_keys(data, keys):
@@ -123,6 +127,7 @@ def drop_keys(data, keys):
     for key in keys:
         if key in data.keys():
             del data[key]
+    return data
 
 @TransformDecorator()
 def flatten(data):
@@ -135,6 +140,7 @@ def flatten(data):
     out = flat_dict(data)
     data.clear()
     data.update(out)
+    return data
 
 def flat_dict(d):
     """
@@ -161,7 +167,7 @@ def flat_dict(d):
 @AggregateDecorator()
 def basic_aggregation(data):
     """Aggregate two DataPolicyPairs together without changing the data."""
-    pass
+    return data
 
 @AggregateDecorator(reduce=True)
 def aggregate_and(data):
