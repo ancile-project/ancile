@@ -26,7 +26,11 @@ class Settings(generic.CreateView):
         return kwargs
 
 def dashboard(request):
-    return render(request, "dashboard.html", {})
+    pending_dev = False
+    if not request.user.is_anonymous:
+        if PendingDeveloper.objects.filter(user=request.user).exists():
+            pending_dev = True
+    return render(request, "dashboard.html", {"pending_dev" : pending_dev})
 
 @login_required
 def providers(request):
@@ -45,6 +49,11 @@ def apps(request):
     context["apps"] = [policy.app for policy in policies]
     context["all_apps"] = App.objects.all()
     return render(request, "user/apps.html", context)
+
+@login_required
+def user_request_dev(request):
+    PendingDeveloper(user=request.user).save()
+    return redirect("/")
 
 @login_required
 @user_is_admin
@@ -229,8 +238,18 @@ def admin_edit_user(request, user_id):
 @user_is_admin
 def admin_approve_user(request, user_id):
     user = User.objects.get(pk=user_id)
+    PendingDeveloper.objects.get(user=user).delete()
     user.is_developer = True
     user.save()
+    print(user)
+    print(user.is_developer)
+    return redirect("/admin")
+
+@login_required
+@user_is_admin
+def admin_reject_user(request, user_id):
+    user = User.objects.get(pk=user_id)
+    PendingDeveloper.objects.get(user=user).delete()
     return redirect("/admin")
 
 @login_required

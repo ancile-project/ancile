@@ -43,16 +43,19 @@ Welcome to the Ancile Admin Console.
                     {{ dev.email }}
                   </td>
                   <td>
+                    <div class="dropdown show" style="display: inline;">
                     <a href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons">check</i></a>
-                     <div class="dropdown-menu" aria-labelledby="DropdownButton">
-                       <a class="dropdown-item" href="/admin/approve/user/{{ user.id }}">Approve</a>
+                     <div class="dropdown-menu" aria-labelledby="approveDropdownButton">
+                       <a class="dropdown-item" href="/admin/approve/user/{{ dev.id }}">Approve</a>
                      </div>
-                    <a href="/admin/view/user/{{ user.id }}"><i class="material-icons">pageview</i></a>
-                    <a href="/admin/edit/user/{{ user.id }}"><i class="material-icons">edit</i></a>
-                    <a href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons">delete</i></a>
-                     <div class="dropdown-menu" aria-labelledby="deleteTokenDropdownButton">
-                       <a class="dropdown-item" href="/admin/delete/user/{{ group.id }}">Delete</a>
+                    </div>
+                    <div class="dropdown show" style="display: inline;">
+                    <a href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons">close</i></a>
+                     <div class="dropdown-menu" aria-labelledby="rejectDropdownButton">
+                       <a class="dropdown-item" href="/admin/reject/user/{{ dev.id }}">Reject</a>
                      </div>
+                    </div>
+                    <a href="/admin/view/user/{{ dev.id }}"><i class="material-icons">pageview</i></a>
                   </td>
                 </tr>
                 {% endfor %}

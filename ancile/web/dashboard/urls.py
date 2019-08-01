@@ -10,6 +10,8 @@ urlpatterns = [
     path('apps', views.apps),
     path('settings', login_required(views.Settings.as_view())),
 
+    path('user/request/dev', views.user_request_dev),
+
     path('admin', views.admin_console),
     path('admin/users', views.admin_users),
     path('admin/tokens', views.admin_tokens),
@@ -23,6 +25,7 @@ urlpatterns = [
     path('admin/view/user/<int:user_id>', views.admin_view_user),
     path('admin/edit/user/<int:user_id>', views.admin_edit_user),
     path('admin/approve/user/<int:user_id>', views.admin_approve_user),
+    path('admin/reject/user/<int:user_id>', views.admin_reject_user),
 
     path('admin/delete/token/<int:token_id>', views.admin_delete_token),
     path('admin/view/token/<int:token_id>', views.admin_view_token),
