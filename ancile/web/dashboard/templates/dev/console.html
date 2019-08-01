@@ -58,7 +58,7 @@
     <input class="form-control" id="users" type="text"></input>
     <br>
     <div id="editor"></div>
-    <div id="output"></div>
+    <textarea id="output" class="form-control" readonly>Your output will be displayed here.</textarea>
     <div style="text-align: center;">
       <button class="btn btn-primary" id="run-button"><i class="material-icons">play_arrow</i>Run</button>
     </div>
@@ -113,17 +113,19 @@
 <style type="text/css" media="screen">
     #output {
         float: right;
-        width: 50%;
-        height: 350px;
+        width: 45%;
+        height: 350px !important;
         border-radius: 5px;
-        padding-left: 5px
+        margin-left: 2.5%;
+        padding: 5px;
+        font-family: monospace;
     }
     #editor {
         float: left;
-        width: 50%;
+        width: 45%;
         height: 350px;
         border-radius: 5px;
-        padding-right: 5px
+        margin-right: 2.5%;
     }
 </style>
 
