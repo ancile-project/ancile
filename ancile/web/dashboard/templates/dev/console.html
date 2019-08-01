@@ -1,4 +1,5 @@
 {% extends "base_table.html" %}
+{% load static %}
 
 {% block title %} Developer Console {% endblock %}
 {% block dev_active %}active{% endblock %}
@@ -42,7 +43,49 @@
 
 {% block post_table %}
 
+<br>
 <div style="text-align: center;">
 <a href="/dev/add/app" class="btn btn-primary">Create App</a>
 </div>
+<br>
+
+<div class="card" style="width: 80%; margin: auto;">
+  <div class="card-body">
+    <h4 class="card-title"></h4>
+    <h6 class="card-subtitle mb-2 text-muted"></h6>
+    <select class="form-control" name="app">
+    {% for app in apps %}
+    <option value={{app.id}}>{{ app.name }}</option>
+    {% endfor %}
+    </select>
+    <input class="form-control" type="text" placeholder="Users"></input>
+    <br>
+    <div id="editor"></div>
+    <div id="output">output</>
+  </div>
+</div>
+
+<script src="{% static "dashboard/js/ace/ace.js" %}" type="text/javascript" charset="utf-8"></script>
+<script>
+    var editor = ace.edit("editor");
+    editor.setTheme("ace/theme/tomorrow");
+    editor.session.setMode("ace/mode/python");
+</script>
+<style type="text/css" media="screen">
+    #output {
+        float: right;
+        width: 50%;
+        height: 350px;
+        border-radius: 5px;
+        padding-left: 5px
+    }
+    #editor {
+        float: left;
+        width: 50%;
+        height: 350px;
+        border-radius: 5px;
+        padding-right: 5px
+    }
+</style>
+
 {% endblock %}
