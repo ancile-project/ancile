@@ -19,7 +19,7 @@ services:
     ports: 
       - 8000:80
     volumes:
-      - ./config/nginx/conf.d:/etc/nginx/conf.d
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d
       - static_volume:/opt/services/ancile/ancile/web/static
     depends_on:
       - ancile
@@ -32,7 +32,7 @@ services:
     ports:
       - "5432"
     env_file:
-      - config/db/postgres.env
+      - docker/db/postgres.env
     networks:
       - ancile_db_network
     volumes:

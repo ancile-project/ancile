@@ -9,5 +9,5 @@ RUN pip install -r requirements.txt
 EXPOSE 8000
 RUN rm -rf ancile/web/static
 RUN python manage.py collectstatic --no-input
-RUN chmod +x ./scripts/entrypoint.sh
-ENTRYPOINT ./scripts/entrypoint.sh
+RUN chmod +x ./docker/entrypoint.sh
+ENTRYPOINT ./docker/entrypoint.sh
