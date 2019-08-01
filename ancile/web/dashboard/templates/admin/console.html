@@ -1,0 +1,193 @@
+{% extends "base_table.html" %}
+
+{% block title %} Admin Console {% endblock %}
+{% block admin_active %}active{% endblock %}
+{% block table_title %} Admin Console {% endblock %}
+{% block table_sub %}{% endblock %}
+
+
+{% block table_content %}
+Welcome to the Ancile Admin Console.
+{% endblock %}
+
+{% block post_table %}
+<br>
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header card-header-primary">
+          <h4 class="card-title">Pending Developers</h4>
+          <p class="card-category"></p>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table">
+              <thead class="text-primary">
+                <th>
+                  Name
+                </th>
+                <th>
+                  Email
+                </th>
+                <th>
+                  Actions
+                </th>
+              </thead>
+              <tbody>
+                {% for dev in devs %}
+                <tr>
+                  <td>
+                    {{ dev.username }}
+                  </td>
+                  <td>
+                    {{ dev.email }}
+                  </td>
+                  <td>
+                    <div class="dropdown show" style="display: inline;">
+                    <a href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons">check</i></a>
+                     <div class="dropdown-menu" aria-labelledby="approveDropdownButton">
+                       <a class="dropdown-item" href="/admin/approve/user/{{ dev.id }}">Approve</a>
+                     </div>
+                    </div>
+                    <div class="dropdown show" style="display: inline;">
+                    <a href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons">close</i></a>
+                     <div class="dropdown-menu" aria-labelledby="rejectDropdownButton">
+                       <a class="dropdown-item" href="/admin/reject/user/{{ dev.id }}">Reject</a>
+                     </div>
+                    </div>
+                    <a href="/admin/view/user/{{ dev.id }}"><i class="material-icons">pageview</i></a>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+</div>
+
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header card-header-primary">
+          <h4 class="card-title ">Pending Functions</h4>
+          <p class="card-category"></p>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table">
+              <thead class="text-primary">
+                <th>
+                  Name
+                </th>
+                <th>
+                  Description
+                </th>
+                <th>
+                  Application
+                </th>
+                <th>
+                  Actions
+                </th>
+              </thead>
+              <tbody>
+                {% for function in functions %}
+                <tr>
+                  <td>
+                    {{ function.name }}
+                  </td>
+                  <td>
+                    {{ function.description }}
+                  </td>
+                  <td>
+                    <a href="/admin/view/app/{{function.app.id}}">{{ function.app.name }}</a>
+                  </td>
+                  <td>
+                    <a href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons">check</i></a>
+                     <div class="dropdown-menu" aria-labelledby="DropdownButton">
+                       <a class="dropdown-item" href="/admin/approve/function/{{ function.id }}">Approve</a>
+                     </div>
+                    <a href="/admin/view/function/{{ function.id }}"><i class="material-icons">pageview</i></a>
+                    <a href="/admin/edit/function/{{ function.id }}"><i class="material-icons">edit</i></a>
+                    <a href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons">delete</i></a>
+                     <div class="dropdown-menu" aria-labelledby="deletePolicyDropdownButton">
+                       <a class="dropdown-item" href="/admin/delete/function/{{ function.id }}">Delete</a>
+                     </div>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+</div>
+
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header card-header-primary">
+          <h4 class="card-title ">Pending Permission Groups</h4>
+          <p class="card-category"></p>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table">
+              <thead class="text-primary">
+                <th>
+                  Name
+                </th>
+                <th>
+                  Description
+                </th>
+                <th>
+                  Application
+                </th>
+                <th>
+                  Scopes
+                </th>
+                <th>
+                  Actions
+                </th>
+              </thead>
+              <tbody>
+                {% for group in groups %}
+                <tr>
+                  <td>
+                    {{ group.name }}
+                  </td>
+                  <td>
+                    {{ group.description }}
+                  </td>
+                  <td>
+                    <a href="/admin/view/group/{{group.app.id}}">{{ group.app.name }}</a>
+                  </td>
+                  <td>
+                    {% for scope in group.scopes.all %}
+                    {{ scope.simple_name }}
+                    {% endfor %}
+                  </td>
+                  <td>
+                    <a href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons">check</i></a>
+                     <div class="dropdown-menu" aria-labelledby="DropdownButton">
+                       <a class="dropdown-item" href="/admin/approve/group/{{ group.id }}">Approve</a>
+                     </div>
+                    <a href="/admin/view/group/{{ group.id }}"><i class="material-icons">pageview</i></a>
+                    <a href="/admin/edit/group/{{ group.id }}"><i class="material-icons">edit</i></a>
+                    <a href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons">delete</i></a>
+                     <div class="dropdown-menu" aria-labelledby="deletePolicyDropdownButton">
+                       <a class="dropdown-item" href="/admin/delete/group/{{ group.id }}">Delete</a>
+                     </div>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+</div>
+{% endblock %}

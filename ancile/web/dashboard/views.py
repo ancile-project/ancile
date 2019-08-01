@@ -26,7 +26,11 @@ class Settings(generic.CreateView):
         return kwargs
 
 def dashboard(request):
-    return render(request, "dashboard.html", {})
+    pending_dev = False
+    if not request.user.is_anonymous:
+        if PendingDeveloper.objects.filter(user=request.user).exists():
+            pending_dev = True
+    return render(request, "dashboard.html", {"pending_dev" : pending_dev})
 
 @login_required
 def providers(request):
@@ -42,9 +46,24 @@ def policies(request):
 def apps(request):
     policies = Policy.objects.filter(user=request.user)
     context = {}
-    context["apps"] = [policy.app for policy in policies]
+    apps = {policy.app.name: policy.app for policy in policies}
+    context["apps"] = list(apps.values())
     context["all_apps"] = App.objects.all()
     return render(request, "user/apps.html", context)
+
+@login_required
+def user_request_dev(request):
+    PendingDeveloper(user=request.user).save()
+    return redirect("/")
+
+@login_required
+@user_is_admin
+def admin_console(request):
+    return render(request,
+                    "admin/console.html",
+                    {"functions" : Function.objects.filter(approved=False),
+                    "groups" : PermissionGroup.objects.filter(approved=False),
+                    "devs" : [x.user for x in PendingDeveloper.objects.all()]})
 
 @login_required
 @user_is_admin
@@ -218,6 +237,24 @@ def admin_edit_user(request, user_id):
 
 @login_required
 @user_is_admin
+def admin_approve_user(request, user_id):
+    user = User.objects.get(pk=user_id)
+    PendingDeveloper.objects.get(user=user).delete()
+    user.is_developer = True
+    user.save()
+    print(user)
+    print(user.is_developer)
+    return redirect("/admin")
+
+@login_required
+@user_is_admin
+def admin_reject_user(request, user_id):
+    user = User.objects.get(pk=user_id)
+    PendingDeveloper.objects.get(user=user).delete()
+    return redirect("/admin")
+
+@login_required
+@user_is_admin
 def admin_delete_app(request, app_id):
     app = App.objects.get(pk=app_id)
     app.delete()
@@ -342,6 +379,14 @@ def admin_edit_group(request, group_id):
 
 @login_required
 @user_is_admin
+def admin_approve_group(request, group_id):
+    group = PermissionGroup.objects.get(pk=group_id)
+    group.approvedr = True
+    group.save()
+    return redirect("/admin")
+
+@login_required
+@user_is_admin
 def admin_delete_function(request, function_id):
     function = Function.objects.get(pk=function_id)
     app = App.objects.get(id=function.app.id)
@@ -408,6 +453,14 @@ def admin_edit_function(request, function_id):
                                                         "form_title" : "Edit Function",
                                                         "body" : function.body,
                                                         "form" : form})
+
+@login_required
+@user_is_admin
+def admin_approve_function(request, function_id):
+    function = Function.objects.get(pk=function_id)
+    function.approved = True
+    function.save()
+    return redirect("/admin")
 
 @login_required
 @user_is_admin
@@ -973,3 +1026,4 @@ def dev_edit_function(request, function_id):
                                                         "form_title" : "Edit Function",
                                                         "body" : function.body,
                                                         "form" : form})
+
