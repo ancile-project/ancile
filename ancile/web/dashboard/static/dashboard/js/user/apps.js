@@ -61,6 +61,9 @@ window.onload = () => {
 
   var permissionGroup = document.getElementById("permission-group");
   var permissionTable = document.getElementById("permission-table");
+  
+  var policyModalTitle = document.getElementById("policy-modal-title")
+  var policyModalBody = document.getElementById("policy-modal-body");
 
   var blankOption = new Option("", "", true, true);
   var groupCard = document.getElementById("group-card");
@@ -241,4 +244,40 @@ window.onload = () => {
   }, 1000);
 
   reloadGroups();
+
+  showPolicies = function(app) {
+    let request = new XMLHttpRequest();
+    let form = new FormData();
+
+    form.append("app", app);
+
+    request.onreadystatechange = () => {
+      
+      if (request.readyState === 4 && request.status === 200) {
+        response = JSON.parse(request.responseText);
+        policyModalTitle.innerHTML = app + " policies";
+        policyModalBody.innerHTML = "";
+        response.forEach(provider => {
+          let card = policyModalBody.appendChild(document.createElement("div"));
+          card.className = "card";
+          card.style.textAlign = "center";
+          card.innerHTML = `
+          <div class="card-header">
+          <h4 class="card-title">${provider.provider}</h4>
+          </div>
+          <div class="card-body">
+            <div class="mermaid"></div>
+          </div>
+          `
+          let frame = card.getElementsByClassName("mermaid")[0];
+          mermaid.render(provider.provider.split(" ").join("-"), provider.policy, svg => frame.innerHTML = svg);
+        });
+      }
+
+    }
+
+    request.open("POST", "/api/app/policies")
+    request.setRequestHeader("X-CSRFToken", csrftoken);
+    request.send(form);
+  }
 }

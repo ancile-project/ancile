@@ -46,7 +46,8 @@ def policies(request):
 def apps(request):
     policies = Policy.objects.filter(user=request.user)
     context = {}
-    context["apps"] = [policy.app for policy in policies]
+    apps = {policy.app.name: policy.app for policy in policies}
+    context["apps"] = list(apps.values())
     context["all_apps"] = App.objects.all()
     return render(request, "user/apps.html", context)
 
@@ -1025,3 +1026,4 @@ def dev_edit_function(request, function_id):
                                                         "form_title" : "Edit Function",
                                                         "body" : function.body,
                                                         "form" : form})
+
