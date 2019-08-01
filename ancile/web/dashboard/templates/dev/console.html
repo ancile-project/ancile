@@ -4,9 +4,11 @@
 {% block title %} Developer Console {% endblock %}
 {% block dev_active %}active{% endblock %}
 {% block table_title %} Apps {% endblock %}
-{% block table_sub %} These are the apps you are develop. {% endblock %}
+{% block table_sub %} These are the apps you are developing {% endblock %}
 
-
+{% block buttons %}
+  <a href="/dev/add/app" class="btn btn-round btn-primary"><i class="material-icons">add</i>Create App</a>
+{% endblock %}
 {% block table_content %}
   <thead class="text-primary">
     <th>
@@ -42,27 +44,26 @@
 {% endblock %}
 
 {% block post_table %}
-
-<br>
-<div style="text-align: center;">
-<a href="/dev/add/app" class="btn btn-primary">Create App</a>
-</div>
-<br>
-
-<div class="card" style="width: 80%; margin: auto;">
+<div class="card" style="max-width: 700px; margin-left: auto; margin-right: auto;">
   <div class="card-body">
     <h4 class="card-title"></h4>
     <h6 class="card-subtitle mb-2 text-muted"></h6>
-    <select class="form-control" name="app">
+    <label for="apps">Select app:</label>
+    <select class="form-control" id="apps" name="app">
     {% for app in apps %}
     <option value={{app.id}}>{{ app.name }}</option>
     {% endfor %}
     </select>
-    <input class="form-control" type="text" placeholder="Users"></input>
+    <label for="users">Enter users:</label>
+    <input class="form-control" id="users" type="text"></input>
     <br>
     <div id="editor"></div>
-    <div id="output">output</>
+    <div id="output"></div>
+    <div style="text-align: center;">
+      <button class="btn btn-primary" id="run-button"><i class="material-icons">play_arrow</i>Run</button>
+    </div>
   </div>
+
 </div>
 
 <script src="{% static "dashboard/js/ace/ace.js" %}" type="text/javascript" charset="utf-8"></script>
@@ -70,6 +71,44 @@
     var editor = ace.edit("editor");
     editor.setTheme("ace/theme/tomorrow");
     editor.session.setMode("ace/mode/python");
+
+    document.getElementById("run-button").onclick = () => {
+      let request = new XMLHttpRequest();
+      let request_object = {
+        app_id: document.getElementById("apps").value,
+        users: document.getElementById("users").value,
+        program: editor.getValue()
+      };
+      let csrftoken = (function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = cookies[i].trim();
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+      })("csrftoken");
+
+      request.onreadystatechange = () => {
+        if (request.readyState === 4 && request.status === 200) {
+          document.getElementById("output").innerHTML = request.responseText;
+        }
+      }
+
+      request.open(
+        "POST",
+        "/api/browser_run"
+      )
+
+      request.setRequestHeader("X-CSRFToken", csrftoken);
+      request.send(JSON.stringify(request_object));
+    }
 </script>
 <style type="text/css" media="screen">
     #output {

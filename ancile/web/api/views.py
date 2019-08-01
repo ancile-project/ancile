@@ -45,12 +45,13 @@ def execute_api(request):
 @login_required
 def browser_execute(request):
     user = request.user
+    body = json.loads(request.body)
 
-    app_id = request.POST['app_id']
+    app_id = body['app_id']
 
     if App.objects.filter(id=app_id, developers=user).exists():
-        users = request.POST["users"]
-        program = request.POST["program"]
+        users = body["users"]
+        program = body["program"]
         try:
             user_info = [get_user_bundle(user, app_id) for user in users]
         except Exception:
