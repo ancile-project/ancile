@@ -135,6 +135,11 @@ class DevEditPolicyTemplateForm(forms.Form):
         provider_choices = [(provider.path_name, provider.display_name) for provider in DataProvider.objects.all()]
         self.fields['provider'] = forms.ChoiceField(label="Provider", choices=provider_choices)
 
+class DevEditFunctionForm(forms.Form):
+    name = forms.CharField(label="Name")
+    description = forms.CharField(label="Description")
+    body = forms.CharField(label="Code", widget=forms.Textarea)
+
 class UserRegistrationForm(forms.ModelForm):
     password1 = forms.CharField(label='Password', widget=forms.PasswordInput)
     password2 = forms.CharField(label='Password confirmation', widget=forms.PasswordInput)

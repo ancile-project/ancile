@@ -373,11 +373,11 @@ def admin_add_function(request, app_id):
     else:
         form = AdminAddFunctionForm()
 
-    return render(request, 'admin/form.html', {"redirect" : "/admin/add/function/" + str(app_id),
-                                                "back" : "/admin/view/app/" + str(app_id),
-                                                "title" : "Add Function",
-                                                "form_title" : "Add Function",
-                                                "form" : form})
+    return render(request, 'admin/function_form.html', {"redirect" : "/admin/add/function/" + str(app_id),
+                                                        "back" : "/admin/view/app/" + str(app_id),
+                                                        "title" : "Add Function",
+                                                        "form_title" : "Add Function",
+                                                        "form" : form})
 
 @login_required
 @user_is_admin
@@ -402,11 +402,12 @@ def admin_edit_function(request, function_id):
                                                 "app_id" : function.app.id,
                                                 "body" : function.body})
 
-    return render(request, 'admin/form.html', {"redirect" : "/admin/edit/function/" + str(function_id),
-                                                "back" : "/admin/view/app/" + str(function.app.id),
-                                                "title" : "Edit Function",
-                                                "form_title" : "Edit Function",
-                                                "form" : form})
+    return render(request, 'admin/function_form.html', {"redirect" : "/admin/edit/function/" + str(function_id),
+                                                        "back" : "/admin/view/app/" + str(function.app.id),
+                                                        "title" : "Edit Function",
+                                                        "form_title" : "Edit Function",
+                                                        "body" : function.body,
+                                                        "form" : form})
 
 @login_required
 @user_is_admin
@@ -900,3 +901,75 @@ def dev_edit_policy(request, policy_id):
                                                     "form" : form})
     else:
         return redirect("/dev")
+
+@login_required
+@user_is_developer
+def dev_delete_function(request, function_id):
+    function = Function.objects.get(pk=function_id)
+    app = function.app
+    if app in request.user.apps:
+        function.delete()
+        return redirect("/dev/view/app/" + str(app.id))
+    else:
+        return redirect("/dev")
+
+@login_required
+@user_is_developer
+def dev_view_function(request, function_id):
+    function = Function.objects.get(pk=function_id)
+    if function.app in request.user.apps:
+        return render(request, "dev/view_function.html", {"function" : function})
+    else:
+        return redirect("/dev")
+
+@login_required
+@user_is_developer
+def dev_add_function(request, app_id):
+    print(app_id)
+    if request.method == "POST":
+        form = DevEditFunctionForm(request.POST)
+
+        if form.is_valid():
+            function = Function(name = form.cleaned_data['name'],
+                            description = form.cleaned_data['description'],
+                            body = form.cleaned_data['body'],
+                            approved = False,
+                            app_id=app_id)
+
+            function.save()
+            return redirect("/dev/view/app/" + str(app_id))
+    else:
+        form = DevEditFunctionForm()
+
+    return render(request, 'dev/function_form.html', {"redirect" : "/dev/add/function/" + str(app_id),
+                                                        "back" : "/dev/view/app/" + str(app_id),
+                                                        "title" : "Add Function",
+                                                        "form_title" : "Add Function",
+                                                        "form" : form})
+
+@login_required
+@user_is_developer
+def dev_edit_function(request, function_id):
+    function = Function.objects.get(pk=function_id)
+
+    if request.method == "POST":
+        form = DevEditFunctionForm(request.POST)
+
+        if form.is_valid():
+            function.name = form.cleaned_data["name"]
+            function.description = form.cleaned_data["description"]
+            function.body = form.cleaned_data["body"]
+            function.approved = False
+            function.save()
+            return redirect("/dev/view/app/" + str(function.app.id))
+    else:
+        form = DevEditFunctionForm(initial={"name" : function.name,
+                                                "description" : function.description,
+                                                "body" : function.body})
+
+    return render(request, 'dev/function_form.html', {"redirect" : "/dev/edit/function/" + str(function_id),
+                                                        "back" : "/dev/view/app/" + str(function.app.id),
+                                                        "title" : "Edit Function",
+                                                        "form_title" : "Edit Function",
+                                                        "body" : function.body,
+                                                        "form" : form})

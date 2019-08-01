@@ -69,6 +69,11 @@ urlpatterns = [
     path('dev/add/group/<int:app_id>', views.dev_add_group),
     path('dev/edit/group/<int:group_id>', views.dev_edit_group),
 
+    path('dev/delete/function/<int:function_id>', views.dev_delete_function),
+    path('dev/view/function/<int:function_id>', views.dev_view_function),
+    path('dev/add/function/<int:app_id>', views.dev_add_function),
+    path('dev/edit/function/<int:function_id>', views.dev_edit_function),
+
     path('dev/delete/policy/template/<int:policy_id>', views.dev_delete_policy),
     path('dev/view/policy/template/<int:policy_id>', views.dev_view_policy),
     path('dev/add/policy/template/<int:group_id>', views.dev_add_policy),
