@@ -1,7 +1,7 @@
-from ancile.core.decorators import use_type_decorator
+from ancile.core.decorators import UseDecorator
 
 
-@use_type_decorator
+@UseDecorator()
 def return_data_to_the_program(data, encryption_keys, decrypt_field_list=None):
     print(f'FUNC: return. data: {data}')
     if decrypt_field_list and isinstance(decrypt_field_list, list):

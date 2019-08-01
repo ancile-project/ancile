@@ -7,7 +7,8 @@ class FunctionTests(unittest.TestCase):
     def test_simple(self):
         policy = 'test.ret'
         program = "dp0=test(data=dp0);ret(data=dp0)"
-        self.assertTrue(run_test(program, policy))
+        res = run_test(program, policy)
+        self.assertTrue(res)
 
     def test_simple_two(self):
         policy = 'test.filter.view.ret'

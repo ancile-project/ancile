@@ -1,4 +1,4 @@
-from ancile.core.decorators import use_type_decorator
+from ancile.core.decorators import *
 import logging
 logger = logging.getLogger(__name__)
 
@@ -13,9 +13,8 @@ class Result:
     def __repr__(self):
         return f"<Result obj>"
 
-    @use_type_decorator
+    @UseDecorator()
     def append_dp_data_to_result(self, data, encryption_keys, decrypt_field_list=None):
-        # print(f'append_dp_data_to_result: {data}')
 
         if decrypt_field_list and isinstance(decrypt_field_list, list):
             dropped = set(encryption_keys.keys()) - set(decrypt_field_list)

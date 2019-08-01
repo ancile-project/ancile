@@ -33,18 +33,18 @@ class RangeCell(object):
     def __repr__(self):
         invert_str = '!' if self.invert_flag else ''
         if self.type == RangeType.OPEN:
-            return f'<RangeCell: {invert_str} {self.lower} < {self.name} < {self.upper} >'
+            return f'{invert_str}{self.lower}<{self.name}<{self.upper}'
         elif self.type == RangeType.CLOSED:
-            return f'<RangeCell: {invert_str} {self.lower} <= {self.name} <= {self.upper} >'
+            return f'{invert_str}{self.lower}<={self.name}<={self.upper}'
         elif self.type == RangeType.LOPEN:
-            return f'<RangeCell: {invert_str} {self.lower} < {self.name} <= {self.upper} >'
+            return f'{invert_str}{self.lower}<{self.name}<={self.upper}'
         elif self.type == RangeType.ROPEN:
-            return f'<RangeCell: {invert_str} {self.lower} <= {self.name} < {self.upper} >'
+            return f'{invert_str}{self.lower}<={self.name}<{self.upper}'
 
     def __eq__(self, other):
         if self is other:
             return True
-        elif not isinstance(other, RangeCell):
+        elif not isinstance(other, self.__class__):
             return False
         else:
             return self.name == other.name and                                \

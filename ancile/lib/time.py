@@ -2,10 +2,11 @@
 This module defines Ancile functions to work with temporal information inside
 Ancile.
 """
-from ancile.core.decorators import comparison_decorator
+from ancile.core.decorators import *
 import ancile.utils.time as ancile_web_time
 
-@comparison_decorator
+
+@ComparisonDecorator()
 def in_time_window(data, lower_str, upper_str, weekday_list=None):
     """
     Determine if the current time is within a given time window on the given

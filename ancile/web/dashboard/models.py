@@ -15,6 +15,7 @@ import json
 
 class User(AbstractUser):
     is_developer = models.BooleanField(default=False)
+    email = models.EmailField(unique=True)
 
     @property
     def apps(self):
@@ -32,9 +33,9 @@ class User(AbstractUser):
 
 
 class AppManager(models.Manager):
-    def retrieve_app(self, coded_salt):
+    def retrieve_app_id(self, coded_salt):
         token_salt = decode(coded_salt, SECRET_KEY)["salt"]
-        return self.get(token_salt=token_salt)
+        return self.filter(token_salt=token_salt).values('id')[0]['id']
 
 
 class App(models.Model):
@@ -65,26 +66,21 @@ class DataProvider(models.Model):
     extra_params = fields.JSONField(default=dict)
 
     @property
-    def basic_auth_header(self):
-        return str(
+    def request_headers(self):
+        basic_header = str(
             b64encode(bytes(self.client_id + ":" + self.client_secret, "utf8")), "utf-8"
         )
-
-    @property
-    def request_headers(self):
-        headers = {"Authorization": "basic " + self.basic_auth_header}
-        if isinstance(self.extra_params, str):
-            headers.update(json.loads(self.extra_params))
-        else:
-            headers.update(**self.extra_params)
-        return headers
+        return {"Authorization": "basic " + basic_header}
 
     def generate_url(self, scopes, base):
         session = OAuth2Session(
             client_id=self.client_id, redirect_uri=self.redirect_url(base), scope=scopes
         )
 
-        auth_url, state = session.authorization_url(self.auth_url)
+        extra_params = json.loads(self.extra_params) \
+            if isinstance(self.extra_params, str) else self.extra_params
+
+        auth_url, state = session.authorization_url(self.auth_url, **extra_params)
         return auth_url, state
 
     def redirect_url(self, base):
@@ -168,8 +164,8 @@ class PolicyTemplate(models.Model):
 
 
 class FunctionManager(models.Manager):
-    def get_app_module(self, app):
-        return "\n\n".join((fn.body for fn in self.filter(app=app)))
+    def get_app_module(self, app_id):
+        return "\n\n".join((fn.body for fn in self.filter(app_id=app_id)))
 
 
 class Function(models.Model):

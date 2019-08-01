@@ -16,12 +16,14 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 from django.contrib.auth import views as auth_views
+from django.contrib.auth.forms import UserCreationForm
 from django.conf.urls import url
 
 urlpatterns = [
     url(r'^login/$', auth_views.LoginView.as_view(template_name="login.html"), name='login'),
-    path('admin/', admin.site.urls),
+    url(r'^logout/$', auth_views.LogoutView.as_view(), name='logout'),
+    path('djadmin/', admin.site.urls),
     path('oauth/', include('ancile.web.oauth.urls')),
-    path('dashboard/', include('ancile.web.dashboard.urls')),
+    path('', include('ancile.web.dashboard.urls')),
     path('api/', include('ancile.web.api.urls')),
 ]

@@ -8,6 +8,7 @@ from config.loader import REDIS_CONFIG
 import logging
 from ancile.core.context_building import assemble_locals
 from ancile.core.advanced.caching import retrieve_compiled
+from ancile.core.advanced.storage import Storage
 
 logger = logging.getLogger(__name__)
 
@@ -17,6 +18,7 @@ UserInfoBundle = namedtuple("UserInfoBundle", ['username', 'policies',
 
 def execute(user_info, program, app_id=None, purpose=None, app_module=None):
     r = redis.Redis(**REDIS_CONFIG)
+    storage = Storage(redis_conneciton=r)
     json_output = dict()
     # object to interact with the program
     result = Result()
@@ -29,7 +31,7 @@ def execute(user_info, program, app_id=None, purpose=None, app_module=None):
         users_specific[user.username] = user_specific
 
     glbls = {'__builtins__': safe_builtins}
-    lcls = assemble_locals(redis=r, result=result,
+    lcls = assemble_locals(storage=storage, result=result,
                            user_specific=users_specific,
                            app_id=app_id,
                            app_module=app_module)
