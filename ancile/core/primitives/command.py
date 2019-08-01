@@ -30,7 +30,8 @@ class Command:
             self.scopes.append(module.name)
 
     def __repr__(self):
-        params_repr = ', '.join([ f'{x}={y}' for x, y in self.params.items() if x!='data'])
+        params_repr = ', '.join([ f'{x}={y}' for x, y in self.params.items()
+                                  if x!='data' and x!='collection'])
 
         return f'<? COMMAND: function: {self.function_name}({params_repr}), scopes: {self.scopes}>'
 

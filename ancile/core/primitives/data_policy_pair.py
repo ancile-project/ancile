@@ -1,8 +1,7 @@
 from copy import copy
 
-from ancile.core.primitives.policy_helpers.command import Command
+from ancile.core.primitives import Policy, Command
 from ancile.utils.errors import AncileException, PolicyError
-from ancile.core.primitives.policy import Policy
 from ancile.core.primitives.policy_helpers.private_data import PrivateData
 import ancile.utils.time as ancile_web_time
 import logging

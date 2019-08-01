@@ -1,5 +1,4 @@
-from ancile.core.primitives.data_policy_pair import DataPolicyPair
-from ancile.core.primitives.collection import Collection
+from ancile.core.primitives import *
 from ancile.utils.errors import AncileException
 import pickle
 from uuid import uuid4

@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 import wrapt
 
-from ancile.core.primitives.policy_helpers.command import Command
+from ancile.core.primitives.command import Command
 
 
 class BaseDecorator(ABC):

@@ -1,6 +1,6 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
-from ancile.core.primitives.policy_helpers.command import Command
+from ancile.core.primitives.command import Command
 from ancile.core.primitives.policy_helpers.expressions import *
 
 

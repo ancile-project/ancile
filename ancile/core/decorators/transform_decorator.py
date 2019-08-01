@@ -1,7 +1,7 @@
 import copy
+from ancile.core.decorators import *
 import logging
 logger = logging.getLogger(__name__)
-from ancile.core.decorators import *
 
 
 class TransformDecorator(BaseDecorator):
