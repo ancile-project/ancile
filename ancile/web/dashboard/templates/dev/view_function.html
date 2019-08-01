@@ -74,7 +74,7 @@
     editor.setReadOnly(true);
 </script>
 <style type="text/css" media="screen">
-    #editor { 
+    #editor {
         margin: auto;
         height: 250px;
         border-radius: 5px;
@@ -83,6 +83,7 @@
 
 <br>
 
-<a href="/dev/view/app/{{ function.app.id }}" class="btn btn-default">Back</a>
+<a class="btn btn-default" href="#" onclick="window.history.back()">Back</a>
+
 {% endblock %}
 

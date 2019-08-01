@@ -15,7 +15,7 @@
                 {% csrf_token %}
                 {{ form|crispy }}
                 <br>
-                <a class="btn btn-default" href={{ back }}>Back</a>
+                <a class="btn btn-default" href="#" onclick="window.history.back()">Back</a>
                 <input class="btn btn-primary" type="submit" value="Submit">
             </form>
         </div>

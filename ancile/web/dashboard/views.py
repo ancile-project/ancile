@@ -173,7 +173,6 @@ def admin_add_policy(request, user_id):
         form.fields['provider'].choices=set([(token.provider.path_name, token.provider.display_name) for token in Token.objects.filter(user=user)])
 
     return render(request, 'admin/form.html', {"redirect" : "/admin/add/policy/" + str(user_id),
-                                                "back" : "/admin/view/user/" + str(user_id),
                                                 "title" : "Add Policy",
                                                 "form_title" : "Add Policy",
                                                 "form" : form})
@@ -196,7 +195,6 @@ def admin_edit_policy(request, policy_id):
         form = AdminEditPolicyForm(initial={"text" : policy.text, "active" : policy.active})
 
     return render(request, 'admin/form.html', {"redirect" : "/admin/edit/policy/" + str(policy_id),
-                                                "back" : "/admin/view/user/" + str(user_id),
                                                 "title" : "Edit Policy",
                                                 "form_title" : "Edit Policy",
                                                 "form" : form})
@@ -230,7 +228,6 @@ def admin_edit_user(request, user_id):
                                             "is_developer" : user.is_developer})
 
     return render(request, 'admin/form.html', {"redirect" : "/admin/edit/user/" + str(user_id),
-                                                "back" : "/admin/view/user/" + str(user_id),
                                                 "title" : "Edit User",
                                                 "form_title" : "Edit User",
                                                 "user_id" : user_id, "form" : form})
@@ -296,7 +293,6 @@ def admin_edit_app(request, app_id):
                                             "app_id" : app_id})
 
     return render(request, 'admin/form.html', {"redirect" : "/admin/edit/app/" + str(app_id),
-                                                "back" : "/admin/view/app/" + str(app_id),
                                                 "title" : "Edit App",
                                                 "form_title" : "Edit App",
                                                 "app_id" : app_id,
@@ -341,7 +337,6 @@ def admin_add_group(request, app_id):
         form = AdminEditGroupForm()
 
     return render(request, 'admin/form.html', {"redirect" : "/admin/add/group/" + str(app_id),
-                                                "back" : "/admin/view/app/" + str(app_id),
                                                 "title" : "Add Group",
                                                 "form_title" : "Add Group",
                                                 "form" : form})
@@ -372,7 +367,6 @@ def admin_edit_group(request, group_id):
                                             "scopes" : [scp.value for scp in group.scopes.all()]})
 
     return render(request, 'admin/form.html', {"redirect" : "/admin/edit/group/" + str(group_id),
-                                                "back" : "/admin/view/group/" + str(group_id),
                                                 "title" : "Edit Group",
                                                 "form_ title" : "Edit Group",
                                                  "form" : form})
@@ -419,7 +413,6 @@ def admin_add_function(request, app_id):
         form = AdminAddFunctionForm()
 
     return render(request, 'admin/function_form.html', {"redirect" : "/admin/add/function/" + str(app_id),
-                                                        "back" : "/admin/view/app/" + str(app_id),
                                                         "title" : "Add Function",
                                                         "form_title" : "Add Function",
                                                         "form" : form})
@@ -448,7 +441,6 @@ def admin_edit_function(request, function_id):
                                                 "body" : function.body})
 
     return render(request, 'admin/function_form.html', {"redirect" : "/admin/edit/function/" + str(function_id),
-                                                        "back" : "/admin/view/app/" + str(function.app.id),
                                                         "title" : "Edit Function",
                                                         "form_title" : "Edit Function",
                                                         "body" : function.body,
@@ -494,7 +486,6 @@ def admin_add_policy_template(request, group_id):
         form = AdminAddPolicyTemplateForm()
 
     return render(request, 'admin/form.html', {"redirect" : "/admin/add/policy/template/" + str(group_id),
-                                                "back" : "/admin/view/group/" + str(group_id),
                                                 "title" : "Add Policy",
                                                 "form_title" : "Add Policy",
                                                 "form" : form})
@@ -517,7 +508,6 @@ def admin_edit_policy_template(request, policy_id):
         form = AdminEditPolicyTemplateForm(initial={"text" : policy.text, "provider" : policy.provider.path_name})
 
     return render(request, 'admin/form.html', {"redirect" : "/admin/edit/policy/template/" + str(policy_id),
-                                                "back" : "/admin/view/group/" + str(group_id),
                                                 "title" : "Edit Policy",
                                                 "form_title" : "Edit Policy",
                                                 "form" : form})
@@ -559,7 +549,6 @@ def admin_add_provider(request):
         form = AdminAddProviderForm(initial={})
 
     return render(request, 'admin/form.html', {"redirect" : "/admin/add/provider",
-                                                "back" : "/admin/providers",
                                                 "title" : "Add Provider",
                                                 "form_title" : "Add Provider",
                                                 "form" : form})
@@ -592,7 +581,6 @@ def admin_edit_provider(request, provider_id):
                                                 "json" : provider.extra_params})
 
     return render(request, 'admin/form.html', {"redirect" : "/admin/edit/provider/" + str(provider_id),
-                                                "back" : "/admin/view/provider/" + str(provider_id),
                                                 "title" : "Edit Provider",
                                                 "form_title" : "Edit Provider",
                                                 "form" : form})
@@ -622,7 +610,6 @@ def admin_add_scope(request, provider_id):
         form = AdminAddScopeForm(initial={})
 
     return render(request, 'admin/form.html', {"redirect" : "/admin/add/scope/" + str(provider_id),
-                                                "back" : "/admin/view/provider/" + str(provider_id),
                                                 "title" : "Add Scope",
                                                 "form_title" : "Add Scope",
                                                 "form" : form})
@@ -649,7 +636,6 @@ def admin_edit_scope(request, scope_id):
                                                 "provider" : scope.provider.path_name})
 
     return render(request, 'admin/form.html', {"redirect" : "/admin/edit/scope/" + str(scope_id),
-                                                "back" : "/admin/view/provider/" + str(scope.provider.id),
                                                 "title" : "Edit Scope",
                                                 "form_title" : "Edit Scope",
                                                 "form" : form})
@@ -698,7 +684,6 @@ def dev_add_app(request):
         form = DevEditAppForm(initial={"developers" : [request.user.username]})
 
     return render(request, 'dev/form.html', {"redirect" : "/dev/add/app",
-                                                "back" : "/dev",
                                                 "title" : "Create App",
                                                 "form_title" : "Create App",
                                                 "form" : form})
@@ -724,7 +709,6 @@ def dev_edit_app(request, app_id):
                                             "developers" : [dev.username for dev in app.developers.all()]})
 
         return render(request, 'dev/form.html', {"redirect" : "/dev/edit/app/" + str(app_id),
-                                                    "back" : "/dev",
                                                     "title" : "Edit App",
                                                     "form_title" : "Edit App",
                                                     "form" : form})
@@ -772,7 +756,6 @@ def dev_add_group(request, app_id):
             form = DevEditGroupForm()
 
         return render(request, 'dev/form.html', {"redirect" : "/dev/add/group/" + str(app_id),
-                                                    "back" : "/dev/view/app/" + str(app_id),
                                                     "title" : "Add Group",
                                                     "form_title" : "Add Group",
                                                     "form" : form})
@@ -802,7 +785,6 @@ def dev_edit_group(request, group_id):
                                             "scopes" : [scope.value for scope in group.scopes.all()]})
 
         return render(request, 'dev/form.html', {"redirect" : "/dev/edit/group/" + str(group_id),
-                                                    "back" : "/dev/view/app/" + str(app.id),
                                                     "title" : "Edit Group",
                                                     "form_title" : "Edit Group",
                                                     "form" : form})
@@ -848,7 +830,6 @@ def dev_add_policy(request, group_id):
             form = DevEditPolicyTemplateForm()
 
         return render(request, 'dev/form.html', {"redirect" : "/dev/add/policy/template/" + str(group_id),
-                                                    "back" : "/dev/view/group/" + str(group_id),
                                                     "title" : "Add Policy",
                                                     "form_title" : "Add Policy",
                                                     "form" : form})
@@ -875,7 +856,6 @@ def dev_edit_policy(request, policy_id):
                                                         "provider" : policy.provider.path_name})
 
         return render(request, 'dev/form.html', {"redirect" : "/dev/edit/policy/template/" + str(policy_id),
-                                                    "back" : "/dev/view/group/" + str(policy.group.id),
                                                     "title" : "Edit Policy",
                                                     "form_title" : "Edit Policy",
                                                     "form" : form})
@@ -921,7 +901,6 @@ def dev_add_policy(request, group_id):
             form = DevEditPolicyTemplateForm()
 
         return render(request, 'dev/form.html', {"redirect" : "/dev/add/policy/template/" + str(group_id),
-                                                    "back" : "/dev/view/group/" + str(group_id),
                                                     "title" : "Add Policy",
                                                     "form_title" : "Add Policy",
                                                     "form" : form})
@@ -948,7 +927,6 @@ def dev_edit_policy(request, policy_id):
                                                         "provider" : policy.provider.path_name})
 
         return render(request, 'dev/form.html', {"redirect" : "/dev/edit/policy/template/" + str(policy_id),
-                                                    "back" : "/dev/view/group/" + str(policy.group.id),
                                                     "title" : "Edit Policy",
                                                     "form_title" : "Edit Policy",
                                                     "form" : form})
@@ -995,7 +973,6 @@ def dev_add_function(request, app_id):
         form = DevEditFunctionForm()
 
     return render(request, 'dev/function_form.html', {"redirect" : "/dev/add/function/" + str(app_id),
-                                                        "back" : "/dev/view/app/" + str(app_id),
                                                         "title" : "Add Function",
                                                         "form_title" : "Add Function",
                                                         "form" : form})
@@ -1021,7 +998,6 @@ def dev_edit_function(request, function_id):
                                                 "body" : function.body})
 
     return render(request, 'dev/function_form.html', {"redirect" : "/dev/edit/function/" + str(function_id),
-                                                        "back" : "/dev/view/app/" + str(function.app.id),
                                                         "title" : "Edit Function",
                                                         "form_title" : "Edit Function",
                                                         "body" : function.body,
