@@ -14,10 +14,10 @@
     <th>
       Name
     </th>
-    <th>
+    <th style="text-align:center;">
       Description
     </th>
-    <th>
+    <th style="text-align:right;">
       Actions
     </th>
   </thead>
@@ -27,10 +27,10 @@
       <td>
         {{ app.name }}
       </td>
-      <td>
+      <td style="text-align:center;">
         {{ app.description }}
       </td>
-      <td>
+      <td style="text-align:right;">
         <a href="/dev/view/app/{{ app.id }}"><i class="material-icons">pageview</i></a>
         <a href="/dev/edit/app/{{ app.id }}"><i class="material-icons">edit</i></a>
         <a href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons">delete</i></a>
@@ -54,8 +54,10 @@
     <option value={{app.id}}>{{ app.name }}</option>
     {% endfor %}
     </select>
-    <label for="users">Enter users:</label>
-    <input class="form-control" id="users" type="text"></input>
+    <div class="tooltip-test" title="Separated by commas">
+      <label for="users">Enter users:</label>
+      <input class="form-control" id="users" placeholder="username1, username2, ..." type="text"></input>
+    </div>
     <br>
     <div id="editor"></div>
     <textarea id="output" class="form-control" readonly>Your output will be displayed here.</textarea>
