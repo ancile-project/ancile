@@ -33,7 +33,7 @@ class AdminEditAppForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super(AdminEditAppForm, self).__init__(*args, **kwargs)
-        choices = [(user.username, user.username) for user in User.objects.all()]
+        choices = [(user.username, user.username) for user in User.objects.filter(is_developer=True)]
         self.fields['developers'] = forms.MultipleChoiceField(label="Developers", choices=choices)
 
 class AdminAddGroupForm(forms.Form):

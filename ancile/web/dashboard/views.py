@@ -266,7 +266,7 @@ def admin_edit_user(request, user_id):
                                             "is_admin" : user.is_superuser,
                                             "is_developer" : user.is_developer})
 
-    return render(request, 'admin/form.html', {"redirect" : "/admin/edit/user/" + str(user_id),
+    return render(request, 'admin/form_users.html', {"redirect" : "/admin/edit/user/" + str(user_id),
                                                 "title" : "Edit User",
                                                 "form_title" : "Edit User",
                                                 "user_id" : user_id, "form" : form})
@@ -331,7 +331,7 @@ def admin_edit_app(request, app_id):
                                             "description" : app.description,
                                             "app_id" : app_id})
 
-    return render(request, 'admin/form.html', {"redirect" : "/admin/edit/app/" + str(app_id),
+    return render(request, 'admin/form_app.html', {"redirect" : "/admin/edit/app/" + str(app_id),
                                                 "title" : "Edit App",
                                                 "form_title" : "Edit App",
                                                 "app_id" : app_id,
@@ -375,7 +375,7 @@ def admin_add_group(request, app_id):
     else:
         form = AdminEditGroupForm()
 
-    return render(request, 'admin/form.html', {"redirect" : "/admin/add/group/" + str(app_id),
+    return render(request, 'admin/form_group.html', {"redirect" : "/admin/add/group/" + str(app_id),
                                                 "title" : "Add Group",
                                                 "form_title" : "Add Group",
                                                 "form" : form})
@@ -405,9 +405,9 @@ def admin_edit_group(request, group_id):
                                             "approved" : group.approved,
                                             "scopes" : [scp.value for scp in group.scopes.all()]})
 
-    return render(request, 'admin/form.html', {"redirect" : "/admin/edit/group/" + str(group_id),
+    return render(request, 'admin/form_group.html', {"redirect" : "/admin/edit/group/" + str(group_id),
                                                 "title" : "Edit Group",
-                                                "form_ title" : "Edit Group",
+                                                "form_title" : "Edit Group",
                                                  "form" : form})
 
 @login_required
@@ -724,7 +724,7 @@ def dev_add_app(request):
     else:
         form = DevEditAppForm(initial={"developers" : [request.user.username]})
 
-    return render(request, 'dev/form.html', {"redirect" : "/dev/add/app",
+    return render(request, 'dev/form_app.html', {"redirect" : "/dev/add/app",
                                                 "title" : "Create App",
                                                 "form_title" : "Create App",
                                                 "form" : form})
@@ -749,7 +749,7 @@ def dev_edit_app(request, app_id):
                                             "description" : app.description,
                                             "developers" : [dev.username for dev in app.developers.all()]})
 
-        return render(request, 'dev/form.html', {"redirect" : "/dev/edit/app/" + str(app_id),
+        return render(request, 'dev/form_app.html', {"redirect" : "/dev/edit/app/" + str(app_id),
                                                     "title" : "Edit App",
                                                     "form_title" : "Edit App",
                                                     "form" : form})
@@ -796,7 +796,7 @@ def dev_add_group(request, app_id):
         else:
             form = DevEditGroupForm()
 
-        return render(request, 'dev/form.html', {"redirect" : "/dev/add/group/" + str(app_id),
+        return render(request, 'dev/form_group.html', {"redirect" : "/dev/add/group/" + str(app_id),
                                                     "title" : "Add Group",
                                                     "form_title" : "Add Group",
                                                     "form" : form})
@@ -825,7 +825,7 @@ def dev_edit_group(request, group_id):
                                             "description" : group.description,
                                             "scopes" : [scope.value for scope in group.scopes.all()]})
 
-        return render(request, 'dev/form.html', {"redirect" : "/dev/edit/group/" + str(group_id),
+        return render(request, 'dev/form_group.html', {"redirect" : "/dev/edit/group/" + str(group_id),
                                                     "title" : "Edit Group",
                                                     "form_title" : "Edit Group",
                                                     "form" : form})
