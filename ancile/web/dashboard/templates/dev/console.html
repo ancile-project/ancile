@@ -59,7 +59,7 @@
       <input class="form-control" id="users" placeholder="username1, username2, ..." type="text"></input>
     </div>
     <br>
-    <div id="editor"></div>
+    <div id="python-editor"></div>
     <textarea id="output" class="form-control" readonly>Your output will be displayed here.</textarea>
     <div style="text-align: center;">
       <button class="btn btn-primary" id="run-button"><i class="material-icons">play_arrow</i>Run</button>
@@ -70,7 +70,7 @@
 
 <script src="{% static "dashboard/js/ace/ace.js" %}" type="text/javascript" charset="utf-8"></script>
 <script>
-    var editor = ace.edit("editor");
+    var editor = ace.edit("python-editor");
     editor.setTheme("ace/theme/tomorrow");
     editor.session.setMode("ace/mode/python");
 
@@ -113,16 +113,7 @@
     }
 </script>
 <style type="text/css" media="screen">
-    #output {
-        float: right;
-        width: 45%;
-        height: 350px !important;
-        border-radius: 5px;
-        margin-left: 2.5%;
-        padding: 5px;
-        font-family: monospace;
-    }
-    #editor {
+    #python-editor {
         float: left;
         width: 45%;
         height: 350px;

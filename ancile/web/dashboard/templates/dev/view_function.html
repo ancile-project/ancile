@@ -62,19 +62,19 @@
   <div class="card-body">
     <h4 class="card-title"></h4>
     <h6 class="card-subtitle mb-2 text-muted"></h6>
-    <div id="editor">{{ function.body }}</div>
+    <div id="python-editor">{{ function.body }}</div>
   </div>
 </div>
 
 <script src="{% static "dashboard/js/ace/ace.js" %}" type="text/javascript" charset="utf-8"></script>
 <script>
-    var editor = ace.edit("editor");
+    var editor = ace.edit("python-editor");
     editor.setTheme("ace/theme/tomorrow");
     editor.session.setMode("ace/mode/python");
     editor.setReadOnly(true);
 </script>
 <style type="text/css" media="screen">
-    #editor {
+    #python-editor {
         margin: auto;
         height: 250px;
         border-radius: 5px;
