@@ -167,7 +167,7 @@ if config.ENABLE_LOGGING:
             },
             "ancile.core": {
                 "level": "DEBUG",
-                "propagate": True,
+                "propagate": False,
                 "handlers": ["file", "console"],
             },
             "api": {"level": "INFO", "propagate": False, "handlers": ["file", "console"]},

@@ -50,7 +50,7 @@ def browser_execute(request):
     app_id = int(body['app_id'])
 
     if App.objects.filter(id=app_id, developers=user).exists():
-        users = body["users"].split(',')
+        users = [u for u in (usr.strip() for usr in body["users"].split(',')) if u]
         program = body["program"]
         try:
             user_info = [get_user_bundle(user, app_id) for user in users]
