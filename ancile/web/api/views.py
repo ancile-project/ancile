@@ -1,41 +1,79 @@
 import json
 from django.shortcuts import render
-# from ancile.core.core import execute
+from ancile.core.core import execute
 from django.http import HttpResponse, Http404, JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth.decorators import login_required
 from ancile.web.api.queries import get_app_id, get_user_bundle, get_app_module
 from ancile.web.dashboard.models import User, Token, PermissionGroup, DataProvider, App, PolicyTemplate, Policy, Scope
+from ancile.web.api.visualizer import parse_policy as parse_policy_string
 import traceback
+from django.views.decorators.csrf import csrf_exempt
+import logging
 
+logger = logging.getLogger(__name__)
+
+@csrf_exempt
 @require_http_methods(["POST"])
 def execute_api(request):
+    body = json.loads(request.body)
+
+    logger.info(f"Received request: {body}")
     try:
-        token = request.POST["token"]
-        users = request.POST["users"]
-        program = request.POST["program"]
+        token = body["token"]
+        users = body["users"]
+        program = body["program"]
     except KeyError:
-        return JsonResponse({"status": "error",
+        return JsonResponse({"result": "error",
                              "error": "Missing one or more required paramters: (token, users, program)"})
 
     try:
         app_id = get_app_id(token)
     except Exception:
-        return JsonResponse({"status": "error",
+        return JsonResponse({"result": "error",
                              "error": "Invalid token"})
     try:
         user_info = [get_user_bundle(user, app_id) for user in users]
     except Exception:
-        return JsonResponse({"status": "error",
+        return JsonResponse({"result": "error",
                              "error": "Problem in retreiving user information"})
 
-    # res = execute(user_info=user_info,
-    #               program=program,
-    #               app_id=app_id,
-    #               app_module=get_app_module(app_id))
-    
-    # return JsonResponse(res)
+    res = execute(user_info=user_info,
+                  program=program,
+                  app_id=app_id,
+                  app_module=get_app_module(app_id))
+    logger.info(f"Returning response: {res}")
+    return JsonResponse(res)
 
+
+@require_http_methods(["POST"])
+@login_required
+def browser_execute(request):
+    user = request.user
+    body = json.loads(request.body)
+
+    logger.info(f"Received request: {body}")
+
+    app_id = int(body['app_id'])
+
+    if App.objects.filter(id=app_id, developers=user).exists():
+        users = [u for u in (usr.strip() for usr in body["users"].split(',')) if u]
+        program = body["program"]
+        try:
+            user_info = [get_user_bundle(user, app_id) for user in users]
+        except Exception:
+            return JsonResponse({"result": "error",
+                                 "error": "Problem in retreiving user information"})
+        res = execute(user_info=user_info,
+                    program=program,
+                    app_id=app_id,
+                    app_module=get_app_module(app_id))
+
+        logger.info(f"Returning response: {res}")
+        return JsonResponse(res)
+    else:
+        return JsonResponse({"result": "error",
+                             "error": "You are not a developer for this app"})
 
 
 @login_required
@@ -68,7 +106,7 @@ def add_predefined_policy_to_user(request):
 
         needed_policies = PolicyTemplate.objects.filter(group=perm_group,
                                                           app=app)
-        
+
         new_policies = []
 
         for policy in needed_policies:
@@ -84,7 +122,7 @@ def add_predefined_policy_to_user(request):
             )
 
             new_policies.append(new_policy)
-        
+
         for policy in new_policies:
             policy.save()
 
@@ -111,7 +149,7 @@ def remove_app_for_user(request):
 def get_app_groups(request):
     app = request.POST.get("app")
     if app:
-        group_names = [group.name for group in PermissionGroup.objects.filter(app__name=app)]
+        group_names = [group.name for group in PermissionGroup.objects.filter(app__name=app, approved=True)]
         return JsonResponse(group_names, safe=False)
     raise Http404
 
@@ -146,5 +184,30 @@ def get_provider_scopes(request):
 
         return JsonResponse(scopes_json, safe=False)
     except Exception:
-        print(traceback.format_exc())
         return JsonResponse({"status": "error", "error": "An error has occurred."})
+
+@login_required
+@require_http_methods(["POST"])
+def parse_policy(request):
+    try:
+        policy = request.POST["policy"]
+        return JsonResponse(parse_policy_string(policy))
+    except Exception:
+        return JsonResponse({"status": "error", "error": traceback.format_exc()})
+
+@login_required
+@require_http_methods(["POST"])
+def get_app_policies(request):
+    try:
+        app_name = request.POST["app"]
+        app = App.objects.get(name=app_name)
+        policies = Policy.objects.filter(user=request.user, app=app)
+        returned_list = [
+            {
+                "policy": parse_policy_string(policy.text)["parsed_policy"],
+                "provider": policy.provider.display_name
+            } for policy in policies
+        ]
+        return JsonResponse(returned_list, safe=False)
+    except Exception:
+        return JsonResponse({"status": "error", "error": traceback.format_exc()})

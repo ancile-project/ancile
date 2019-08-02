@@ -1,5 +1,5 @@
 django
-psycopg2
+psycopg2-binary
 gunicorn
 requests-oauthlib
 pyjwt
@@ -9,3 +9,9 @@ django-crispy-forms
 redis
 dill
 wrapt
+sly
+tzlocal
+cryptography
+restrictedpython
+geopy
+numpy

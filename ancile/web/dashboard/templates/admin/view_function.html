@@ -1,4 +1,5 @@
 {% extends "base_table.html" %}
+{% load static %}
 
 {% block title %} Function {% endblock %}
 {% block admin_active %}active{% endblock %}
@@ -20,7 +21,7 @@
     <th>
       Approved
     </th>
-    <th>
+    <th class="actions">
       Actions
     </th>
   </thead>
@@ -42,7 +43,7 @@
         <i class="material-icons">close</i>
         {% endif %}
       </td>
-      <td>
+      <td class="actions">
         <a href="/admin/edit/function/{{ function.id }}"><i class="material-icons">edit</i></a>
         <a href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons">delete</i></a>
          <div class="dropdown-menu" aria-labelledby="deletePolicyDropdownButton">
@@ -55,18 +56,33 @@
 
 {% block post_table %}
 
-<div class="card" style="width: 50rem; margin: auto;">
+<br>
+
+<div class="card" style="width: 50%; margin: auto;">
   <div class="card-body">
     <h4 class="card-title"></h4>
     <h6 class="card-subtitle mb-2 text-muted"></h6>
-    <p class="card-text" style="font-family: monospace;">
-    {{ function.body }}
-    </p>
+    <div id="python-editor">{{ function.body }}</div>
   </div>
 </div>
 
+<script src="{% static "dashboard/js/ace/ace.js" %}" type="text/javascript" charset="utf-8"></script>
+<script>
+    var editor = ace.edit("python-editor");
+    editor.setTheme("ace/theme/tomorrow");
+    editor.session.setMode("ace/mode/python");
+    editor.setReadOnly(true);
+</script>
+<style type="text/css" media="screen">
+    #python-editor {
+        margin: auto;
+        height: 250px;
+        border-radius: 5px;
+    }
+</style>
+
 <br>
 
-<a href="/admin/view/app/{{ function.app.id }}" class="btn btn-default">Back</a>
+<a class="btn btn-default" href="#" onclick="window.history.back()">Back</a>
 {% endblock %}
 

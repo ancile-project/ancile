@@ -71,7 +71,7 @@ def fetch_history_location(data, token=None, fr=None, to=None, device_type=None)
     else:
         raise AncileException("Couldn't fetch location from the server.")
 
-    return True
+    return data
 
 
 @TransformDecorator()
@@ -79,7 +79,7 @@ def test_transform(data):
     import time
 
     data['test_transform_' + str(time.time())] = True
-    return True
+    return data
 
 
 @TransformDecorator()
@@ -88,3 +88,4 @@ def fuzz_location(data, mean, std):
 
     data['sta_location_x'] = np.random.normal(mean, std)
     data['sta_location_y'] = np.random.normal(mean, std)
+    return data

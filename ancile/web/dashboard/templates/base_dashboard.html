@@ -24,7 +24,7 @@
         Tip 2: you can also add an image using data-image tag
     -->
       <div class="logo">
-        <a href="/dashboard" class="simple-text logo-normal">
+        <a href="/" class="simple-text logo-normal">
           Ancile
         </a>
       </div>
@@ -64,12 +64,19 @@
               <p>Admin</p>
             </a>
               <div class="dropdown-menu" aria-labelledby="adminDropdown">
+                <a class="dropdown-item" href="/admin">Console</a>
                 <a class="dropdown-item" href="/admin/users">Users</a>
                 <a class="dropdown-item" href="/admin/apps">Apps</a>
                 <a class="dropdown-item" href="/admin/providers">Providers</a>
               </div>
           </li>
           {% endif %}
+          <li class="nav-item {% block settings_active %}{% endblock%}          ">
+            <a class="nav-link" href="/settings">
+              <i class="material-icons">settings</i>
+              <p>Settings</p>
+            </a>
+          </li>
           <li class="nav-item">
           <a class="nav-link" href="/logout">
             <i class="material-icons">logout</i>

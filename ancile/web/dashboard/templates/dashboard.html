@@ -13,6 +13,13 @@
   </div>
   <div class="card-body">
     <a href="/logout" class="btn btn-danger">Logout</a>
+    {% if pending_dev %}
+    <p>Developer request pending.</p>
+    {% else %}
+        {% if user.is_developer is False %}
+        <a href="/user/request/dev"><p>Request to be a Developer.</p></a>
+        {% endif %}
+    {% endif %}
   </div>
   {% else %}
   <div class="card-body">

@@ -30,7 +30,8 @@
   <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:400,700|Material+Icons" />
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css">
   <!-- CSS Files -->
-  <link href="{% static "dashboard/css/material-dashboard.css" %}" rel="stylesheet" />
+  <link href="{% static "dashboard/css/material-dashboard.min.css" %}" rel="stylesheet" />
+  <link href="{% static "dashboard/css/style.css" %}" rel="stylesheet" />
 </head>
 
 <body class="">
@@ -56,13 +57,17 @@
             <script>
               document.write(new Date().getFullYear())
             </script>
-            <a href="http://smalldata.io" target="_blank">small data lab</a> 
+            <a href="http://smalldata.io" target="_blank">small data lab</a>
           </div>
         </div>
       </footer>
     </div>
   </div>
   </div>
+  <script>
+    (()=>{let tables=document.getElementsByTagName("table");Array.prototype.forEach.call(tables,table=>{if(!table.className.startsWith("jsoneditor")){table.style.display=table.rows.length<=1?"none":""}});
+      })(); 
+  </script>
   <!--   Core JS Files   -->
   <script src="{% static "dashboard/js/core/jquery.min.js" %}"></script>
   <script src="{% static "dashboard/js/core/popper.min.js" %}"></script>
@@ -103,5 +108,4 @@
   <!-- Control Center for Material Dashboard: parallax effects, scripts for the example pages etc -->
   <script src="{% static "dashboard/js/material-dashboard.js" %}" type="text/javascript"></script>
 </body>
-
 </html>

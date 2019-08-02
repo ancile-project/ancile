@@ -19,7 +19,7 @@
     <th>
       Expires At
     </th>
-    <th>
+    <th class="actions">
       Actions
     </th>
   </thead>
@@ -39,7 +39,8 @@
       <td class="timestamp" style="display: none;">
         {{ token.expires_at }}
       </td>
-      <td>
+      <td class="actions">
+        <a href="/user/view/token/{{token.id}}" ><i class="material-icons">pageview</i></a>
         <a href="#" onclick="removeProvider(this, '{{ token.provider.path_name }}'); return false"><i class="material-icons">delete</i></a>
       </td>
     </tr>

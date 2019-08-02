@@ -42,7 +42,7 @@ def test_transform(data):
     else:
         data['test_transform'] = [str(time.time())]
     print(data)
-    return True
+    return data
 
 
 @TransformDecorator()
@@ -53,4 +53,4 @@ def test_transform_param(data, param):
         data['test_transform_param'].append(str(param) + str(time.time()))
     else:
         data['test_transform_param'] = [str(param) + str(time.time())]
-    return True
+    return data

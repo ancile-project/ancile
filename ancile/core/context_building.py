@@ -55,7 +55,7 @@ def assemble_locals(storage, result, user_specific, app_id, app_module=None):
     lcls['user'] = user
     lcls['new_collection'] = new_collection
     lcls['encrypt'] = encrypt
-    lcls['return_to_app'] = result.append_dp_data_to_result
+    lcls['return_to_app'] = result.return_to_app
     lcls['app'] = app_module
 
     return lcls

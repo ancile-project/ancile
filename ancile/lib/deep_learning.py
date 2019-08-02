@@ -24,7 +24,7 @@ def get_split_train_mnist( data, part, split, token=None, user=None, name=None):
     print(len(sub_dataset))
     data['train_dataset'] = sub_dataset
 
-    return True
+    return data
 
 
 @AggregateDecorator()
@@ -41,7 +41,7 @@ def aggregate_train_dataset(data):
     data[f'train_dataset'] = dataset
 
     data['output'].append(f'Aggregated datasets.')
-    return True
+    return data
 
 @TransformDecorator()
 def get_loader(data, dataset_name, batch_size):
@@ -51,7 +51,7 @@ def get_loader(data, dataset_name, batch_size):
     train_loader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=True)
     data[f'{dataset_name}_loader'] = train_loader
     data['output'].append(f'added {dataset_name} dataset.')
-    return True
+    return data
 
 @ExternalDecorator()
 def get_test_mnist(data, token=None):
@@ -64,7 +64,7 @@ def get_test_mnist(data, token=None):
                            transforms.Normalize((0.1307,), (0.3081,))
                        ]))
 
-    return True
+    return data
 
 
 @TransformDecorator()
@@ -96,7 +96,7 @@ def create_model(data):
         net.load_state_dict(data['model'])
     data['model'] = net
     data['output'].append(f'Built model')
-    return True
+    return data
 
 
 @TransformDecorator()
@@ -107,7 +107,7 @@ def sgd_optimizer(data, lr, momentum):
     data['optimizer'] = optimizer
     data['output'].append(f'Created SGD model')
 
-    return True
+    return data
 
 
 @TransformDecorator()
@@ -119,7 +119,7 @@ def nll_loss(data):
 
     data['output'].append(f'Created NLL Loss')
 
-    return True
+    return data
 
 
 @TransformDecorator()
@@ -143,6 +143,7 @@ def train_one_epoch(data, epoch, log_interval=10):
             print(out)
 
             data['output'].append(out)
+    return data
 
 @TransformDecorator()
 def test(data, epoch):
@@ -170,7 +171,7 @@ def test(data, epoch):
     print(out)
     data['output'].append(out)
 
-    return True
+    return data
 
 
 @TransformDecorator()
@@ -187,12 +188,12 @@ def get_prediction(data, image_id=1):
     confidence, label = torch.max(prediction, dim=1)
 
     data['prediction'] = {'confidence': confidence, 'label': label}
-
+    return data
 
 @TransformDecorator()
 def pickle_model(data):
     data['model'] = data['model'].state_dict()
-
+    return data
 
 @TransformDecorator()
 def prepare_for_json(data):

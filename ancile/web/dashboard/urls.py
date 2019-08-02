@@ -1,5 +1,6 @@
 from django.urls import  path
 import ancile.web.dashboard.views as views
+from django.contrib.auth.decorators import login_required
 
 urlpatterns = [
     path('', views.dashboard),
@@ -7,6 +8,13 @@ urlpatterns = [
     path('policies', views.policies),
     path('providers', views.providers),
     path('apps', views.apps),
+    path('settings', login_required(views.Settings.as_view())),
+
+    path('user/request/dev', views.user_request_dev),
+    path('user/view/token/<int:token_id>', views.user_view_token),
+    path('user/edit/data/<int:token_id>', views.user_edit_data),
+
+    path('admin', views.admin_console),
     path('admin/users', views.admin_users),
     path('admin/tokens', views.admin_tokens),
     path('admin/apps', views.admin_apps),
@@ -18,6 +26,8 @@ urlpatterns = [
     path('admin/delete/user/<int:user_id>', views.admin_delete_user),
     path('admin/view/user/<int:user_id>', views.admin_view_user),
     path('admin/edit/user/<int:user_id>', views.admin_edit_user),
+    path('admin/approve/user/<int:user_id>', views.admin_approve_user),
+    path('admin/reject/user/<int:user_id>', views.admin_reject_user),
 
     path('admin/delete/token/<int:token_id>', views.admin_delete_token),
     path('admin/view/token/<int:token_id>', views.admin_view_token),
@@ -44,11 +54,13 @@ urlpatterns = [
     path('admin/view/group/<int:group_id>', views.admin_view_group),
     path('admin/add/group/<int:app_id>', views.admin_add_group),
     path('admin/edit/group/<int:group_id>', views.admin_edit_group),
+    path('admin/approve/group/<int:group_id>', views.admin_approve_group),
 
     path('admin/delete/function/<int:function_id>', views.admin_delete_function),
     path('admin/view/function/<int:function_id>', views.admin_view_function),
     path('admin/add/function/<int:app_id>', views.admin_add_function),
     path('admin/edit/function/<int:function_id>', views.admin_edit_function),
+    path('admin/approve/function/<int:function_id>', views.admin_approve_function),
 
     path('admin/delete/policy/template/<int:policy_id>', views.admin_delete_policy_template),
     path('admin/view/policy/template/<int:policy_id>', views.admin_view_policy_template),
@@ -66,6 +78,11 @@ urlpatterns = [
     path('dev/view/group/<int:group_id>', views.dev_view_group),
     path('dev/add/group/<int:app_id>', views.dev_add_group),
     path('dev/edit/group/<int:group_id>', views.dev_edit_group),
+
+    path('dev/delete/function/<int:function_id>', views.dev_delete_function),
+    path('dev/view/function/<int:function_id>', views.dev_view_function),
+    path('dev/add/function/<int:app_id>', views.dev_add_function),
+    path('dev/edit/function/<int:function_id>', views.dev_edit_function),
 
     path('dev/delete/policy/template/<int:policy_id>', views.dev_delete_policy),
     path('dev/view/policy/template/<int:policy_id>', views.dev_view_policy),

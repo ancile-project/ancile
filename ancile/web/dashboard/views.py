@@ -15,14 +15,66 @@ class SignUp(generic.CreateView):
     success_url = reverse_lazy('login')
     template_name = 'register.html'
 
+class Settings(generic.CreateView):
+    form_class = UserSettingsForm
+    success_url = "/settings"
+    template_name = 'settings.html'
+
+    def get_form_kwargs(self):
+        kwargs = super(Settings, self).get_form_kwargs()
+        kwargs.update({'request': self.request})
+        return kwargs
 
 def dashboard(request):
-    return render(request, "dashboard.html", {})
+    pending_dev = False
+    if not request.user.is_anonymous:
+        if PendingDeveloper.objects.filter(user=request.user).exists():
+            pending_dev = True
+    return render(request, "dashboard.html", {"pending_dev" : pending_dev})
 
 @login_required
 def providers(request):
     tokens = Token.objects.filter(user=request.user)
     return render(request, "user/providers.html", {"tokens" : tokens, "all_providers": DataProvider.objects.all})
+
+@login_required
+def user_view_token(request, token_id):
+    token = Token.objects.get(pk=token_id)
+    if PrivateData.objects.filter(user=request.user, provider=token.provider).exists():
+        data = PrivateData.objects.get(user=request.user, provider=token.provider).value
+    else:
+        data = "{}"
+    return render(request, "user/view_token.html", {"token" : token, "data" : json.loads(data)})
+
+@login_required
+def user_edit_data(request, token_id):
+    token = Token.objects.get(pk=token_id)
+    if request.method == "POST":
+        form = UserEditDataForm(request.POST)
+
+        if form.is_valid():
+            if PrivateData.objects.filter(user=request.user, provider=token.provider).exists():
+                data = PrivateData.objects.get(user=request.user, provider=token.provider)
+            else:
+                data = PrivateData(user=request.user,
+                                    provider=token.provider)
+
+            data.value = form.cleaned_data['json']
+            data.save()
+            return redirect("/user/view/token/" + str(token_id))
+    else:
+        if PrivateData.objects.filter(user=request.user, provider=token.provider).exists():
+            data = PrivateData.objects.get(user=request.user, provider=token.provider).value
+        else:
+            data = "{}"
+
+        form = UserEditDataForm(initial={"json" : data})
+
+        return render(request, 'user/provider_form.html', {"redirect" : "/user/edit/data/" + str(token_id),
+                                                            "title" : "Edit Data",
+                                                            "form_title" : "Edit Data",
+                                                            "body" : json.loads(data),
+                                                            "form" : form})
 
 @login_required
 def policies(request):
@@ -33,9 +85,24 @@ def policies(request):
 def apps(request):
     policies = Policy.objects.filter(user=request.user)
     context = {}
-    context["apps"] = [policy.app for policy in policies]
+    apps = {policy.app.name: policy.app for policy in policies}
+    context["apps"] = list(apps.values())
     context["all_apps"] = App.objects.all()
     return render(request, "user/apps.html", context)
+
+@login_required
+def user_request_dev(request):
+    PendingDeveloper(user=request.user).save()
+    return redirect("/")
+
+@login_required
+@user_is_admin
+def admin_console(request):
+    return render(request,
+                    "admin/console.html",
+                    {"functions" : Function.objects.filter(approved=False),
+                    "groups" : PermissionGroup.objects.filter(approved=False),
+                    "devs" : [x.user for x in PendingDeveloper.objects.all()]})
 
 @login_required
 @user_is_admin
@@ -145,7 +212,6 @@ def admin_add_policy(request, user_id):
         form.fields['provider'].choices=set([(token.provider.path_name, token.provider.display_name) for token in Token.objects.filter(user=user)])
 
     return render(request, 'admin/form.html', {"redirect" : "/admin/add/policy/" + str(user_id),
-                                                "back" : "/admin/view/user/" + str(user_id),
                                                 "title" : "Add Policy",
                                                 "form_title" : "Add Policy",
                                                 "form" : form})
@@ -168,7 +234,6 @@ def admin_edit_policy(request, policy_id):
         form = AdminEditPolicyForm(initial={"text" : policy.text, "active" : policy.active})
 
     return render(request, 'admin/form.html', {"redirect" : "/admin/edit/policy/" + str(policy_id),
-                                                "back" : "/admin/view/user/" + str(user_id),
                                                 "title" : "Edit Policy",
                                                 "form_title" : "Edit Policy",
                                                 "form" : form})
@@ -201,11 +266,28 @@ def admin_edit_user(request, user_id):
                                             "is_admin" : user.is_superuser,
                                             "is_developer" : user.is_developer})
 
-    return render(request, 'admin/form.html', {"redirect" : "/admin/edit/user/" + str(user_id),
-                                                "back" : "/admin/view/user/" + str(user_id),
+    return render(request, 'admin/form_users.html', {"redirect" : "/admin/edit/user/" + str(user_id),
                                                 "title" : "Edit User",
                                                 "form_title" : "Edit User",
                                                 "user_id" : user_id, "form" : form})
+
+@login_required
+@user_is_admin
+def admin_approve_user(request, user_id):
+    user = User.objects.get(pk=user_id)
+    PendingDeveloper.objects.get(user=user).delete()
+    user.is_developer = True
+    user.save()
+    print(user)
+    print(user.is_developer)
+    return redirect("/admin")
+
+@login_required
+@user_is_admin
+def admin_reject_user(request, user_id):
+    user = User.objects.get(pk=user_id)
+    PendingDeveloper.objects.get(user=user).delete()
+    return redirect("/admin")
 
 @login_required
 @user_is_admin
@@ -249,8 +331,7 @@ def admin_edit_app(request, app_id):
                                             "description" : app.description,
                                             "app_id" : app_id})
 
-    return render(request, 'admin/form.html', {"redirect" : "/admin/edit/app/" + str(app_id),
-                                                "back" : "/admin/view/app/" + str(app_id),
+    return render(request, 'admin/form_app.html', {"redirect" : "/admin/edit/app/" + str(app_id),
                                                 "title" : "Edit App",
                                                 "form_title" : "Edit App",
                                                 "app_id" : app_id,
@@ -294,8 +375,7 @@ def admin_add_group(request, app_id):
     else:
         form = AdminEditGroupForm()
 
-    return render(request, 'admin/form.html', {"redirect" : "/admin/add/group/" + str(app_id),
-                                                "back" : "/admin/view/app/" + str(app_id),
+    return render(request, 'admin/form_group.html', {"redirect" : "/admin/add/group/" + str(app_id),
                                                 "title" : "Add Group",
                                                 "form_title" : "Add Group",
                                                 "form" : form})
@@ -325,11 +405,18 @@ def admin_edit_group(request, group_id):
                                             "approved" : group.approved,
                                             "scopes" : [scp.value for scp in group.scopes.all()]})
 
-    return render(request, 'admin/form.html', {"redirect" : "/admin/edit/group/" + str(group_id),
-                                                "back" : "/admin/view/group/" + str(group_id),
+    return render(request, 'admin/form_group.html', {"redirect" : "/admin/edit/group/" + str(group_id),
                                                 "title" : "Edit Group",
-                                                "form_ title" : "Edit Group",
+                                                "form_title" : "Edit Group",
                                                  "form" : form})
+
+@login_required
+@user_is_admin
+def admin_approve_group(request, group_id):
+    group = PermissionGroup.objects.get(pk=group_id)
+    group.approved = True
+    group.save()
+    return redirect("/admin")
 
 @login_required
 @user_is_admin
@@ -364,11 +451,10 @@ def admin_add_function(request, app_id):
     else:
         form = AdminAddFunctionForm()
 
-    return render(request, 'admin/form.html', {"redirect" : "/admin/add/function/" + str(app_id),
-                                                "back" : "/admin/view/app/" + str(app_id),
-                                                "title" : "Add Function",
-                                                "form_title" : "Add Function",
-                                                "form" : form})
+    return render(request, 'admin/function_form.html', {"redirect" : "/admin/add/function/" + str(app_id),
+                                                        "title" : "Add Function",
+                                                        "form_title" : "Add Function",
+                                                        "form" : form})
 
 @login_required
 @user_is_admin
@@ -393,11 +479,19 @@ def admin_edit_function(request, function_id):
                                                 "app_id" : function.app.id,
                                                 "body" : function.body})
 
-    return render(request, 'admin/form.html', {"redirect" : "/admin/edit/function/" + str(function_id),
-                                                "back" : "/admin/view/app/" + str(function.app.id),
-                                                "title" : "Edit Function",
-                                                "form_title" : "Edit Function",
-                                                "form" : form})
+    return render(request, 'admin/function_form.html', {"redirect" : "/admin/edit/function/" + str(function_id),
+                                                        "title" : "Edit Function",
+                                                        "form_title" : "Edit Function",
+                                                        "body" : function.body,
+                                                        "form" : form})
+
+@login_required
+@user_is_admin
+def admin_approve_function(request, function_id):
+    function = Function.objects.get(pk=function_id)
+    function.approved = True
+    function.save()
+    return redirect("/admin")
 
 @login_required
 @user_is_admin
@@ -431,7 +525,6 @@ def admin_add_policy_template(request, group_id):
         form = AdminAddPolicyTemplateForm()
 
     return render(request, 'admin/form.html', {"redirect" : "/admin/add/policy/template/" + str(group_id),
-                                                "back" : "/admin/view/group/" + str(group_id),
                                                 "title" : "Add Policy",
                                                 "form_title" : "Add Policy",
                                                 "form" : form})
@@ -454,7 +547,6 @@ def admin_edit_policy_template(request, policy_id):
         form = AdminEditPolicyTemplateForm(initial={"text" : policy.text, "provider" : policy.provider.path_name})
 
     return render(request, 'admin/form.html', {"redirect" : "/admin/edit/policy/template/" + str(policy_id),
-                                                "back" : "/admin/view/group/" + str(group_id),
                                                 "title" : "Edit Policy",
                                                 "form_title" : "Edit Policy",
                                                 "form" : form})
@@ -491,14 +583,14 @@ def admin_add_provider(request):
                                     client_secret=form.cleaned_data['client_secret'],
                                     extra_params=form.cleaned_data['json'])
             provider.save()
-            return redirect("/admin/providers")
+            return redirect("/admin/view/provider/" + str(provider.id))
     else:
         form = AdminAddProviderForm(initial={})
 
-    return render(request, 'admin/form.html', {"redirect" : "/admin/add/provider",
-                                                "back" : "/admin/providers",
+    return render(request, 'admin/provider_form.html', {"redirect" : "/admin/add/provider",
                                                 "title" : "Add Provider",
                                                 "form_title" : "Add Provider",
+                                                "json" : json.loads("{}"),
                                                 "form" : form})
 
 @login_required
@@ -528,10 +620,10 @@ def admin_edit_provider(request, provider_id):
                                                 "client_secret" : provider.client_secret,
                                                 "json" : provider.extra_params})
 
-    return render(request, 'admin/form.html', {"redirect" : "/admin/edit/provider/" + str(provider_id),
-                                                "back" : "/admin/view/provider/" + str(provider_id),
+    return render(request, 'admin/provider_form.html', {"redirect" : "/admin/edit/provider/" + str(provider_id),
                                                 "title" : "Edit Provider",
                                                 "form_title" : "Edit Provider",
+                                                "json" : json.loads(str(provider.extra_params)),
                                                 "form" : form})
 
 @login_required
@@ -559,7 +651,6 @@ def admin_add_scope(request, provider_id):
         form = AdminAddScopeForm(initial={})
 
     return render(request, 'admin/form.html', {"redirect" : "/admin/add/scope/" + str(provider_id),
-                                                "back" : "/admin/view/provider/" + str(provider_id),
                                                 "title" : "Add Scope",
                                                 "form_title" : "Add Scope",
                                                 "form" : form})
@@ -586,7 +677,6 @@ def admin_edit_scope(request, scope_id):
                                                 "provider" : scope.provider.path_name})
 
     return render(request, 'admin/form.html', {"redirect" : "/admin/edit/scope/" + str(scope_id),
-                                                "back" : "/admin/view/provider/" + str(scope.provider.id),
                                                 "title" : "Edit Scope",
                                                 "form_title" : "Edit Scope",
                                                 "form" : form})
@@ -634,8 +724,7 @@ def dev_add_app(request):
     else:
         form = DevEditAppForm(initial={"developers" : [request.user.username]})
 
-    return render(request, 'dev/form.html', {"redirect" : "/dashboard/dev/add/app",
-                                                "back" : "/dashboard/dev",
+    return render(request, 'dev/form_app.html', {"redirect" : "/dev/add/app",
                                                 "title" : "Create App",
                                                 "form_title" : "Create App",
                                                 "form" : form})
@@ -660,8 +749,7 @@ def dev_edit_app(request, app_id):
                                             "description" : app.description,
                                             "developers" : [dev.username for dev in app.developers.all()]})
 
-        return render(request, 'dev/form.html', {"redirect" : "/dev/edit/app/" + str(app_id),
-                                                    "back" : "/dev",
+        return render(request, 'dev/form_app.html', {"redirect" : "/dev/edit/app/" + str(app_id),
                                                     "title" : "Edit App",
                                                     "form_title" : "Edit App",
                                                     "form" : form})
@@ -708,8 +796,7 @@ def dev_add_group(request, app_id):
         else:
             form = DevEditGroupForm()
 
-        return render(request, 'dev/form.html', {"redirect" : "/dev/add/group/" + str(app_id),
-                                                    "back" : "/dev/view/app" + str(app_id),
+        return render(request, 'dev/form_group.html', {"redirect" : "/dev/add/group/" + str(app_id),
                                                     "title" : "Add Group",
                                                     "form_title" : "Add Group",
                                                     "form" : form})
@@ -738,8 +825,7 @@ def dev_edit_group(request, group_id):
                                             "description" : group.description,
                                             "scopes" : [scope.value for scope in group.scopes.all()]})
 
-        return render(request, 'dev/form.html', {"redirect" : "/dev/edit/group/" + str(group_id),
-                                                    "back" : "/dev/view/app/" + str(app.id),
+        return render(request, 'dev/form_group.html', {"redirect" : "/dev/edit/group/" + str(group_id),
                                                     "title" : "Edit Group",
                                                     "form_title" : "Edit Group",
                                                     "form" : form})
@@ -785,7 +871,6 @@ def dev_add_policy(request, group_id):
             form = DevEditPolicyTemplateForm()
 
         return render(request, 'dev/form.html', {"redirect" : "/dev/add/policy/template/" + str(group_id),
-                                                    "back" : "/dev/view/group/" + str(group_id),
                                                     "title" : "Add Policy",
                                                     "form_title" : "Add Policy",
                                                     "form" : form})
@@ -812,7 +897,6 @@ def dev_edit_policy(request, policy_id):
                                                         "provider" : policy.provider.path_name})
 
         return render(request, 'dev/form.html', {"redirect" : "/dev/edit/policy/template/" + str(policy_id),
-                                                    "back" : "/dev/view/group/" + str(policy.group.id),
                                                     "title" : "Edit Policy",
                                                     "form_title" : "Edit Policy",
                                                     "form" : form})
@@ -858,7 +942,6 @@ def dev_add_policy(request, group_id):
             form = DevEditPolicyTemplateForm()
 
         return render(request, 'dev/form.html', {"redirect" : "/dev/add/policy/template/" + str(group_id),
-                                                    "back" : "/dev/view/group/" + str(group_id),
                                                     "title" : "Add Policy",
                                                     "form_title" : "Add Policy",
                                                     "form" : form})
@@ -885,9 +968,79 @@ def dev_edit_policy(request, policy_id):
                                                         "provider" : policy.provider.path_name})
 
         return render(request, 'dev/form.html', {"redirect" : "/dev/edit/policy/template/" + str(policy_id),
-                                                    "back" : "/dev/view/group/" + str(policy.group.id),
                                                     "title" : "Edit Policy",
                                                     "form_title" : "Edit Policy",
                                                     "form" : form})
     else:
         return redirect("/dev")
+
+@login_required
+@user_is_developer
+def dev_delete_function(request, function_id):
+    function = Function.objects.get(pk=function_id)
+    app = function.app
+    if app in request.user.apps:
+        function.delete()
+        return redirect("/dev/view/app/" + str(app.id))
+    else:
+        return redirect("/dev")
+
+@login_required
+@user_is_developer
+def dev_view_function(request, function_id):
+    function = Function.objects.get(pk=function_id)
+    if function.app in request.user.apps:
+        return render(request, "dev/view_function.html", {"function" : function})
+    else:
+        return redirect("/dev")
+
+@login_required
+@user_is_developer
+def dev_add_function(request, app_id):
+    print(app_id)
+    if request.method == "POST":
+        form = DevEditFunctionForm(request.POST)
+
+        if form.is_valid():
+            function = Function(name = form.cleaned_data['name'],
+                            description = form.cleaned_data['description'],
+                            body = form.cleaned_data['body'],
+                            approved = False,
+                            app_id=app_id)
+
+            function.save()
+            return redirect("/dev/view/app/" + str(app_id))
+    else:
+        form = DevEditFunctionForm()
+
+    return render(request, 'dev/function_form.html', {"redirect" : "/dev/add/function/" + str(app_id),
+                                                        "title" : "Add Function",
+                                                        "form_title" : "Add Function",
+                                                        "form" : form})
+
+@login_required
+@user_is_developer
+def dev_edit_function(request, function_id):
+    function = Function.objects.get(pk=function_id)
+
+    if request.method == "POST":
+        form = DevEditFunctionForm(request.POST)
+
+        if form.is_valid():
+            function.name = form.cleaned_data["name"]
+            function.description = form.cleaned_data["description"]
+            function.body = form.cleaned_data["body"]
+            function.approved = False
+            function.save()
+            return redirect("/dev/view/app/" + str(function.app.id))
+    else:
+        form = DevEditFunctionForm(initial={"name" : function.name,
+                                                "description" : function.description,
+                                                "body" : function.body})
+
+    return render(request, 'dev/function_form.html', {"redirect" : "/dev/edit/function/" + str(function_id),
+                                                        "title" : "Edit Function",
+                                                        "form_title" : "Edit Function",
+                                                        "body" : function.body,
+                                                        "form" : form})
+

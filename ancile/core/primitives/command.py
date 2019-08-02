@@ -29,6 +29,10 @@ class Command:
         if hasattr(module, 'name'):
             self.scopes.append(module.name)
 
+    @property
+    def print_params(self):
+        return {k:v for k,v in self.params.items() if k != 'data'}
+
     def __repr__(self):
         params_repr = ', '.join([ f'{x}={y}' for x, y in self.params.items()
                                   if x!='data' and x!='collection'])

@@ -49,10 +49,25 @@
 
 {% block post_table %}
 
-<div style="text-align: center;">
-<a href="/dev/add/group/{{ app.id }}" class="btn btn-primary">Add Group</a>
-<a href="/dev/add/function/{{ app.id }}" class="btn btn-primary">Add Function</a>
-<a href="/dev" class="btn btn-default">Back</a>
+<div class="card">
+    <div class="card-header card-header-primary">
+      <h4 class="card-title">JSON Web Token</h4>
+      <p class="card-category"></p>
+    </div>
+    <div class="card-body">
+    <p id="salt" class="card-text" style="font-family: monospace;">{{app.encoded_salt}}</p>
+    <a href="#" onclick="copySalt()"><i class="material-icons" style="float: right;">file_copy</i></a>
+    <script>
+        function copySalt() {
+            var range = document.createRange();
+            range.selectNode(document.getElementById("salt"));
+            window.getSelection().removeAllRanges(); // clear current selection
+            window.getSelection().addRange(range); // to select text
+            document.execCommand("copy");
+            window.getSelection().removeAllRanges();// to deselect
+        }
+    </script>
+  </div>
 </div>
 
   <div class="row">
@@ -63,6 +78,7 @@
           <p class="card-category"></p>
         </div>
         <div class="card-body">
+          <a href="/dev/add/group/{{ app.id }}" class="btn btn-primary btn-round"><i class="material-icons">add</i>Add Group</a>
           <div class="table-responsive">
             <table class="table">
               <thead class="text-primary">
@@ -78,7 +94,7 @@
                 <th>
                   Approved
                 </th>
-                <th>
+                <th class="actions">
                   Actions
                 </th>
               </thead>
@@ -103,7 +119,7 @@
                     <i class="material-icons">close</i>
                     {% endif %}
                   </td>
-                  <td>
+                  <td class="actions">
                     <a href="/dev/view/group/{{ group.id }}"><i class="material-icons">pageview</i></a>
                     <a href="/dev/edit/group/{{ group.id }}"><i class="material-icons">edit</i></a>
                     <a href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons">delete</i></a>
@@ -129,6 +145,7 @@
           <p class="card-category"></p>
         </div>
         <div class="card-body">
+          <a href="/dev/add/function/{{ app.id }}" class="btn btn-primary btn-round"><i class="material-icons">add</i>Add Function</a>
           <div class="table-responsive">
             <table class="table">
               <thead class="text-primary">
@@ -141,7 +158,7 @@
                 <th>
                   Approved?
                 </th>
-                <th>
+                <th class="actions">
                   Actions
                 </th>
               </thead>
@@ -161,7 +178,7 @@
                     <i class="material-icons">close</i>
                     {% endif %}
                   </td>
-                  <td>
+                  <td class="actions">
                     <a href="/dev/view/function/{{ function.id }}"><i class="material-icons">pageview</i></a>
                     <a href="/dev/edit/function/{{ function.id }}"><i class="material-icons">edit</i></a>
                     <a href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons">delete</i></a>
@@ -177,6 +194,11 @@
         </div>
       </div>
     </div>
+</div>
+
+
+<div style="text-align: center;">
+  <a class="btn btn-default" href="#" onclick="window.history.back()">Back</a>
 </div>
 
 {% endblock %}

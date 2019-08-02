@@ -1,20 +1,23 @@
 {% extends "base_table.html" %}
+{% load static %}
 
 {% block title %} Developer Console {% endblock %}
 {% block dev_active %}active{% endblock %}
 {% block table_title %} Apps {% endblock %}
-{% block table_sub %} These are the apps you are develop. {% endblock %}
+{% block table_sub %} These are the apps you are developing {% endblock %}
 
-
+{% block buttons %}
+  <a href="/dev/add/app" class="btn btn-round btn-primary"><i class="material-icons">add</i>Create App</a>
+{% endblock %}
 {% block table_content %}
   <thead class="text-primary">
     <th>
       Name
     </th>
-    <th>
+    <th style="text-align:center;">
       Description
     </th>
-    <th>
+    <th class="actions">
       Actions
     </th>
   </thead>
@@ -24,10 +27,10 @@
       <td>
         {{ app.name }}
       </td>
-      <td>
+      <td style="text-align:center;">
         {{ app.description }}
       </td>
-      <td>
+      <td class="actions">
         <a href="/dev/view/app/{{ app.id }}"><i class="material-icons">pageview</i></a>
         <a href="/dev/edit/app/{{ app.id }}"><i class="material-icons">edit</i></a>
         <a href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons">delete</i></a>
@@ -41,8 +44,82 @@
 {% endblock %}
 
 {% block post_table %}
+<div class="card" style="max-width: 700px; margin-left: auto; margin-right: auto;">
+  <div class="card-body">
+    <h4 class="card-title"></h4>
+    <h6 class="card-subtitle mb-2 text-muted"></h6>
+    <label for="apps">Select app:</label>
+    <select class="form-control" id="apps" name="app">
+    {% for app in apps %}
+    <option value={{app.id}}>{{ app.name }}</option>
+    {% endfor %}
+    </select>
+    <div class="tooltip-test" title="Separated by commas">
+      <label for="users">Enter users:</label>
+      <input class="form-control" id="users" placeholder="username1, username2, ..." type="text"></input>
+    </div>
+    <br>
+    <div id="python-editor"></div>
+    <textarea id="output" class="form-control" readonly>Your output will be displayed here.</textarea>
+    <div style="text-align: center;">
+      <button class="btn btn-primary" id="run-button"><i class="material-icons">play_arrow</i>Run</button>
+    </div>
+  </div>
 
-<div style="text-align: center;">
-<a href="/dev/add/app" class="btn btn-primary">Create App</a>
 </div>
+
+<script src="{% static "dashboard/js/ace/ace.js" %}" type="text/javascript" charset="utf-8"></script>
+<script>
+    var editor = ace.edit("python-editor");
+    editor.setTheme("ace/theme/tomorrow");
+    editor.session.setMode("ace/mode/python");
+
+    document.getElementById("run-button").onclick = () => {
+      let request = new XMLHttpRequest();
+      let request_object = {
+        app_id: document.getElementById("apps").value,
+        users: document.getElementById("users").value,
+        program: editor.getValue()
+      };
+      let csrftoken = (function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = cookies[i].trim();
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+      })("csrftoken");
+
+      request.onreadystatechange = () => {
+        if (request.readyState === 4 && request.status === 200) {
+          document.getElementById("output").innerHTML = request.responseText;
+        }
+      }
+
+      request.open(
+        "POST",
+        "/api/browser_run"
+      )
+
+      request.setRequestHeader("X-CSRFToken", csrftoken);
+      request.send(JSON.stringify(request_object));
+    }
+</script>
+<style type="text/css" media="screen">
+    #python-editor {
+        float: left;
+        width: 45%;
+        height: 350px;
+        border-radius: 5px;
+        margin-right: 2.5%;
+    }
+</style>
+
 {% endblock %}

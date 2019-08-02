@@ -271,3 +271,6 @@ class PrivateData(models.Model):
                 fields=["user", "provider"], name="private_data:unique_user_provider"
             )
         ]
+
+class PendingDeveloper(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)

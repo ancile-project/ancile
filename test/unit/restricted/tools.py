@@ -15,8 +15,8 @@ def get_dummy_pair(input_policy: str, id_num) -> DataPolicyPair:
 
 def gen_dummy_fn(name):
     @TransformDecorator()
-    def fn(**kwargs):
-        pass
+    def fn(data,**kwargs):
+        return data
     fn.__name__ = name
     return fn
 

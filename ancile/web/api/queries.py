@@ -33,16 +33,20 @@ def _get_user_bundle(username, app_id):
     policies_raw = models.Policy.objects.filter(
         app_id=app_id, user_id=user_id, active=True
     ).values("provider__path_name", "text")
-    tokens_raw = models.Token.objects.filter(user_id=user_id).values(
-        "provider__path_name", "access_token"
-    )
+
+    tokens_raw = models.Token.objects.filter(user_id=user_id)
+    tokens = dict()
+    for token in tokens_raw:
+        if token.expired:
+            token.refresh()
+        tokens[token.provider.path_name] = token.access_token
+
     private_data_raw = models.PrivateData.objects.filter(user_id=user_id).values(
         "value", "provider__path_name"
     )
 
     policies = dict()
 
-    tokens = {x["provider__path_name"]: x["access_token"] for x in tokens_raw}
     private_data = {
         x["provider__path_name"]: jsonify(x["value"]) for x in private_data_raw
     }

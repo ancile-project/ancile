@@ -46,6 +46,7 @@ def in_geofence(geofence, radius, data=None):
     location_tuple = (data.get('latitude'), data.get('longitude'))
     result_bool = location._in_geofence(geofence, location_tuple, radius)
     data['in_geofence'] = result_bool
+    return data
 
 
 @TransformDecorator()
@@ -79,15 +80,16 @@ def in_geofences(geofences, data=None):
         raise AncileException("Specified Geofences must not overlap")
 
     data['in_geofences'] = result
+    return data
 
 
 def in_geofences_bool(geofences, data=None):
     """ A wrapper around in_geofences that reduces the value to a boolean"""
-    in_geofences(geofences=geofences, data=data)
+    data = in_geofences(geofences=geofences, data=data)
 
     val = data._data.pop('in_geofences')
     data._data['in_geofences'] = val not in ["Location Unknown"]
-
+    return data
 
 @TransformDecorator()
 def fuzz_location(data, radius):
@@ -105,3 +107,4 @@ def fuzz_location(data, radius):
                                                 radius)
     data['latitude'] = new_lat
     data['longitude'] = new_long
+    return data
