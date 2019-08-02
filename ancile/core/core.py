@@ -16,7 +16,7 @@ UserInfoBundle = namedtuple("UserInfoBundle", ['username', 'policies',
                                                'tokens', 'private_data'])
 
 
-def execute(user_info, program, app_id=None, purpose=None, app_module=None):
+def execute(user_info, program, app_id=None, app_module=None):
     r = redis.Redis(**REDIS_CONFIG)
     storage = Storage(redis_conneciton=r)
     json_output = dict()

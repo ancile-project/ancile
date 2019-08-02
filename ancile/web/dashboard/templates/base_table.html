@@ -1,0 +1,26 @@
+{% extends "base_dashboard.html" %}
+
+{% block pre_table %}{% endblock %}
+
+{% block content %}
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header card-header-primary">
+          <h4 class="card-title ">{% block table_title %}{% endblock %}</h4>
+          <p class="card-category">{% block table_sub %}{% endblock %}</p>
+        </div>
+        <div class="card-body">
+          {% block buttons %}{% endblock %}
+          <div class="table-responsive">
+            <table class="table" id="main-table">
+            {% block table_content %}{% endblock %}
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+</div>
+
+{% block post_table %}{% endblock %}
+{% endblock %}

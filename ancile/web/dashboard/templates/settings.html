@@ -1,0 +1,85 @@
+{% extends "base_dashboard.html" %}
+
+{% block title %}Settings{% endblock %}
+{% block settings_active %}active{% endblock%}
+{% block content %}
+
+
+<div class="card" style="max-width: 400px; margin: 0 auto;">
+    <div class="card-header card-header-text card-header-primary" style="margin:0 auto;">
+        <div class="card-text" style="text-align: center">
+            <h2 class="card-title">Settings</h4>
+        </div>
+    </div>
+    <div class="card-body">
+        <p style="text-align: center;">
+        </p>
+        <form method="post">
+            {% csrf_token %}
+
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input value="{{ user.username }}" class="form-control" type="text" id="username" disabled=True>
+                </div>
+
+                <div class="form-group {% if form.first_name.errors %}has-danger{% endif %}">
+                    <label for="first_name">First name</label>
+                    <input value="{{ user.first_name }}" class="form-control" type="text" name="first_name" id="first_name">
+                    <span class="material-icons form-control-feedback">clear</span>
+                    {% if form.first_name.errors %}
+                    <p style="color:#f44336;">{{ form.first_name.errors.as_text }}</p>
+                   {% endif %}
+                </div>
+
+                <div class="form-group {% if form.last_name.errors %}has-danger{% endif %}">
+                    <label for="last_name">Last name</label>
+                    <input value="{{ user.last_name }}" class="form-control" type="text" name="last_name" id="last_name">
+                    <span class="material-icons form-control-feedback">clear</span>
+                    {% if form.last_name.errors %}
+                    <p style="color:#f44336;">{{ form.last_name.errors.as_text }}</p>
+                   {% endif %}
+                </div>
+
+                <div class="form-group {% if form.email.errors %}has-danger{% endif %}">
+                    <label for="email">Email address</label>
+                    <input value="{{ user.email }}" class="form-control" type="text" name="email" id="email">
+                    <span class="material-icons form-control-feedback">clear</span>
+                    {% if form.email.errors %}
+                    <p style="color:#f44336;">{{ form.email.errors.as_text }}</p>
+                   {% endif %}
+                </div>
+
+                <div class="form-group {% if form.old_password.errors %}has-danger{% endif %}">
+                    <label for="old_password">Old Password</label>
+                    <input class="form-control" type="password" name="old_password" id="old_password">
+                    <span class="material-icons form-control-feedback">clear</span>
+                    {% if form.old_password.errors %}
+                    <p style="color:#f44336;">{{ form.old_password.errors.as_text }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="form-group {% if form.new_password.errors %}has-danger{% endif %}">
+                    <label for="new_password">New password</label>
+                    <input class="form-control" type="password" name="new_password" id="new_password">
+                    <span class="material-icons form-control-feedback">clear</span>
+                    {% if form.new_password.errors %}
+                    <p style="color:#f44336;">{{ form.new_password.errors.as_text }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="form-group {% if form.new_password.errors %}has-danger{% endif %}">
+                    <label for="new_password_confirm">New password confirmation</label>
+                    <input class="form-control" type="password" name="new_password_confirm" id="new_password_confirm">
+                    <span class="material-icons form-control-feedback">clear</span>
+                    {% if form.new_password_confirm.errors %}
+                    <p style="color:#f44336;">{{ form.new_password_confirm.errors.as_text }}</p>
+                   {% endif %}
+                </div>
+            <div style="width:100%; text-align: center;">
+                <button type="submit" class="btn btn-primary">Update</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

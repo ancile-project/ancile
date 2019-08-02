@@ -1,5 +1,5 @@
 #!/usr/bin/bash
 
 source .env/bin/activate
-export FLASK_APP=runner.py
-flask db upgrade
+python manage.py migrate
+deactivate

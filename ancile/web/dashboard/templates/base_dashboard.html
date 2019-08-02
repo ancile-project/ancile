@@ -1,0 +1,123 @@
+<!--
+=========================================================
+ Material Dashboard - v2.1.1
+=========================================================
+
+ Product Page: https://www.creative-tim.com/product/material-dashboard
+ Copyright 2019 Creative Tim (https://www.creative-tim.com)
+ Licensed under MIT (https://github.com/creativetimofficial/material-dashboard/blob/master/LICENSE.md)
+
+ Coded by Creative Tim
+
+=========================================================
+
+ The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software. -->
+
+{% extends "base.html" %}
+
+{% block nav %}
+  <div class="wrapper ">
+    <div class="sidebar" data-color="purple" data-background-color="white" data-image="">
+      <!--
+        Tip 1: You can change the color of the sidebar using: data-color="purple | azure | green | orange | danger"
+
+        Tip 2: you can also add an image using data-image tag
+    -->
+      <div class="logo">
+        <a href="/" class="simple-text logo-normal">
+          Ancile
+        </a>
+      </div>
+      <div class="sidebar-wrapper">
+        <ul class="nav">
+          {% if user.is_authenticated %}
+          <li class="nav-item {% block dashboard_active %}{% endblock%} ">
+            <a class="nav-link" href="/">
+              <i class="material-icons">fingerprint</i>
+              <p>Dashboard</p>
+            </a>
+          </li>
+          <li class="nav-item  {% block providers_active %}{% endblock%}">
+            <a class="nav-link" href="/providers">
+              <i class="material-icons">widgets</i>
+              <p>Providers</p>
+            </a>
+          </li>
+          <li class="nav-item  {% block apps_active %}{% endblock%}">
+            <a class="nav-link" href="/apps">
+              <i class="material-icons">apps</i>
+              <p>Apps</p>
+            </a>
+          </li>
+          {% if user.is_developer %}
+          <li class="nav-item {% block dev_active %}{% endblock%}">
+            <a class="nav-link" href="/dev">
+              <i class="material-icons">developer_mode</i>
+              <p>Developer</p>
+            </a>
+          </li>
+          {% endif %}
+          {% if user.is_superuser %}
+          <li class="nav-item {% block admin_active %}{% endblock%}">
+            <a class="nav-link" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" href="#">
+              <i class="material-icons">supervised_user_circle</i>
+              <p>Admin</p>
+            </a>
+              <div class="dropdown-menu" aria-labelledby="adminDropdown">
+                <a class="dropdown-item" href="/admin">Console</a>
+                <a class="dropdown-item" href="/admin/users">Users</a>
+                <a class="dropdown-item" href="/admin/apps">Apps</a>
+                <a class="dropdown-item" href="/admin/providers">Providers</a>
+              </div>
+          </li>
+          {% endif %}
+          <li class="nav-item {% block settings_active %}{% endblock%}          ">
+            <a class="nav-link" href="/settings">
+              <i class="material-icons">settings</i>
+              <p>Settings</p>
+            </a>
+          </li>
+          <li class="nav-item">
+          <a class="nav-link" href="/logout">
+            <i class="material-icons">logout</i>
+            <p>Logout</p>
+          </a>
+        </li>
+        {% else %}
+        <li class="nav-item {% block login_active %}{% endblock%}">
+        <a class="nav-link" href="/login">
+          <i class="material-icons">account_circle</i>
+          <p>Login</p>
+        </a>
+        <li class="nav-item {% block register_active %}{% endblock%}">
+        <a class="nav-link" href="/register">
+          <i class="material-icons">person_add</i>
+          <p>Register</p>
+        </a>
+        {% endif %}
+        </ul>
+      </div>
+    </div>
+    <div class="main-panel">
+      <!-- Navbar -->
+      <nav class="navbar navbar-expand-lg navbar-transparent navbar-absolute fixed-top ">
+        <div class="container-fluid">
+          <div class="navbar-wrapper">
+            <a class="navbar-brand" href="/">Ancile</a>
+          </div>
+          <button class="navbar-toggler" type="button" data-toggle="collapse" aria-controls="navigation-index" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="navbar-toggler-icon icon-bar"></span>
+            <span class="navbar-toggler-icon icon-bar"></span>
+            <span class="navbar-toggler-icon icon-bar"></span>
+          </button>
+          <div class="collapse navbar-collapse justify-content-end">
+
+          </div>
+        </div>
+      </nav>
+      <!-- End Navbar -->
+      <div class="content">
+        <div class="container-fluid">
+{% endblock %}
+

@@ -13,7 +13,7 @@ remote deployment for actual use.
 
 ### Pre-reqs
 0. Tested on: Arch Linux, Ubuntu 18.04, OSX Mojave
-1. Python 3.6+
+1. Python 3.7+
     - python3 venv
     - python devtools
 2. [Docker](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-18-04).
@@ -33,85 +33,41 @@ will delete the configuration files and database. If docker is running
 slowly, the migrations can sometimes fail, if this occurs try running them
 separately with `bash scripts/setup/run_migrations.sh`.
 
+Note: If python 3.7 is not the default python3 installation on the system, adjust the
+`scripts/setup/setup_env.sh` to use `python3.7` instead of `python3` (or the appropriate
+name on the system).
 
-### Editing the secrets
+### Configuration
 In `config.yaml` change the values for:
 - SECRET_KEY - generate a secure random string
-- SECURITY_PASSWORD_SALT - generate a secure random string
 
-Use your favorite locally sourced randomness and generate these strings before
-proceeding.
+#### Local Development
+Nothing needs to be changed from the defaults
 
-We will come back to the configs shortly.
+#### Deployment
+- Change SERVER name to the hostname ex: "ancile.cs.vassar.edu"
+- Change SERVER_DEBUG to false
 
-### Setup the roles and sample users (both)
-Once you've setup the secret keys, run:
+#### Optional Configs
+- LOGGING (default True): Setting to t/f enables or disables logs
+- CACHE (default False): Setting to t/f enables or disables caching of user info and 
+compiled programs
+
+### Create a super user
+From the ancile directory run:
 ```
-bash scripts/setup/role_setup.sh
-```
-This will configure the system roles and generate three sample users:
-- username: admin, password: password, role: admin
-- username: user, password: user_password, role: user
-- username: app, password: app_password, role: app
-
-### Edit the configs for local work
-At this point the configs are properly configured for running ancile locally
-without an email server. If you wish to use an email server, see the
-instructions below. The `SERVER_NAME` config must be left blank for the local
-instance to function.
-
-### Edit the configs for remote work
-If running the server on a remote machine meant to be accessed over the
-internet, you will need to change the `SERVER_NAME` variable to the domain name
-of your server, ex: "ancile.cs.vassar.edu".
-
-### Configure Mail Server (remote) [recommended]
-If available, running the ancile deployment with email validation is
-recommended. The following config values will need to be adjusted with the
-information of your mail server:
-- MAIL_SERVER
-- MAIL_PORT
-- MAIL_USERNAME
-- MAIL_PASSWORD
-
-Next you'll need to adjust `SECURITY_EMAIL_SENDER` to match your deployment
-information. Ex: "ancile@ancile.cs.vassar.edu".
-
-### Configure Mail Server (locally)
-No additional configuration needs to be done to run ancile with a local
-email. You will however need to run a local email server by:
-```
-python3 -m venv .env
 source .env/bin/activate
-pip install aiosmtpd
-aiosmtpd -n
+python manage.py createsuperuser
 ```
-This will capture any emails that Ancile sends, so that the links can be used
-for local testing and verification. It will not, however, actually send any
-email.
+and follower the prompts.
 
-### Enable email (optional)
-To enable the confirmation and email features of the server, change the
-following configuration variables to true:
-- SECURITY_CONFIRMABLE
-- SECURITY_SEND_REGISTER_EMAIL
-- SECURITY_SEND_PASSWORD_CHANGE_EMAIL
-- SECURITY_SEND_PASSWORD_RESET_EMAIL
-- SECURITY_SEND_PASSWORD_RESET_NOTICE_EMAIL
+### Running the server locally
+To run the server locally use `bash scripts/start_dev_server.sh`. This will run the server
+and host the static files, but is not suitable for the deployment. When running this way
+ensure `SERVER_DEBUG` is true. This will also make the \djadmin route available to assist
+in development.
 
-This will require users to confirm their email before they can log in and will
-configure the deployment to send email.
-
-### Operational configuration
-The info logs can be disabled by changing the `LOGGING` configuration value to
-False. To disable access logs, run the server using
-`bash scripts/start_server_no_logs.sh`. 
-
-The redis cache can be enabled by changing the `CACHE` configuration value to
-True.
-
-
-### Setup SSL and Reverse Proxy (remote)
+### Setup SSL and NGINX for remote deployment
 For remote setups, Ancile requires the use of a reverse proxy and SSL
 certificates.
 
@@ -150,6 +106,22 @@ location / {
 	}
 ```
 
+Finally, we need to serve our static files by directing NGINX to them. Add the following
+to the 443 server block.
+```
+	location /static/ {
+		alias /HOME/ancile/ancile/web/static/;
+	}
+```
+
+### Collect static files for deployment
+Once NGINX is configured the static files can be collected. This is done by running
+```
+source .env/bin/activate
+python manage.py collectstatic
+```
+from the ancile directory.
+
 ### (optional) Setup Supervisor [recommended for remote]
 Setting up a supervisor process to run the server is recommended. First install
 supervisor with `sudo apt-get install supervisor` (on debian based systems),
@@ -159,7 +131,7 @@ Create a new file in `/etc/supervisor/conf.d/` called `ancile`. Edit it such
 that it contains the following:
 ```
 [program:ancile]
-command=bash scripts/start_server.sh
+command=bash scripts/start_prod_server.sh
 directory=PATH_TO_ANCILE/ancile
 user=YOUR_USER
 autostart=true
@@ -171,30 +143,5 @@ killasgroup=true
 Ancile can now be run with `sudo supervisorctl start ancile` and should reboot
 on system start.
 
-### Running Ancile
-Once everything is setup Ancile can be started in a local terminal by running:
-```
-bash scripts/start_server.sh
-```
-This will start the server locally on port 8000. If running locally you can now
-access the deployment. If running on a remote machine, ensure that the NGINX
-configurations upgrade connections to SSL and redirect requests to the gunicorn
-server.
-
-
-### Change admin user password
-Once the server is running, the password to the admin user should be changed
-from the web interface.
-
-
-## Unit Tests:
-To run the python unit tests:
-```
-ancile$  python -m unittest
-```
-
-## Development 
-
-Let's just review each others code and verify that it works. 
-
-Ideally, we will need to have better testing, but will see how it goes. 
+If necessary, the production server can be run in a terminal window with 
+`bash scripts/start_prod_server.sh`

@@ -30,4 +30,4 @@ class StarExpression(UnaryExpression):
         return Constants.ONE
 
     def simplify(self):
-        return self
+        return StarExpression(self.expression.simplify())

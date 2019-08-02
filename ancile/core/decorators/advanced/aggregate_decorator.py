@@ -17,7 +17,7 @@ class AggregateDecorator(BaseDecorator):
         self.reduce = reduce
 
     def process_call(self, command):
-        logger.debug('Calling Aggregate Decorator')
+        logger.debug(f'Calling Aggregate "{command.function_name}"')
 
         new_data = dict() if not self.reduce else list()
         new_policy = None

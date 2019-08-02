@@ -20,7 +20,8 @@ class ComparisonDecorator(BaseDecorator):
         self.scopes.append('compare')
 
     def process_call(self, command):
-        logger.debug('Calling Comparison Decorator')
+        logger.debug(f'Calling Comparison "{command.function_name}" with arguments {command.params}')
+
 
         dp_pair = self.decorator_preamble(command.params)
 

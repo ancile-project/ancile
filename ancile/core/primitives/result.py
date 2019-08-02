@@ -14,7 +14,7 @@ class Result:
         return f"<Result obj>"
 
     @UseDecorator()
-    def append_dp_data_to_result(self, data, encryption_keys, decrypt_field_list=None):
+    def return_to_app(self, data, encryption_keys, decrypt_field_list=None):
 
         if decrypt_field_list and isinstance(decrypt_field_list, list):
             dropped = set(encryption_keys.keys()) - set(decrypt_field_list)

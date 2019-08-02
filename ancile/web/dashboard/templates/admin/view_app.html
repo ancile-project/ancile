@@ -1,0 +1,174 @@
+{% extends "base_table.html" %}
+
+{% block title %}{{ app.name }}{% endblock %}
+{% block admin_active %}active{% endblock %}
+{% block table_title %} App {% endblock %}
+{% block table_sub %}  {% endblock %}
+
+
+{% block table_content %}
+  <thead class="text-primary">
+    <th>
+      Name
+    </th>
+    <th>
+      Description
+    </th>
+    <th>
+      Developers
+    </th>
+    <th class="actions">
+      Actions
+    </th>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        {{ app.name }}
+      </td>
+      <td>
+        {{ app.description }}
+      </td>
+      <td>
+        {% for usr in developers %}
+        <a href="/admin/view/user/{{ usr.id }}">{{ usr.username }}</a>
+        {% endfor %}
+      </td>
+      <td class="actions">
+        <a href="/admin/edit/app/{{ app.id }}"><i class="material-icons">edit</i></a>
+        <a href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons">delete</i></a>
+         <div class="dropdown-menu" aria-labelledby="deleteUserDropdownButton">
+           <a class="dropdown-item" href="/admin/delete/app/{{ app.id }}">Delete</a>
+         </div>
+      </td>
+    </tr>
+  </tbody>
+
+
+{% endblock %}
+
+{% block post_table %}
+
+<div class="card">
+  <div class="card-header card-header-primary">
+    <h4 class="card-title ">Permission Groups</h4>
+    <p class="card-category"></p>
+  </div>
+  <div class="card-body">
+    <a href="/admin/add/group/{{ app.id }}" class="btn btn-primary btn-round"><i class="material-icons">add</i>Add Group</a>
+    <div class="table-responsive">
+      <table class="table">
+        <thead class="text-primary">
+          <th>
+            Name
+          </th>
+          <th>
+            Description
+          </th>
+          <th>
+            Scopes
+          </th>
+          <th>
+            Approved
+          </th>
+          <th class="actions">
+            Actions
+          </th>
+        </thead>
+        <tbody>
+          {% for group in groups %}
+          <tr>
+            <td>
+              {{ group.name }}
+            </td>
+            <td>
+              {{ group.description }}
+            </td>
+            <td>
+              {% for scope in group.scopes.all %}
+              {{ scope.simple_name }}
+              {% endfor %}
+            </td>
+            <td>
+              {% if group.approved %}
+              <i class="material-icons">check</i>
+              {% else %}
+              <i class="material-icons">close</i>
+              {% endif %}
+            </td>
+            <td class="actions">
+              <a href="/admin/view/group/{{ group.id }}"><i class="material-icons">pageview</i></a>
+              <a href="/admin/edit/group/{{ group.id }}"><i class="material-icons">edit</i></a>
+              <a href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons">delete</i></a>
+                <div class="dropdown-menu" aria-labelledby="deleteTokenDropdownButton">
+                  <a class="dropdown-item" href="/admin/delete/group/{{ group.id }}">Delete</a>
+                </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header card-header-primary">
+    <h4 class="card-title ">Functions</h4>
+    <p class="card-category"></p>
+  </div>
+  <div class="card-body">
+    <a href="/admin/add/function/{{ app.id }}" class="btn btn-primary btn-round"><i class="material-icons">add</i>Add Function</a>
+    <div class="table-responsive">
+      <table class="table">
+        <thead class="text-primary">
+          <th>
+            Name
+          </th>
+          <th>
+            Description
+          </th>
+          <th>
+            Approved?
+          </th>
+          <th class="actions">
+            Actions
+          </th>
+        </thead>
+        <tbody>
+          {% for function in functions %}
+          <tr>
+            <td>
+              {{ function.name }}
+            </td>
+            <td>
+              {{ function.description }}
+            </td>
+            <td>
+              {% if function.approved %}
+              <i class="material-icons">check</i>
+              {% else %}
+              <i class="material-icons">close</i>
+              {% endif %}
+            </td>
+            <td class="actions">
+              <a href="/admin/view/function/{{ function.id }}"><i class="material-icons">pageview</i></a>
+              <a href="/admin/edit/function/{{ function.id }}"><i class="material-icons">edit</i></a>
+              <a href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons">delete</i></a>
+                <div class="dropdown-menu" aria-labelledby="deletePolicyDropdownButton">
+                  <a class="dropdown-item" href="/admin/delete/function/{{ function.id }}">Delete</a>
+                </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<div style="text-align: center;">
+<a class="btn btn-default" href="#" onclick="window.history.back()">Back</a>
+</div>
+
+
+{% endblock %}

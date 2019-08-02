@@ -1,52 +1,24 @@
+# Change these before deployment
+SERVER_NAME: "localhost"
+SECRET_KEY: "super-secret"
+SERVER_DEBUG: True
+
+LOGGING: True
+CACHE: False
+LANGUAGE_CODE: "en-us"
+TIME_ZONE: "Etc/GMT-4"
+
+
 database:
-    POSTGRES_USER: postgres
-    POSTGRES_PASSWORD: postgres
-    POSTGRES_HOST: localhost
-    POSTGRES_PORT: 5432
-    POSTGRES_DB: ancile_dev_db
+    ENGINE: "django.db.backends.postgresql"
+    USER: "postgres"
+    PASSWORD: "postgres"
+    HOST: "localhost"
+    PORT: "5432"
+    NAME: "ancile_db"
 
 redis:
     host: localhost
     port: 6379
     db: 1
 
-server:
-    SERVER_NAME: 
-    SQLALCHEMY_TRACK_MODIFICATIONS: False
-    SECRET_KEY: "super-secret"
-
-security:
-    SECURITY_PASSWORD_SALT: very secret salt
-    SECURITY_UNAUTHORIZED_VIEW: "/"
-    SECURITY_LOGIN_USER_TEMPLATE: "security/login_user.html"
-    SECURITY_REGISTER_USER_TEMPLATE: "security/register_user.html"
-    SECURITY_RESET_PASSWORD_TEMPLATE: "security/reset_password.html"
-    SECURITY_CHANGE_PASSWORD_TEMPLATE: "security/change_password.html"
-    SECURITY_POST_LOGIN_VIEW: "/panel"
-    SECURITY_REGISTERABLE: True
-    SECURITY_CONFIRMABLE: False
-    SECURITY_RECOVERABLE: True
-    SECURITY_CHANGEABLE: True
-
-mail:
-    MAIL_SERVER: "localhost"
-    MAIL_PORT: 8025
-    MAIL_USE_SSL: False
-    MAIL_USERNAME: 
-    MAIL_PASSWORD: 
-    SECURITY_EMAIL_SENDER: "ancile@localhost"
-    SECURITY_EMAIL_SUBJECT_REGISTER: "Welcome to Ancile!"
-    SECURITY_EMAIL_SUBJECT_PASSWORD_RESET: "Ancile password reset instructions"
-    SECURITY_EMAIL_SUBJECT_PASSWORD_NOTICE: "Your Ancile password has been reset"
-    SECURITY_EMAIL_SUBJECT_CONFIRM: "Please confirm your email for Ancile"
-    SECURITY_SEND_REGISTER_EMAIL: False
-    SECURITY_SEND_PASSWORD_CHANGE_EMAIL: False
-    SECURITY_SEND_PASSWORD_RESET_EMAIL: False
-    SECURITY_SEND_PASSWORD_RESET_NOTICE_EMAIL: False
-
-operational:
-    CACHE: False
-    LOGGING: True
-
-providers:
-    ["GitHub"]

@@ -13,6 +13,8 @@ class ExternalDecorator(BaseDecorator):
         self.scopes.append('fetch')
 
     def process_call(self, command):
+        logger.debug(f'Calling External "{command.function_name}" with arguments {command.print_params}')
+
 
         user_specific = command.params.pop('user', False)
         data_source = inspect.getmodule(command.function).name
