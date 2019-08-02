@@ -47,10 +47,10 @@ def browser_execute(request):
     user = request.user
     body = json.loads(request.body)
 
-    app_id = body['app_id']
+    app_id = int(body['app_id'])
 
     if App.objects.filter(id=app_id, developers=user).exists():
-        users = body["users"]
+        users = body["users"].split(',')
         program = body["program"]
         try:
             user_info = [get_user_bundle(user, app_id) for user in users]
