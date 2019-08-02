@@ -19,18 +19,18 @@ def execute_api(request):
         users = body["users"]
         program = body["program"]
     except KeyError:
-        return JsonResponse({"status": "error",
+        return JsonResponse({"result": "error",
                              "error": "Missing one or more required paramters: (token, users, program)"})
 
     try:
         app_id = get_app_id(token)
     except Exception:
-        return JsonResponse({"status": "error",
+        return JsonResponse({"result": "error",
                              "error": "Invalid token"})
     try:
         user_info = [get_user_bundle(user, app_id) for user in users]
     except Exception:
-        return JsonResponse({"status": "error",
+        return JsonResponse({"result": "error",
                              "error": "Problem in retreiving user information"})
 
     res = execute(user_info=user_info,
@@ -55,7 +55,7 @@ def browser_execute(request):
         try:
             user_info = [get_user_bundle(user, app_id) for user in users]
         except Exception:
-            return JsonResponse({"status": "error",
+            return JsonResponse({"result": "error",
                                  "error": "Problem in retreiving user information"})
         res = execute(user_info=user_info,
                     program=program,
@@ -64,7 +64,7 @@ def browser_execute(request):
 
         return JsonResponse(res)
     else:
-        return JsonResponse({"status": "error",
+        return JsonResponse({"result": "error",
                              "error": "You are not a developer for this app"})
 
 
