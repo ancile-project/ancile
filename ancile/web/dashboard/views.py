@@ -38,6 +38,45 @@ def providers(request):
     return render(request, "user/providers.html", {"tokens" : tokens, "all_providers": DataProvider.objects.all})
 
 @login_required
+def user_view_token(request, token_id):
+    token = Token.objects.get(pk=token_id)
+    if PrivateData.objects.filter(user=request.user, provider=token.provider).exists():
+        data = PrivateData.objects.get(user=request.user, provider=token.provider).value
+    else:
+        data = "{}"
+    return render(request, "user/view_token.html", {"token" : token, "data" : json.loads(data)})
+
+@login_required
+def user_edit_data(request, token_id):
+    token = Token.objects.get(pk=token_id)
+    if request.method == "POST":
+        form = UserEditDataForm(request.POST)
+
+        if form.is_valid():
+            if PrivateData.objects.filter(user=request.user, provider=token.provider).exists():
+                data = PrivateData.objects.get(user=request.user, provider=token.provider)
+            else:
+                data = PrivateData(user=request.user,
+                                    provider=token.provider)
+
+            data.value = form.cleaned_data['json']
+            data.save()
+            return redirect("/user/view/token/" + str(token_id))
+    else:
+        if PrivateData.objects.filter(user=request.user, provider=token.provider).exists():
+            data = PrivateData.objects.get(user=request.user, provider=token.provider).value
+        else:
+            data = "{}"
+
+        form = UserEditDataForm(initial={"json" : data})
+
+        return render(request, 'user/provider_form.html', {"redirect" : "/user/edit/data/" + str(token_id),
+                                                            "title" : "Edit Data",
+                                                            "form_title" : "Edit Data",
+                                                            "body" : json.loads(data),
+                                                            "form" : form})
+
+@login_required
 def policies(request):
     policies = Policy.objects.filter(user=request.user)
     return render(request, "user/policies.html", {"policies" : policies})

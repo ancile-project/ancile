@@ -11,6 +11,8 @@ urlpatterns = [
     path('settings', login_required(views.Settings.as_view())),
 
     path('user/request/dev', views.user_request_dev),
+    path('user/view/token/<int:token_id>', views.user_view_token),
+    path('user/edit/data/<int:token_id>', views.user_edit_data),
 
     path('admin', views.admin_console),
     path('admin/users', views.admin_users),

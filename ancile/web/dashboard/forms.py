@@ -2,6 +2,8 @@ from django import forms
 from ancile.web.dashboard.models import *
 from django.contrib.auth import get_user_model, authenticate
 from django.contrib.auth.forms import UserCreationForm
+from jsoneditor.forms import JSONEditor
+from django.contrib.postgres.fields import JSONField
 
 class AdminAddPolicyForm(forms.Form):
     text = forms.CharField(label="Policy", widget=forms.Textarea)
@@ -140,6 +142,9 @@ class DevEditFunctionForm(forms.Form):
     description = forms.CharField(label="Description")
     body = forms.CharField(label="Code", widget=forms.Textarea)
 
+class UserEditDataForm(forms.Form):
+    json = forms.CharField(label="Data", widget=JSONEditor)
+
 class UserRegistrationForm(forms.ModelForm):
     password1 = forms.CharField(label='Password', widget=forms.PasswordInput)
     password2 = forms.CharField(label='Password confirmation', widget=forms.PasswordInput)
@@ -177,11 +182,11 @@ class UserSettingsForm(forms.ModelForm):
     class Meta:
         model = get_user_model()
         fields = ("first_name", "last_name", )
-    
+
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request')
         super(UserSettingsForm, self).__init__(*args, **kwargs)
-    
+
     def clean_email(self):
         email = self.cleaned_data["email"]
 
@@ -199,7 +204,7 @@ class UserSettingsForm(forms.ModelForm):
 
         if old_password:
             if authenticate(username=self.request.user, password=old_password):
-                if new_password or new_password_confirm: 
+                if new_password or new_password_confirm:
                     if new_password != new_password_confirm:
                         raise forms.ValidationError("Passwords don't match.")
                     return new_password_confirm
@@ -207,7 +212,7 @@ class UserSettingsForm(forms.ModelForm):
                     raise forms.ValidationError("New password can't be blank.")
             raise forms.ValidationError("Old password is not valid.")
         return ""
-    
+
     def save(self, commit=True):
         # Save the provided password in hashed format
         user = self.request.user

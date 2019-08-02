@@ -1,0 +1,77 @@
+{% extends "base_table.html" %}
+
+{% block title %} Provider {% endblock %}
+{% block provider_active %}active{% endblock %}
+{% block table_title %} Provider {% endblock %}
+{% block table_sub %} {% endblock %}
+
+
+{% block table_content %}
+  <thead class="text-primary">
+    <th>
+      Data Provider
+    </th>
+    <th>
+      Authorized Scopes
+    </th>
+    <th>
+      Expires At
+    </th>
+    <th>
+      Actions
+    </th>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        {{ token.provider.display_name }}
+      </td>
+      <td>
+        <ul>
+        {% for scope in token.scopes.all %}
+          <li>{{ scope.simple_name }}</li>
+        {% endfor %}
+        </ul>
+      </td>
+      <td class="timestamp">
+        {{ token.expires_at }}
+      </td>
+      <td>
+        <a href="#" onclick="removeProvider(this, '{{ token.provider.path_name }}'); return false"><i class="material-icons">delete</i></a>
+      </td>
+    </tr>
+  </tbody>
+{% endblock %}
+
+{% block post_table %}
+
+<br>
+
+<div class="card" style="width: 700px; margin: auto;">
+  <div class="card-body">
+    <h4 class="card-title">Token Data</h4>
+    <h6 class="card-subtitle mb-2 text-muted"></h6>
+    <p class="card-text" style="font-family: monospace;">
+        <table cellpadding="10">
+        <tr>
+        <th></th>
+        <td></td>
+        </tr>
+        {% for key,value in data.items %}
+        <tr>
+        <th>{{ key }}</th>
+        <td>{{ value }}</td>
+        </tr>
+        {% endfor %}
+        </table>
+    </p>
+  </div>
+</div>
+
+<br>
+<div style="text-align: center;">
+<a class="btn btn-primary" href="/user/edit/data/{{token.id}}">Edit Data</a>
+<a class="btn btn-default" href="#" onclick="window.history.back()">Back</a>
+<div>
+{% endblock %}
+

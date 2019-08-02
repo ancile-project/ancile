@@ -16,28 +16,36 @@
             <form action={{ redirect }} method="post" style="text-align: center; width: 50%; margin: auto;">
                 {% csrf_token %}
                 {{ form|crispy }}
-                <div id="editor">{{body}}</div>
+                <div id="editor"></div>
                 <br>
                 <a class="btn btn-default" href="#" onclick="window.history.back()">Back</a>
-                <input class="btn btn-primary" type="submit" value="Submit">
+                <input id="submitjson" class="btn btn-primary" type="submit" value="Submit">
             </form>
         </div>
     </div>
   </div>
 
-<script src="{% static "dashboard/js/ace/ace.js" %}" type="text/javascript" charset="utf-8"></script>
+<link href="{% static "dashboard/jsoneditor/jsoneditor.min.css" %}" rel="stylesheet" type="text/css">
+<script src="{% static "dashboard/jsoneditor/jsoneditor.min.js" %}"></script>
+
 <script type="text/javascript">
-    //document.getElementById("id_body").style.display = "none";
-    var editor = ace.edit("editor");
-    editor.setTheme("ace/theme/tomorrow");
-    editor.session.setMode("ace/mode/python");
-    editor.session.on('change', function(delta) {
-        document.getElementById("id_body").value = editor.getValue()
-    });
+    // create the editor
+    var container = document.getElementById("editor");
+    var options = {
+        onChange : function () {
+            document.getElementById("id_json").innerHTML = editor.getText()
+            console.log(editor.get())
+        }
+    };
+    var editor = new JSONEditor(container, options);
+    var data = "{{body}}".replace(/&#39;/g, "'");
+    editor.setText(data);
 </script>
 <style type="text/css" media="screen">
     #editor {
         height: 250px;
+        width: 400px;
+        border-radius: 5px;
     }
 </style>
 {% endblock %}
