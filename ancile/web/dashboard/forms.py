@@ -2,7 +2,6 @@ from django import forms
 from ancile.web.dashboard.models import *
 from django.contrib.auth import get_user_model, authenticate
 from django.contrib.auth.forms import UserCreationForm
-from jsoneditor.forms import JSONEditor
 from django.contrib.postgres.fields import JSONField
 
 class AdminAddPolicyForm(forms.Form):
@@ -143,7 +142,7 @@ class DevEditFunctionForm(forms.Form):
     body = forms.CharField(label="Code", widget=forms.Textarea)
 
 class UserEditDataForm(forms.Form):
-    json = forms.CharField(label="Data", widget=JSONEditor)
+    json = forms.CharField(label="Data")
 
 class UserRegistrationForm(forms.ModelForm):
     password1 = forms.CharField(label='Password', widget=forms.PasswordInput)

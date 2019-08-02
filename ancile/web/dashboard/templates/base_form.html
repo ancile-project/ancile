@@ -4,12 +4,12 @@
 {% block content %}
 
 
-  <div class="col-md-6" style="margin: auto;">
-    <div class="card">
-        <div class="card-header card-header-danger">
-            <h4 class="card-title">{% block form_title %}{{ form_title }}{% endblock%}</h4>
-            <p class="category"></p>
-        </div>
+    <div class="card" style="max-width:500px;">
+      <div class="card-header card-header-text card-header-primary" style="margin:0 auto;">
+          <div class="card-text" style="text-align: center">
+              <h4 class="card-title">{% block form_title %}{{ form_title }}{% endblock%}</h4>
+          </div>
+      </div>
         <div class="card-body">
             <form action={{ redirect }} method="post" style="text-align: center; width: 50%; margin: auto;">
                 {% csrf_token %}

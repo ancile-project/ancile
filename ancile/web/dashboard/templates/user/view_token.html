@@ -45,33 +45,30 @@
 
 {% block post_table %}
 
-<br>
-
-<div class="card" style="width: 700px; margin: auto;">
-  <div class="card-body">
-    <h4 class="card-title">Token Data</h4>
-    <h6 class="card-subtitle mb-2 text-muted"></h6>
-    <p class="card-text" style="font-family: monospace;">
-        <table cellpadding="10">
-        <tr>
-        <th></th>
-        <td></td>
-        </tr>
-        {% for key,value in data.items %}
-        <tr>
-        <th>{{ key }}</th>
-        <td>{{ value }}</td>
-        </tr>
-        {% endfor %}
-        </table>
-    </p>
-  </div>
+<div class="row">
+    <div class="col-md-12">
+      <div class="card">
+          <div class="card-header card-header-primary">
+              <h4 class="card-title">Token Data</h4>
+          </div>
+        <div class="card-body">
+          <a class="btn btn-primary btn-round" href="/user/edit/data/{{token.id}}"><i class="material-icons">edit</i>Edit Data</a>
+            <table cellpadding="10">
+            <tr>
+            </tr>
+            {% for key,value in data.items %}
+            <tr>
+            <th>{{ key }}</th>
+            <td>{{ value }}</td>
+            </tr>
+            {% endfor %}
+            </table>
+        </div>
+      </div>
+    </div>
 </div>
-
-<br>
 <div style="text-align: center;">
-<a class="btn btn-primary" href="/user/edit/data/{{token.id}}">Edit Data</a>
 <a class="btn btn-default" href="#" onclick="window.history.back()">Back</a>
-<div>
+</div>
 {% endblock %}
 
