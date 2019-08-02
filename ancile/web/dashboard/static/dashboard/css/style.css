@@ -1,0 +1,30 @@
+#editor {
+  height: 250px;
+  width: 100%;
+  border-radius: 5px;
+  position: static;
+}
+
+#div_id_json {
+  display: none;
+}
+
+.jsoneditor {
+  border-color: #701c7e !important;
+}
+
+.jsoneditor-menu {
+  background-color: #8e24aa !important;
+  border-bottom-color: #701c7e !important;
+}
+
+.card {
+  font-size: .875rem;
+  max-width: 700px;
+  margin-left:auto;
+  margin-right:auto;
+}
+
+.actions {
+  text-align: right;
+}

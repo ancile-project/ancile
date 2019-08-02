@@ -11,7 +11,6 @@ Welcome to the Ancile Admin Console.
 {% endblock %}
 
 {% block post_table %}
-<br>
   <div class="row">
     <div class="col-md-12">
       <div class="card">
@@ -29,7 +28,7 @@ Welcome to the Ancile Admin Console.
                 <th>
                   Email
                 </th>
-                <th>
+                <th class="actions">
                   Actions
                 </th>
               </thead>
@@ -42,7 +41,7 @@ Welcome to the Ancile Admin Console.
                   <td>
                     {{ dev.email }}
                   </td>
-                  <td>
+                  <td class="actions">
                     <div class="dropdown show" style="display: inline;">
                     <a href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons">check</i></a>
                      <div class="dropdown-menu" aria-labelledby="approveDropdownButton">
@@ -87,7 +86,7 @@ Welcome to the Ancile Admin Console.
                 <th>
                   Application
                 </th>
-                <th>
+                <th class="actions">
                   Actions
                 </th>
               </thead>
@@ -103,7 +102,7 @@ Welcome to the Ancile Admin Console.
                   <td>
                     <a href="/admin/view/app/{{function.app.id}}">{{ function.app.name }}</a>
                   </td>
-                  <td>
+                  <td class="actions">
                     <a href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons">check</i></a>
                      <div class="dropdown-menu" aria-labelledby="DropdownButton">
                        <a class="dropdown-item" href="/admin/approve/function/{{ function.id }}">Approve</a>
@@ -148,7 +147,7 @@ Welcome to the Ancile Admin Console.
                 <th>
                   Scopes
                 </th>
-                <th>
+                <th class="actions">
                   Actions
                 </th>
               </thead>
@@ -169,7 +168,7 @@ Welcome to the Ancile Admin Console.
                     {{ scope.simple_name }}
                     {% endfor %}
                   </td>
-                  <td>
+                  <td class="actions">
                     <a href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons">check</i></a>
                      <div class="dropdown-menu" aria-labelledby="DropdownButton">
                        <a class="dropdown-item" href="/admin/approve/group/{{ group.id }}">Approve</a>

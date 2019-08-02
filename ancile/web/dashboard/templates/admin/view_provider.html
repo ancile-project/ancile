@@ -11,7 +11,7 @@
     <th>
       Name
     </th>
-    <th>
+    <th class="actions">
       Actions
     </th>
   </thead>
@@ -20,7 +20,7 @@
       <td>
         {{ provider.display_name }}
       </td>
-      <td>
+      <td class="actions">
         <a href="/admin/edit/provider/{{ provider.id }}"><i class="material-icons">edit</i></a>
         <a href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons">delete</i></a>
          <div class="dropdown-menu" aria-labelledby="deleteUserDropdownButton">
@@ -98,7 +98,7 @@
                 <th>
                   Description
                 </th>
-                <th>
+                <th class="actions">
                   Actions
                 </th>
               </thead>
@@ -114,7 +114,7 @@
                   <td>
                     {{ scope.description }}
                   </td>
-                  <td>
+                  <td class="actions">
                     <a href="/admin/edit/scope/{{ scope.id }}"><i class="material-icons">edit</i></a>
                     <a href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons">delete</i></a>
                      <div class="dropdown-menu" aria-labelledby="deleteTokenDropdownButton">
