@@ -17,7 +17,7 @@
     <th>
       Developers
     </th>
-    <th style="text-align: right;">
+    <th class="actions">
       Actions
     </th>
   </thead>
@@ -34,7 +34,7 @@
         <a href="/admin/view/user/{{ usr.id }}">{{ usr.username }}</a>
         {% endfor %}
       </td>
-      <td style="text-align: right;">
+      <td class="actions">
         <a href="/admin/edit/app/{{ app.id }}"><i class="material-icons">edit</i></a>
         <a href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons">delete</i></a>
          <div class="dropdown-menu" aria-labelledby="deleteUserDropdownButton">
@@ -71,7 +71,7 @@
           <th>
             Approved
           </th>
-          <th style="text-align: right;">
+          <th class="actions">
             Actions
           </th>
         </thead>
@@ -96,7 +96,7 @@
               <i class="material-icons">close</i>
               {% endif %}
             </td>
-            <td style="text-align: right;">
+            <td class="actions">
               <a href="/admin/view/group/{{ group.id }}"><i class="material-icons">pageview</i></a>
               <a href="/admin/edit/group/{{ group.id }}"><i class="material-icons">edit</i></a>
               <a href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons">delete</i></a>
@@ -131,7 +131,7 @@
           <th>
             Approved?
           </th>
-          <th style="text-align: right;">
+          <th class="actions">
             Actions
           </th>
         </thead>
@@ -151,7 +151,7 @@
               <i class="material-icons">close</i>
               {% endif %}
             </td>
-            <td style="text-align: right;">
+            <td class="actions">
               <a href="/admin/view/function/{{ function.id }}"><i class="material-icons">pageview</i></a>
               <a href="/admin/edit/function/{{ function.id }}"><i class="material-icons">edit</i></a>
               <a href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons">delete</i></a>
