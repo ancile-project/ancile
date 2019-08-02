@@ -16,7 +16,7 @@
             <form action={{ redirect }} method="post" style="text-align: center; width: 50%; margin: auto;">
                 {% csrf_token %}
                 {{ form|crispy }}
-                <div id="editor">{{body}}</div>
+                <div id="python-editor">{{body}}</div>
                 <br>
                 <a class="btn btn-default" href="#" onclick="window.history.back()">Back</a>
                 <input class="btn btn-primary" type="submit" value="Submit">
@@ -28,7 +28,7 @@
 <script src="{% static "dashboard/js/ace/ace.js" %}" type="text/javascript" charset="utf-8"></script>
 <script type="text/javascript">
     document.getElementById("id_body").style.display = "none";
-    var editor = ace.edit("editor");
+    var editor = ace.edit("python-editor");
     editor.setTheme("ace/theme/tomorrow");
     editor.session.setMode("ace/mode/python");
     editor.session.on('change', function(delta) {
@@ -36,7 +36,7 @@
     });
 </script>
 <style type="text/css" media="screen">
-    #editor {
+    #python-editor {
         height: 250px;
         border-radius: 5px;
     }
