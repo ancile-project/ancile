@@ -23,6 +23,10 @@
   margin-right:auto;
 }
 
+.actions {
+  text-align: right;
+}
+
 *,
 *::before,
 *::after {

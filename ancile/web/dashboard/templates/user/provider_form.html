@@ -3,27 +3,25 @@
 {% load static %}
 
 {% block title %}{{ title }}{% endblock %}
-{% block dev_active %}active{% endblock %}
 
 {% block content %}
-  <div class="col-md-6" style="margin: auto;">
-    <div class="card">
-        <div class="card-header card-header-danger">
+<div class="card" style="max-width:500px;">
+    <div class="card-header card-header-text card-header-primary" style="margin:0 auto;">
+        <div class="card-text" style="text-align: center">
             <h4 class="card-title">{% block form_title %}{{ form_title }}{% endblock%}</h4>
-            <p class="category"></p>
-        </div>
-        <div class="card-body">
-            <form action={{ redirect }} method="post" style="text-align: center; width: 50%; margin: auto;">
-                {% csrf_token %}
-                {{ form|crispy }}
-                <div id="editor"></div>
-                <br>
-                <a class="btn btn-default" href="#" onclick="window.history.back()">Back</a>
-                <input id="submitjson" class="btn btn-primary" type="submit" value="Submit">
-            </form>
         </div>
     </div>
-  </div>
+    <div class="card-body">
+        <form action={{ redirect }} method="post" style="text-align: center; margin: auto;">
+            {% csrf_token %}
+            {{ form|crispy }}
+            <div id="editor"></div>
+            <br>
+            <a class="btn btn-default" href="#" onclick="window.history.back()">Back</a>
+            <input id="submitjson" class="btn btn-primary" type="submit" value="Save">
+        </form>
+    </div>
+</div>
 
 <link href="{% static "dashboard/jsoneditor/jsoneditor.min.css" %}" rel="stylesheet" type="text/css">
 <script src="{% static "dashboard/jsoneditor/jsoneditor.min.js" %}"></script>
@@ -33,8 +31,7 @@
     var container = document.getElementById("editor");
     var options = {
         onChange : function () {
-            document.getElementById("id_json").innerHTML = editor.getText()
-            console.log(editor.get())
+            document.getElementById("id_json").value = editor.getText();
         }
     };
     var editor = new JSONEditor(container, options);
@@ -44,8 +41,19 @@
 <style type="text/css" media="screen">
     #editor {
         height: 250px;
-        width: 400px;
+        width: 100%;
         border-radius: 5px;
+        position: static;
+    }
+    #div_id_json {
+        display: none;
+    }
+    .jsoneditor {
+        border-color: #701c7e !important;
+    }
+    .jsoneditor-menu {
+        background-color: #8e24aa !important;
+        border-bottom-color: #701c7e !important;
     }
 </style>
 {% endblock %}

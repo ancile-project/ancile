@@ -6,14 +6,14 @@
 {% block dev_active %}active{% endblock %}
 
 {% block content %}
-  <div class="col-md-6" style="margin: auto;">
-    <div class="card">
-        <div class="card-header card-header-danger">
-            <h4 class="card-title">{% block form_title %}{{ form_title }}{% endblock%}</h4>
-            <p class="category"></p>
+    <div class="card" style="width:500px;">
+        <div class="card-header card-header-text card-header-primary" style="margin:0 auto;">
+            <div class="card-text" style="text-align: center">
+                <h4 class="card-title">{% block form_title %}{{ form_title }}{% endblock%}</h4>
+            </div>
         </div>
         <div class="card-body">
-            <form action={{ redirect }} method="post" style="text-align: center; width: 50%; margin: auto;">
+            <form action={{ redirect }} method="post" style="text-align: center; margin: auto;">
                 {% csrf_token %}
                 {{ form|crispy }}
                 <div id="editor">{{body}}</div>
@@ -23,7 +23,6 @@
             </form>
         </div>
     </div>
-  </div>
 
 <script src="{% static "dashboard/js/ace/ace.js" %}" type="text/javascript" charset="utf-8"></script>
 <script type="text/javascript">

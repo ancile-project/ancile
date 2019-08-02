@@ -49,12 +49,12 @@
 
 {% block post_table %}
 
-<br>
-
-<div class="card" style="width: 50rem; margin: auto;">
-  <div class="card-body">
-    <h4 class="card-title">JSON Web Token</h4>
-    <h6 class="card-subtitle mb-2 text-muted"></h6>
+<div class="card">
+    <div class="card-header card-header-primary">
+      <h4 class="card-title">JSON Web Token</h4>
+      <p class="card-category"></p>
+    </div>
+    <div class="card-body">
     <p id="salt" class="card-text" style="font-family: monospace;">{{app.encoded_salt}}</p>
     <a href="#" onclick="copySalt()"><i class="material-icons" style="float: right;">file_copy</i></a>
     <script>
@@ -70,15 +70,6 @@
   </div>
 </div>
 
-<br>
-
-<div style="text-align: center;">
-<a href="/dev/add/group/{{ app.id }}" class="btn btn-primary">Add Group</a>
-<a href="/dev/add/function/{{ app.id }}" class="btn btn-primary">Add Function</a>
-<a class="btn btn-default" href="#" onclick="window.history.back()">Back</a>
-
-</div>
-
   <div class="row">
     <div class="col-md-12">
       <div class="card">
@@ -87,6 +78,7 @@
           <p class="card-category"></p>
         </div>
         <div class="card-body">
+          <a href="/dev/add/group/{{ app.id }}" class="btn btn-primary btn-round"><i class="material-icons">add</i>Add Group</a>
           <div class="table-responsive">
             <table class="table">
               <thead class="text-primary">
@@ -153,6 +145,7 @@
           <p class="card-category"></p>
         </div>
         <div class="card-body">
+          <a href="/dev/add/function/{{ app.id }}" class="btn btn-primary btn-round"><i class="material-icons">add</i>Add Function</a>
           <div class="table-responsive">
             <table class="table">
               <thead class="text-primary">
@@ -201,6 +194,11 @@
         </div>
       </div>
     </div>
+</div>
+
+
+<div style="text-align: center;">
+  <a class="btn btn-default" href="#" onclick="window.history.back()">Back</a>
 </div>
 
 {% endblock %}
