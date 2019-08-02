@@ -587,9 +587,10 @@ def admin_add_provider(request):
     else:
         form = AdminAddProviderForm(initial={})
 
-    return render(request, 'admin/form.html', {"redirect" : "/admin/add/provider",
+    return render(request, 'admin/provider_form.html', {"redirect" : "/admin/add/provider",
                                                 "title" : "Add Provider",
                                                 "form_title" : "Add Provider",
+                                                "json" : json.loads("{}"),
                                                 "form" : form})
 
 @login_required
@@ -619,9 +620,10 @@ def admin_edit_provider(request, provider_id):
                                                 "client_secret" : provider.client_secret,
                                                 "json" : provider.extra_params})
 
-    return render(request, 'admin/form.html', {"redirect" : "/admin/edit/provider/" + str(provider_id),
+    return render(request, 'admin/provider_form.html', {"redirect" : "/admin/edit/provider/" + str(provider_id),
                                                 "title" : "Edit Provider",
                                                 "form_title" : "Edit Provider",
+                                                "json" : json.loads(str(provider.extra_params)),
                                                 "form" : form})
 
 @login_required
