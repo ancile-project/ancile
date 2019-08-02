@@ -9,11 +9,16 @@ from ancile.web.dashboard.models import User, Token, PermissionGroup, DataProvid
 from ancile.web.api.visualizer import parse_policy as parse_policy_string
 import traceback
 from django.views.decorators.csrf import csrf_exempt
+import logging
+
+logger = logging.getLogger(__name__)
 
 @csrf_exempt
 @require_http_methods(["POST"])
 def execute_api(request):
     body = json.loads(request.body)
+
+    logger.info(f"Received request: {body}")
     try:
         token = body["token"]
         users = body["users"]
@@ -37,7 +42,7 @@ def execute_api(request):
                   program=program,
                   app_id=app_id,
                   app_module=get_app_module(app_id))
-
+    logger.info(f"Returning response: {res}")
     return JsonResponse(res)
 
 
@@ -46,6 +51,8 @@ def execute_api(request):
 def browser_execute(request):
     user = request.user
     body = json.loads(request.body)
+
+    logger.info(f"Received request: {body}")
 
     app_id = int(body['app_id'])
 
@@ -62,6 +69,7 @@ def browser_execute(request):
                     app_id=app_id,
                     app_module=get_app_module(app_id))
 
+        logger.info(f"Returning response: {res}")
         return JsonResponse(res)
     else:
         return JsonResponse({"result": "error",

@@ -170,7 +170,7 @@ if config.ENABLE_LOGGING:
                 "propagate": False,
                 "handlers": ["file", "console"],
             },
-            "api": {"level": "INFO", "propagate": False, "handlers": ["file", "console"]},
-            "oauth": {"level": "INFO", "propagate": False, "handlers": ["file", "console"]},
+            "ancile.web.api": {"level": "INFO", "propagate": False, "handlers": ["file", "console"]},
+            "ancile.web.oauth": {"level": "INFO", "propagate": False, "handlers": ["file", "console"]},
         },
     }

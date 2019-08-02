@@ -16,7 +16,8 @@ class ReductionDecorator(BaseDecorator):
 
     def process_call(self, command):
 
-        logger.debug('Calling Reduction Decorator')
+        logger.debug(f'Calling Reduction "{command.function_name}"')
+
 
         collection = command.params.get('collection', None)
         if not isinstance(collection, Collection):

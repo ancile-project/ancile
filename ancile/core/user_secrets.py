@@ -17,6 +17,9 @@ class UserSecrets:
         self._app_id = app_id
         logger.debug(f'parsed policies for {self._username}: {self._user_policies}')
 
+    def __repr__(self):
+        return f"<{self._username}>"
+
     def get_empty_data_pair(self, data_source, name=None, sample_policy='ANYF*.return'):
         """
         Returns a new Data Policy Pair object that has no data.
