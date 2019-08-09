@@ -4,13 +4,14 @@ from ancile.core.primitives import *
 
 logger = logging.getLogger(__name__)
 
+
 # Helper Comparison Functions
 def _dependent_comparison(**kwargs):
     pass
 
+
 def _enforce_comparison(**kwargs):
     pass
-
 
 
 class ComparisonDecorator(BaseDecorator):
@@ -21,7 +22,6 @@ class ComparisonDecorator(BaseDecorator):
 
     def process_call(self, command):
         logger.debug(f'Calling Comparison "{command.function_name}" with arguments {command.params}')
-
 
         dp_pair = self.decorator_preamble(command.params)
 

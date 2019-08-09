@@ -1,4 +1,3 @@
-from abc import ABC
 from ancile.core.primitives.policy_helpers.expressions import *
 
 
@@ -47,6 +46,9 @@ class IntersectExpression(BinaryExpression):
         P* + 1 = P*
 
         """
+        # resolve circular dependency
+        from ancile.core.primitives.policy_helpers.expressions import StarExpression
+
         self.l_expr = self.l_expr.simplify()
         self.r_expr = self.r_expr.simplify()
 
