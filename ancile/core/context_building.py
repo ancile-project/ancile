@@ -2,6 +2,10 @@ from ancile.core.user_secrets import UserSecrets
 from ancile.core.primitives.data_policy_pair import DataPolicyPair
 from ancile.core.primitives.policy_helpers.private_data import PrivateData
 from ancile.core.primitives.collection import Collection
+import pprint
+from config.loader import configs
+from ancile.core.decorators import TransformDecorator
+import types
 
 
 def gen_module_namespace():
@@ -19,6 +23,14 @@ def gen_module_namespace():
     for _, mod_name, is_pac in pkgutil.iter_modules(path=base.__path__):
         if not is_pac and mod_name not in exclude:
             module_namespace[mod_name] = importlib.import_module(prefix_name + mod_name)
+
+    for library in configs.get('libraries', []):
+        module = importlib.import_module(library)
+        decorator = TransformDecorator()
+        for k, v in vars(module).items():
+            if isinstance(v, types.FunctionType):
+                vars(module)[k] = decorator(v)
+        module_namespace[library] = module
 
     return module_namespace
 
@@ -57,5 +69,9 @@ def assemble_locals(storage, result, user_specific, app_id, app_module=None):
     lcls['encrypt'] = encrypt
     lcls['return_to_app'] = result.return_to_app
     lcls['app'] = app_module
+
+    if configs['SERVER_DEBUG']:
+        # allow printing in the debug state
+        lcls['pprint'] = pprint.pprint
 
     return lcls
