@@ -30,7 +30,6 @@ def gen_module_namespace():
             if isinstance(v, types.FunctionType):
                 decorator = TransformDecorator()
                 vars(module)[k] = decorator(v)
-
         module_namespace[library] = module
 
     return module_namespace

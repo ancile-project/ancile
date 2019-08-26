@@ -112,13 +112,13 @@ class DataPolicyPair:
         self._advance_policy_error(command)
         self._resolve_private_data_values(command.params)
 
-    def _call_transform(self, command: Command):
+    def _call_transform(self, command: Command, key='data'):
         """
         If the policy check succeeds pass data argument
         as parameter and call the function
         """
         self.check_call(command)
-        command.params['data'] = self._data
+        command.params[key] = self._data
         return command.call()
 
     def _call_store(self, command):

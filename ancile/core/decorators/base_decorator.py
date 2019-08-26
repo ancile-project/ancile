@@ -24,6 +24,7 @@ class BaseDecorator(ABC):
                              f'Try: {self.__class__.__name__}()')
         self.is_collection = is_collection
         self.scopes = scopes if scopes else list()
+        self.decorated = True
 
     @wrapt.decorator
     def __call__(self, wrapped, _, args, kwargs):

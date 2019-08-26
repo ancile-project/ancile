@@ -160,6 +160,12 @@ def flat_dict(d):
     return out
 
 
+@TransformDecorator()
+def replace_data_root_with_key(data, key):
+    data = data[key]
+
+    return data
+
 # =============================================================================
 # Aggregation Functions
 # =============================================================================
