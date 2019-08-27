@@ -32,7 +32,10 @@ class TransformDecorator(BaseDecorator):
                 logger.info(f'Found DataPolicyPair for param: {name}')
                 dp_pairs.append((name, param))
 
-        if len(dp_pairs) != 1:
+        if len(dp_pairs) > 1:
+            raise AncileException("Passed more than one DataPolicyPair or none. Not Implemented yet.")
+        elif len(dp_pairs) == 0:
+            logger.info(f'Calling function without DPPs')
             raise AncileException("Passed more than one DataPolicyPair or none. Not Implemented yet.")
         else:
             name, dp_pair = dp_pairs[0]
