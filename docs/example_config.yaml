@@ -8,6 +8,8 @@ CACHE: False
 LANGUAGE_CODE: "en-us"
 TIME_ZONE: "Etc/GMT-4"
 
+library:
+    - numpy
 
 database:
     ENGINE: "django.db.backends.postgresql"
