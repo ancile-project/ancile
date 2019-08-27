@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 import wrapt
 
 from ancile.core.primitives.command import Command
-import inspect
+
 
 class BaseDecorator(ABC):
     """
@@ -24,22 +24,21 @@ class BaseDecorator(ABC):
                              f'Try: {self.__class__.__name__}()')
         self.is_collection = is_collection
         self.scopes = scopes if scopes else list()
-        self.decorated = True
 
     @wrapt.decorator
     def __call__(self, wrapped, _, args, kwargs):
         """
-        We check if the call to the method was
-        originated from the submitted program (has signature <string>)
-        or from library module. If the call comes from the library
-        we can ignore the checks and keep the library operational.
+        We check if the call to the method has any DataPolicyPairs, otherwise
+        allow calling the method on unprotected data.
 
-        Example: numpy.sort() uses methods amin(), amax() a lot, so we don't need
-        to put amin and amax in the policy.
+        Example:
+            1. numpy.sort() uses methods amin(), amax() internally. These
+        methods are wrapped by the decorator, however we don't want them to
+        be part of the policy as they are internal calls to the `sort()` method.
+            2. Calling numpy.sort() on unprotected data should be always allowed
         """
 
-        context = inspect.stack()
-        if context[1].filename == '<string>':
+        if self.check_dp_pair_passed(args, kwargs):
             if args:
                 raise ValueError("Please specify keyword arguments instead of positions.")
             command = Command(function=wrapped, scopes=self.scopes, params=kwargs)
@@ -65,3 +64,21 @@ class BaseDecorator(ABC):
         dp_pair = params.get('data', False)
         BaseDecorator.check_data(dp_pair)
         return dp_pair
+
+    @staticmethod
+    def check_dp_pair_passed(args, kwargs):
+        """
+        Allow calling a method if none of the parameters are DataPolicyPair
+        (assuming they all have `ANYF*` policy). Useful for library integrations.
+        """
+        from ancile.core.primitives import DataPolicyPair
+
+        for arg in args:
+            if isinstance(arg, DataPolicyPair):
+                return True
+
+        for name, arg in kwargs.items():
+            if isinstance(arg, DataPolicyPair):
+                return True
+
+        return False

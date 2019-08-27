@@ -36,7 +36,7 @@ class TransformDecorator(BaseDecorator):
             raise AncileException("Passed more than one DataPolicyPair or none. Not Implemented yet.")
         elif len(dp_pairs) == 0:
             logger.info(f'Calling function without DPPs')
-            raise AncileException("Passed more than one DataPolicyPair or none. Not Implemented yet.")
+            raise AncileException("Passed no DataPolicyPairs. Not Implemented yet.")
         else:
             name, dp_pair = dp_pairs[0]
 
