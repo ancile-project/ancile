@@ -345,3 +345,21 @@ def no_filter(collection=None):
 
 def get_token(user):
     return user['token']
+
+# =============================================================================
+#  Serialize Functions
+# =============================================================================
+
+
+@TransformDecorator()
+def serialize_np_array(data):
+    """
+    If we deal with numpy arrays it's impossible to serialize
+    them into JSON. Probably need a more general solution /
+
+    """
+    import numpy as np
+
+    data = data.tolist()
+
+    return data
