@@ -4,12 +4,16 @@ from ancile.core.core import execute
 from django.http import HttpResponse, Http404, JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth.decorators import login_required
+
+from ancile.core.user_secrets import UserSecrets
 from ancile.web.api.queries import get_app_id, get_user_bundle, get_app_module
 from ancile.web.dashboard.models import User, Token, PermissionGroup, DataProvider, App, PolicyTemplate, Policy, Scope
 from ancile.web.api.visualizer import parse_policy as parse_policy_string
 import traceback
 from django.views.decorators.csrf import csrf_exempt
 import logging
+import pika
+import dill
 
 logger = logging.getLogger(__name__)
 
@@ -64,12 +68,32 @@ def browser_execute(request):
         except Exception:
             return JsonResponse({"result": "error",
                                  "error": "Problem in retreiving user information"})
-        res = execute(user_info=user_info,
-                    program=program,
-                    app_id=app_id,
-                    app_module=get_app_module(app_id))
+        res = {'dumb_output': None}
+        users_specific = dict()
+        for user in user_info:
+            user_specific = UserSecrets(user.policies, user.tokens,
+                                        user.private_data,
+                                        username=user.username,
+                                        app_id=app_id)
+            users_specific[user.username] = user_specific
+
+        user_pickled = dill.dumps(
+            (users_specific, program,
+             app_id, None)
+        )
+        print(user_pickled)
+
+        connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
+        channel = connection.channel()
+        channel.queue_declare(queue='ancile')
+
+        channel.basic_publish(exchange='',
+                              routing_key='ancile',
+                              body=user_pickled)
+        print(" [x] Sent execute request")
 
         logger.info(f"Returning response: {res}")
+        connection.close()
         return JsonResponse(res)
     else:
         return JsonResponse({"result": "error",
