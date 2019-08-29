@@ -27,10 +27,24 @@ class BaseDecorator(ABC):
 
     @wrapt.decorator
     def __call__(self, wrapped, _, args, kwargs):
-        if args:
-            raise ValueError("Please specify keyword arguments instead of positions.")
-        command = Command(function=wrapped, scopes=self.scopes, params=kwargs)
-        return self.process_call(command)
+        """
+        We check if the call to the method has any DataPolicyPairs, otherwise
+        allow calling the method on unprotected data.
+
+        Example:
+            1. numpy.sort() uses methods amin(), amax() internally. These
+        methods are wrapped by the decorator, however we don't want them to
+        be part of the policy as they are internal calls to the `sort()` method.
+            2. Calling numpy.sort() on unprotected data should be always allowed
+        """
+
+        if self.check_dp_pair_passed(args, kwargs):
+            if args:
+                raise ValueError("Please specify keyword arguments instead of positions.")
+            command = Command(function=wrapped, scopes=self.scopes, params=kwargs)
+            return self.process_call(command)
+        else:
+            wrapped(*args, **kwargs)
 
     @abstractmethod
     def process_call(self, command: Command):
@@ -50,3 +64,21 @@ class BaseDecorator(ABC):
         dp_pair = params.get('data', False)
         BaseDecorator.check_data(dp_pair)
         return dp_pair
+
+    @staticmethod
+    def check_dp_pair_passed(args, kwargs):
+        """
+        Allow calling a method if none of the parameters are DataPolicyPair
+        (assuming they all have `ANYF*` policy). Useful for library integrations.
+        """
+        from ancile.core.primitives import DataPolicyPair
+
+        for arg in args:
+            if isinstance(arg, DataPolicyPair):
+                return True
+
+        for name, arg in kwargs.items():
+            if isinstance(arg, DataPolicyPair):
+                return True
+
+        return False
