@@ -44,6 +44,9 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "crispy_forms",
+    "rest_framework",
+    "rest_framework.authtoken",
+    'corsheaders'
 ]
 
 CRISPY_TEMPLATE_PACK = "bootstrap3"
@@ -56,6 +59,8 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
 ]
 
 ROOT_URLCONF = "ancile.web.ancile_web.urls"
@@ -174,3 +179,8 @@ if config.ENABLE_LOGGING:
             "ancile.web.oauth": {"level": "INFO", "propagate": False, "handlers": ["file", "console"]},
         },
     }
+
+if config.SERVER_DEBUG:
+    CORS_ORIGIN_REGEX_WHITELIST = [
+        'http://localhost',
+    ]
