@@ -46,7 +46,8 @@ INSTALLED_APPS = [
     "crispy_forms",
     "rest_framework",
     "rest_framework.authtoken",
-    'corsheaders'
+    'corsheaders',
+    'graphene_django'
 ]
 
 CRISPY_TEMPLATE_PACK = "bootstrap3"
@@ -91,6 +92,14 @@ DATABASES = {
     "default": config.DATABASE_CONFIG
 }
 
+REST_FRAMEWORK = {
+   'DEFAULT_AUTHENTICATION_CLASSES': (
+       'rest_framework.authentication.TokenAuthentication',
+   ),
+   'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAdminUser'
+   ),
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/2.2/ref/settings/#auth-password-validators
@@ -184,3 +193,7 @@ if config.SERVER_DEBUG:
     CORS_ORIGIN_REGEX_WHITELIST = [
         'http://localhost',
     ]
+    
+GRAPHENE = {
+    'SCHEMA': 'ancile.web.ancile_web.schema.schema'
+}

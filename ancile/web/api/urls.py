@@ -13,5 +13,6 @@ urlpatterns = [
     path('app/policies', views.get_app_policies),
     path('provider/delete', views.remove_provider_for_user),
     path('provider/scopes', views.get_provider_scopes),
-    path('token', authviews.obtain_auth_token)
+    path('token', authviews.obtain_auth_token),
+    path('graphene', views.DRFAuthenticatedGraphQLView.as_view(graphiql=True))
 ]
