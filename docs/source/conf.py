@@ -15,10 +15,24 @@
 # sys.path.insert(0, os.path.abspath('.'))
 
 
+# At top on conf.py (with other import statements)
+import recommonmark
+from recommonmark.transform import AutoStructify
+
+# At the bottom of conf.py
+def setup(app):
+    app.add_config_value('recommonmark_config', {
+            'url_resolver': lambda url: 'http://github.com/' + url,
+            'auto_toc_tree_section': 'Contents',
+            }, True)
+    app.add_transform(AutoStructify)
+
+source_suffix = ['.rst', '.md']
+
 # -- Project information -----------------------------------------------------
 
 project = 'Ancile'
-copyright = '2019, Eugene Bagdasaryan'
+copyright = '2019, Cornell University'
 author = 'Eugene Bagdasaryan'
 
 # The full version, including alpha/beta/rc tags
@@ -30,8 +44,7 @@ release = '1.0'
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = [
-]
+extensions = ['recommonmark']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

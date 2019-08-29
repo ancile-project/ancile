@@ -6,10 +6,12 @@
 Welcome to Ancile's documentation!
 ==================================
 
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+.. include installation.md
 
+.. toctree::
+   :maxdepth: 1
+
+   installation
 
 
 Indices and tables
@@ -18,3 +20,4 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
+
