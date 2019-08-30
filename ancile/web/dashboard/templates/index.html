@@ -10,12 +10,11 @@
   </head>
   <body>
     <noscript>
-      <strong>We're sorry but ancile-front doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
+      <strong>We're sorry but Ancile doesn't work without JavaScript. Please enable it to continue.</strong>
     </noscript>
     {% if user.is_authenticated %}
     <div id="loggedin" style="display:none"></div>
     {% endif %}
-    {% csrf_token %}
     <div id="app"></div>
   {% render_bundle 'app' 'js' %}
   </body>
