@@ -20,6 +20,20 @@ class TokenType(DjangoObjectType):
     
     class Meta:
         model = models.Token
+        
+class DeleteToken(graphene.Mutation):
+    class Arguments:
+        token = graphene.Int()
+    
+    ok = graphene.Boolean()
+    
+    def mutate(root, info, token):
+        token = models.Token.objects.get(id=token)
+        token.delete()
+        return DeleteToken(ok=True)
+
+class Mutations(graphene.ObjectType):
+    delete_token = DeleteToken.Field()
 
 class Query(object):
     all_providers = graphene.List(ProviderType)

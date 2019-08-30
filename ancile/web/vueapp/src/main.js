@@ -26,8 +26,6 @@ if (token && document.getElementById("loggedin")) {
 // clearing the cookies and changing the state.
 const router = routerFactory(state, () => {
   state.loggedIn = false;
-  state.token = false;
-  Vue.cookies.remove('token');
   Vue.prototype.$vs.notify({
     title: "Sucessfully logged out.",
     icon: "fa-check",
@@ -36,11 +34,6 @@ const router = routerFactory(state, () => {
     position: "top-center"
   })
 });
-
-// when in development, the front-end and django
-// are hosted on different web servers
-
-const ENDPOINT = '/api/graphene';
 
 new Vue({
   data: state,
@@ -71,14 +64,15 @@ new Vue({
         token = Vue.cookies.get("csrftoken");
         axios.defaults.headers["X-CSRFToken"] = token;
       }
-
       return axios.post(endpoint, data);
+
+
     },
 
     async dataFetch(query, callback) {
       this.$vs.loading();
 
-      await this.postRequest(ENDPOINT, {query: query})
+      await this.postRequest('/api/graphene', {query: query})
       .then(resp => {
         if (resp.status === 200) callback(resp.data.data)
         else if (resp.status === 400) {
@@ -86,7 +80,6 @@ new Vue({
         }
       })
       .catch(err => {
-
         if (err.response.status === 403) {
           this.notify("fail", "Your session has expired.");
           this.loggedIn = false;
@@ -96,6 +89,7 @@ new Vue({
         }
       })
       .catch(() => {
+
         this.notify("fail", "Connection error.");
       })
 
