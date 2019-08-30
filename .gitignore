@@ -1,6 +1,6 @@
 # storage for certificates
 /priv/cert/
-
+static/
 #Pyenv config
 .python-version
 

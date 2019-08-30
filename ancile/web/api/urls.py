@@ -1,6 +1,7 @@
 from django.urls import path
 import ancile.web.api.views as views
-from rest_framework.authtoken import views as authviews
+from graphene_django.views import GraphQLView
+
 
 urlpatterns = [
     path('run', views.execute_api),
@@ -13,6 +14,5 @@ urlpatterns = [
     path('app/policies', views.get_app_policies),
     path('provider/delete', views.remove_provider_for_user),
     path('provider/scopes', views.get_provider_scopes),
-    path('token', authviews.obtain_auth_token),
-    path('graphene', views.DRFAuthenticatedGraphQLView.as_view(graphiql=True))
+    path('graphene', GraphQLView.as_view(graphiql=True))
 ]

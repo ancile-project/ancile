@@ -30,7 +30,7 @@ def dashboard(request):
     if not request.user.is_anonymous:
         if PendingDeveloper.objects.filter(user=request.user).exists():
             pending_dev = True
-    return render(request, "dashboard.html", {"pending_dev" : pending_dev})
+    return render(request, "index.html", {"pending_dev" : pending_dev})
 
 @login_required
 def providers(request):

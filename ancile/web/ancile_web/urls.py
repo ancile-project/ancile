@@ -19,6 +19,7 @@ from django.contrib.auth import views as auth_views
 from django.contrib.auth.forms import UserCreationForm
 from django.conf.urls import url
 from config.loader import SERVER_DEBUG
+from django.views.decorators.csrf import ensure_csrf_cookie
 
 urlpatterns = [
     url(r'^login/$', auth_views.LoginView.as_view(template_name="login.html"), name='login'),

@@ -44,10 +44,9 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "crispy_forms",
-    "rest_framework",
-    "rest_framework.authtoken",
     'corsheaders',
-    'graphene_django'
+    'graphene_django',
+    'webpack_loader'
 ]
 
 CRISPY_TEMPLATE_PACK = "bootstrap3"
@@ -92,15 +91,6 @@ DATABASES = {
     "default": config.DATABASE_CONFIG
 }
 
-REST_FRAMEWORK = {
-   'DEFAULT_AUTHENTICATION_CLASSES': (
-       'rest_framework.authentication.TokenAuthentication',
-   ),
-   'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAdminUser'
-   ),
-}
-
 # Password validation
 # https://docs.djangoproject.com/en/2.2/ref/settings/#auth-password-validators
 
@@ -135,6 +125,17 @@ USE_TZ = True
 
 STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "ancile/web" + STATIC_URL)
+
+WEBPACK_LOADER = {
+    'DEFAULT': {
+        'CACHE': not DEBUG,
+        'BUNDLE_DIR_NAME': "bundles/", # must end with slash
+        'STATS_FILE': os.path.join(BASE_DIR, "ancile/web/vueapp/node_modules/@vue/cli-service/webpack-stats.json"),
+        'POLL_INTERVAL': 0.1,
+        'TIMEOUT': None,
+        'IGNORE': [r'.+\.hot-update.js', r'.+\.map']
+    }
+}
 
 if config.ENABLE_LOGGING:
     LOGGING = {
@@ -190,9 +191,9 @@ if config.ENABLE_LOGGING:
     }
 
 if config.SERVER_DEBUG:
-    CORS_ORIGIN_REGEX_WHITELIST = [
-        'http://localhost',
-    ]
+    CORS_ORIGIN_ALLOW_ALL = True
+    CORS_ALLOW_CREDENTIALS = True
+
     
 GRAPHENE = {
     'SCHEMA': 'ancile.web.ancile_web.schema.schema'
