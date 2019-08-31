@@ -11,6 +11,8 @@ bash scripts/setup/copy_templates.sh
 
 bash scripts/setup/setup_env.sh
 
+bash scripts/setup/setup_node.sh
+
 bash scripts/setup/setup_dockers.sh
 
 echo "Waiting for docker ..."
