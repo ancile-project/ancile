@@ -16,6 +16,8 @@
     "mermaid": "~8.1.0",
     "node-sass": "^4.12.0",
     "sass-loader": "^7.3.1",
+    "typeface-montserrat": "0.0.75",
+    "typeface-open-sans": "0.0.75",
     "vue": "^2.6.10",
     "vue-cookies": "^1.5.13",
     "vue-router": "^3.1.2",

@@ -18,6 +18,13 @@ import Footer from './components/Footer.vue'
 import Header from './components/Header.vue'
 import Sidebar from './components/Sidebar.vue'
 
+import 'material-icons/iconfont/material-icons.css';
+import 'typeface-open-sans'
+import 'typeface-montserrat'
+import '@fortawesome/fontawesome-free/css/fontawesome.css'
+import '@fortawesome/fontawesome-free/css/regular.css'
+import '@fortawesome/fontawesome-free/css/solid.css'
+
 export default {
   name: 'app',
   components: {
@@ -37,13 +44,6 @@ export default {
 </script>
 
 <style lang="scss">
-@import url('https://fonts.googleapis.com/css?family=Montserrat|Open+Sans&display=swap');
-
-$fa-font-path: "~@fortawesome/fontawesome-free/webfonts";
-@import "~@fortawesome/fontawesome-free/scss/fontawesome";
-@import "~@fortawesome/fontawesome-free/scss/solid"; // fas
-@import "~@fortawesome/fontawesome-free/scss/regular"; // far
-@import "~@fortawesome/fontawesome-free/scss/brands"; // fab
 
 #app {
   min-height: 100%;

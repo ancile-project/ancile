@@ -1,4 +1,4 @@
-cd ancile/web/vueapp
+cd ancile/web/frontend
 
 npm run build
 

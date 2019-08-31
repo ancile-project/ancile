@@ -5,7 +5,6 @@ import routerFactory from './router'
 import 'vuesax/dist/vuesax.css'
 import VueCookie from 'vue-cookies'
 import axios from 'axios';
-import 'material-icons/iconfont/material-icons.css';
 
 Vue.config.productionTip = false
 
@@ -60,7 +59,7 @@ new Vue({
           this.notify("fail", response.data.error)
         }
       })
-      .catch(error => {
+      .catch(() => {
         this.notify("fail", "Connection error.");
       })
 
