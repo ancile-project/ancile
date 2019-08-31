@@ -16,28 +16,56 @@ const state = {
   loggedIn: false,
 };
 
-let token = Vue.cookies.get("csrftoken");
-axios.defaults.headers["X-CSRFToken"] = token;
-
-if (token && document.getElementById("loggedin")) {
+if (Vue.cookies.get("csrftoken") && document.getElementById("loggedin")) {
   state.loggedIn = true;
 }
 // This is the logout function, it takes care of
-// clearing the cookies and changing the state.
-const router = routerFactory(state, () => {
-  state.loggedIn = false;
-  Vue.prototype.$vs.notify({
-    title: "Sucessfully logged out.",
-    icon: "fa-check",
-    iconPack: "fas",
-    color: "success",
-    position: "top-center"
+// changing the state.
+function logout() {
+  axios.get('/logout')
+  .then(() => {
+    state.loggedIn = false;
+    Vue.prototype.$vs.notify({
+      title: "Sucessfully logged out.",
+      icon: "fa-check",
+      iconPack: "fas",
+      color: "success",
+      position: "top-center"
+    })
   })
-});
+  .catch(() => {
+    Vue.prototype.$vs.notify({
+      title: "Error while logging out.",
+      icon: "fa-check",
+      iconPack: "fas",
+      color: "danger",
+      position: "top-center"
+    })
+  })
+}
+
+const router = routerFactory(state, logout);
 
 new Vue({
   data: state,
   methods: {
+  login(username, password) {
+    this.postRequest("/login", {username, password})
+      .then(response => {
+        if (response.data.status === 'ok') {
+          this.notify("success", "Sucessfully logged in!");
+          this.loggedIn = true;
+          this.$router.push("/");
+        } else if (response.data.status === 'error') {
+          this.notify("fail", response.data.error)
+        }
+      })
+      .catch(error => {
+        this.notify("fail", "Connection error.");
+      })
+
+    },
+    logout,
     notify(type, title, text) {
       var icon = "fa-info";
       var color = "primary";
@@ -59,14 +87,10 @@ new Vue({
         iconPack: "fas"
       })
     },
+
     postRequest(endpoint, data) {
-      if (!token) {
-        token = Vue.cookies.get("csrftoken");
-        axios.defaults.headers["X-CSRFToken"] = token;
-      }
+      axios.defaults.headers["X-CSRFToken"] = Vue.cookies.get("csrftoken");
       return axios.post(endpoint, data);
-
-
     },
 
     async dataFetch(query, callback) {

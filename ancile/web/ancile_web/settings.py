@@ -26,12 +26,7 @@ SECRET_KEY = config.SECRET_KEY
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config.SERVER_DEBUG
 
-LOGIN_URL = "/login"
-
 ALLOWED_HOSTS = [config.SERVER_NAME]
-
-LOGIN_REDIRECT_URL = LOGOUT_REDIRECT_URL = "/"
-# Application definition
 
 INSTALLED_APPS = [
     "ancile.web.dashboard.apps.DashboardConfig",
@@ -43,13 +38,9 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "crispy_forms",
-    'corsheaders',
     'graphene_django',
     'webpack_loader'
 ]
-
-CRISPY_TEMPLATE_PACK = "bootstrap3"
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -58,10 +49,7 @@ MIDDLEWARE = [
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
-    "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.common.CommonMiddleware',
-]
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",]
 
 ROOT_URLCONF = "ancile.web.ancile_web.urls"
 
@@ -82,7 +70,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "ancile.web.ancile_web.wsgi.application"
-
 
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
@@ -190,11 +177,6 @@ if config.ENABLE_LOGGING:
         },
     }
 
-if config.SERVER_DEBUG:
-    CORS_ORIGIN_ALLOW_ALL = True
-    CORS_ALLOW_CREDENTIALS = True
-
-    
 GRAPHENE = {
     'SCHEMA': 'ancile.web.ancile_web.schema.schema'
 }

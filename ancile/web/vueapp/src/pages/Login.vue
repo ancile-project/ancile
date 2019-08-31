@@ -32,26 +32,7 @@ export default {
   },
   methods: {
   login() {
-    const data = new FormData();
-    data.set('username', this.username);
-    data.set('password', this.password);
-    this.$root.postRequest("/login/", data)
-      .then(response => {
-        if (response.status === 200) {
-          this.$root.notify("success", "Sucessfully logged in!");
-          this.$root.loggedIn = true;
-          this.$router.push("/");
-        }
-      })
-      .catch(error => {
-        if (error.response.status === 400) {
-          this.$root.notify("fail", "Incorrect username or password.");
-        }
-      })
-      .catch(() => {
-        this.$root.notify("fail", "Connection error.");
-      })
-
+    this.$root.login(this.username, this.password);
     }
   },
 }
