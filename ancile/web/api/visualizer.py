@@ -242,10 +242,7 @@ def parse_policy(policy):
     top_nodes, _ = traverse_tree(parsed_policy)
     mermaid_string = visualize_policies(top_nodes)
 
-    return {
-        "status": "ok",
-        "parsed_policy": mermaid_string
-    }
+    return mermaid_string
 
 def param_cell_to_str(param_cells):
     """

@@ -42,7 +42,7 @@ class PolicyType(DjangoObjectType):
         only_fields = ('provider', 'text')
         
     def resolve_graph(self, info, **args):
-        return parse_policy(self.text)["parsed_policy"]
+        return parse_policy(self.text)
 
 class PermissionGroupType(DjangoObjectType):
     
