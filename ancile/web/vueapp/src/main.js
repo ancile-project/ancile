@@ -75,9 +75,6 @@ new Vue({
       await this.postRequest('/api/graphene', {query: query})
       .then(resp => {
         if (resp.status === 200) callback(resp.data.data)
-        else if (resp.status === 400) {
-          this.notify("fail", "Query error.")
-        }
       })
       .catch(err => {
         if (err.response.status === 403) {
@@ -86,10 +83,11 @@ new Vue({
           this.$router.push('/login');
         } else if (err.response.status === 500) {
           this.notify("fail", "Server side error.");
+        } else if (err.response.status === 400) {
+          this.notify("fail", "Query error.")
         }
       })
       .catch(() => {
-
         this.notify("fail", "Connection error.");
       })
 

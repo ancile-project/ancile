@@ -228,7 +228,6 @@ export default {
           icon: "fa-info",
           color: "primary",
           callback: (tr) => {
-            console.log(this.actions)
             let token = this.allTokens[tr.id];
 
             this.currentToken = {
@@ -242,7 +241,6 @@ export default {
           icon: "fa-trash",
           color: "danger",
           callback: (tr) => {
-            console.log(tr);
             let query = `
             mutation deleteToken {
               deleteToken(token: ${tr.id}) {

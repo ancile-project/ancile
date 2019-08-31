@@ -1,6 +1,7 @@
 from django.urls import path
 import ancile.web.api.views as views
 from graphene_django.views import GraphQLView
+from django.contrib.auth.decorators import login_required
 
 
 urlpatterns = [
@@ -14,5 +15,5 @@ urlpatterns = [
     path('app/policies', views.get_app_policies),
     path('provider/delete', views.remove_provider_for_user),
     path('provider/scopes', views.get_provider_scopes),
-    path('graphene', GraphQLView.as_view(graphiql=True))
+    path('graphene', login_required(GraphQLView.as_view(graphiql=True)))
 ]

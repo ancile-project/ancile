@@ -22,7 +22,8 @@
       <SidebarItem :loggedIn="0" :index="2" icon="fa-sign-in-alt" to="/login" label="Login" />
       <SidebarItem :loggedIn="0" :index="3" icon="fa-user-plus" to="/signup" label="Signup" />
 
-      <SidebarItem :loggedIn="1" :index="2" icon="fa-database" to="/providers" label="Providers" />
+      <SidebarItem :loggedIn="1" :index="2" icon="fa-server" to="/providers" label="Providers" />
+      <SidebarItem :loggedIn="1" :index="3" icon="fa-rocket" to="/apps" label="Apps" />
       <SidebarItem :index="50" :loggedIn="1" icon="fa-sign-out-alt" label="Logout" to="/logout" />
 
     </vs-sidebar>

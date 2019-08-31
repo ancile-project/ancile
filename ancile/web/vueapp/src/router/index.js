@@ -4,6 +4,7 @@ import Home from '@/pages/Home'
 import Login from '@/pages/Login'
 import Signup from '@/pages/Signup'
 
+import UserApps from '@/pages/user/UserApps'
 import UserProviders from '@/pages/user/UserProviders'
 
 Vue.use(Router)
@@ -28,6 +29,11 @@ export default function(state, logout) {
         path: '/signup',
         name: 'Signup',
         component: Signup
+      },
+      {
+        path: '/apps',
+        name: 'UserApps',
+        component: UserApps
       },
       {
         path: '/providers',

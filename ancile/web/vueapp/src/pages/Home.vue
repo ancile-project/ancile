@@ -15,9 +15,12 @@
             <span>
               Ancile is a light, flexible framework for privacy-aware applications.
             </span>
-            <div class="login-buttons">
+            <div v-if="!$root.loggedIn" class="login-buttons">
               <vs-button type="gradient" to="/login">Login</vs-button>
               <vs-button type="gradient" to="/signup">Signup</vs-button>
+            </div>
+            <div v-else class="login-buttons">
+              <vs-button type="gradient" color="danger" to="/logout">Logout</vs-button>
             </div>
           </div>
         </vs-card>
@@ -28,7 +31,7 @@
 
 <script>
 export default {
-  name: 'Home'
+  name: 'Home',
 }
 </script>
 

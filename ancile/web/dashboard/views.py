@@ -8,6 +8,7 @@ from ancile.web.dashboard.decorators import *
 from django.urls import reverse_lazy
 from django.views import generic
 from django.template import RequestContext
+from django.views.decorators.csrf import ensure_csrf_cookie
 
 # Create your views here.
 class SignUp(generic.CreateView):
@@ -25,6 +26,7 @@ class Settings(generic.CreateView):
         kwargs.update({'request': self.request})
         return kwargs
 
+@ensure_csrf_cookie 
 def dashboard(request):
     pending_dev = False
     if not request.user.is_anonymous:
