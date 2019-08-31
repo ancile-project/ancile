@@ -13,6 +13,7 @@ Vue.use(VueCookie)
 
 const state = {
   loggedIn: false,
+  user: {}
 };
 
 if (Vue.cookies.get("csrftoken") && document.getElementById("loggedin")) {
@@ -21,7 +22,7 @@ if (Vue.cookies.get("csrftoken") && document.getElementById("loggedin")) {
 // This is the logout function, it takes care of
 // changing the state.
 function logout() {
-  axios.get('/logout')
+  axios.get('/logout/')
   .then(() => {
     state.loggedIn = false;
     Vue.prototype.$vs.notify({
@@ -35,7 +36,7 @@ function logout() {
   .catch(() => {
     Vue.prototype.$vs.notify({
       title: "Error while logging out.",
-      icon: "fa-check",
+      icon: "fa-times",
       iconPack: "fas",
       color: "danger",
       position: "top-center"
@@ -48,11 +49,30 @@ const router = routerFactory(state, logout);
 new Vue({
   data: state,
   methods: {
+  getUserData() {
+    const query = `
+    {
+      currentUser {
+        username
+        firstName
+        lastName
+        email
+        isSuperuser
+        isDeveloper
+      }
+    }
+    `
+  
+    this.dataFetch(query, (resp) => {
+      this.user = resp.currentUser;
+    })
+  },
   login(username, password) {
-    this.postRequest("/login", {username, password})
+    this.postRequest("/login/", {username, password})
       .then(response => {
         if (response.data.status === 'ok') {
           this.notify("success", "Sucessfully logged in!");
+          this.getUserData();
           this.loggedIn = true;
           this.$router.push("/");
         } else if (response.data.status === 'error') {
@@ -128,6 +148,10 @@ new Vue({
 
       return obj;
     }
+  },
+
+  beforeMount() {
+    if (this.loggedIn) this.getUserData();
   },
   render: h => h(App),
   router,

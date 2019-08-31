@@ -9,54 +9,50 @@ import UserProviders from '@/pages/user/UserProviders'
 
 Vue.use(Router)
 
-const loggedOutOnlyPaths = ["/login", "/signup"]
-const anyState = ["/"]
-
 export default function(state, logout) {
+  const loggedOutOnly = (to, from, next) => state.loggedIn ? next('/') : next();
+  const loggedInOnly = (to, from, next) => !state.loggedIn ? next('/') : next();
+
   const router = new Router({
     routes: [
       {
         path: '/',
         name: 'Home',
-        component: Home
+        component: Home,
       },
       {
         path: '/login',
         name: 'Login',
-        component: Login
+        component: Login,
+        beforeEnter: loggedOutOnly
+      },
+      {
+        path: '/logout',
+        beforeEnter(to, from, next) {
+          logout();
+          from.path === "/" ? "" : next('/');
+        }
       },
       {
         path: '/signup',
         name: 'Signup',
-        component: Signup
+        component: Signup,
+        beforeEnter: loggedOutOnly
       },
       {
         path: '/apps',
         name: 'UserApps',
-        component: UserApps
+        component: UserApps,
+        beforeEnter: loggedInOnly
       },
       {
         path: '/providers',
         name: 'UserProviders',
-        component: UserProviders
+        component: UserProviders,
+        beforeEnter: loggedInOnly
       }
     ]
   })
 
-  router.beforeEach(function(to, from, next) {
-    if (to.path === "/logout") {
-      logout();
-      return next('/');
-    }
-
-    if (state.loggedIn) {
-      if (loggedOutOnlyPaths.includes(to.path)) return next('/');
-    } else if (!(loggedOutOnlyPaths.includes(to.path) || anyState.includes(to.path))) {
-      return next('/login')
-    }
-
-    return next();
-
-  })
   return router;
 }

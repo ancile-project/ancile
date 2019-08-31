@@ -13,7 +13,9 @@
                 {{ providers[providerId].displayName }}
               </h3>
             </div>
-            <div class="mermaid" v-html="policyGraph" :id='"mermaid" + providerId + "s" + index' :key="index" v-for="(policyGraph, index) in graphs[providerId]">
+            <div v-if="viewAppActive">
+              <div class="mermaid" v-html="policyGraph" :id='"mermaid" + providerId + "s" + index' :key="policyGraph" v-for="(policyGraph, index) in graphs[providerId]">
+              </div>
             </div>
           </vs-card>
         </vs-col>
@@ -60,6 +62,7 @@ export default {
   },
   data() {
     return {
+      appKey: 0,
       apps: {},
       userApps: [],
       availableApps: [],
