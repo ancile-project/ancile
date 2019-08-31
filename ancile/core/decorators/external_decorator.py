@@ -15,7 +15,6 @@ class ExternalDecorator(BaseDecorator):
     def process_call(self, command):
         logger.debug(f'Calling External "{command.function_name}" with arguments {command.print_params}')
 
-
         user_specific = command.params.pop('user', False)
         data_source = inspect.getmodule(command.function).name
         name = command.params.pop('name', False)
