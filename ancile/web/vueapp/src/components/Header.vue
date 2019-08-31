@@ -4,7 +4,7 @@
       <vs-col type="flex" vs-justify="center" vs-align="center" vs-w="1">
           <div id="title">
             <h2>
-              <span id="title-text">Ancile</span>
+              <router-link to="/"><span id="title-text">Ancile</span></router-link>
             </h2>
           </div>
       </vs-col>

@@ -48,7 +48,7 @@ class PermissionGroupType(DjangoObjectType):
     
     class Meta:
         model = models.PermissionGroup
-        only_fields = ("name", "description", "scopes", )
+        only_fields = ("id", "name", "description", "scopes", )
     
     @classmethod
     def get_queryset(cls, queryset, info):
@@ -71,8 +71,55 @@ class AppType(DjangoObjectType):
         permission_groups = models.PermissionGroup.objects.filter(app=self)
         return permission_groups
 
+class DeleteApp(graphene.Mutation):
+    class Arguments:
+        app = graphene.Int()
+    
+    ok = graphene.Boolean()
+    
+    def mutate(root, info, app):
+        models.Policy.objects.filter(app__id=app, user=info.context.user).delete()
+        return DeleteApp(ok=True)
+
+class AddPermissionGroup(graphene.Mutation):
+    class Arguments:
+        app = graphene.Int()
+        group = graphene.Int()
+        
+    ok = graphene.Boolean()
+    
+    def mutate(root, info, group, app):
+        app = models.App.objects.get(id=app)
+        perm_group = models.PermissionGroup.objects.get(id=group, app=app)
+
+        needed_policies = models.PolicyTemplate.objects.filter(group=perm_group,
+                                                               app=app)
+
+        new_policies = []
+
+        for policy in needed_policies:
+            if not models.Token.objects.filter(provider=policy.provider):
+                raise Exception("Provider not found")
+
+            new_policy = models.Policy(
+                text=policy.text,
+                provider=policy.provider,
+                user=info.context.user,
+                app=app,
+                active=True
+            )
+
+            new_policies.append(new_policy)
+
+        for policy in new_policies:
+            policy.save()
+        
+        return AddPermissionGroup(ok=True)
+
 class Mutations(graphene.ObjectType):
     delete_token = DeleteToken.Field()
+    delete_app = DeleteApp.Field()
+    add_permission_group = AddPermissionGroup.Field()
 
 class Query(object):
     all_providers = graphene.List(ProviderType)

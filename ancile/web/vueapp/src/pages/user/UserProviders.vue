@@ -4,7 +4,7 @@
       <vs-button radius color="primary" type="filled" icon="fa-plus" icon-pack="fas" @click="popupActive = true"/>
     </Table>
 
-    <vs-popup title="Add Provider" :active.sync="popupActive">
+    <vs-popup title="New provider" :active.sync="popupActive">
       <div class="popup-form">
         <vs-select class="inputx" label="Provider" v-model="newProvider" @change="updateScopes()">
           <vs-select-item :key="index" :value="item.value" :text="item.name" v-for="(item, index) in availableProviders" />
@@ -274,7 +274,7 @@ export default {
 
 <style>
 .popup-form > * {
-  margin: 10px;
+  margin: 10px 0;
 }
 
 input[type="text"]:disabled {

@@ -13,7 +13,7 @@
       spacer v-model="active">
 
       <div class="header-sidebar" slot="header">
-        <vs-icon color="white" size="30px" icon-pack="fas" icon="fa-fingerprint"></vs-icon>
+        <router-link to="/"><vs-icon color="white" size="30px" icon-pack="fas" icon="fa-fingerprint"></vs-icon></router-link>
       </div>
 
 
