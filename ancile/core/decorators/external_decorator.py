@@ -28,5 +28,13 @@ class ExternalDecorator(BaseDecorator):
 
         return dp_pair
 
+    @staticmethod
+    def check_dp_pair_passed(args, kwargs):
+        """
+        Ignore this check as external commands don't need DPPs.
+        """
+
+        return True
+
 
 

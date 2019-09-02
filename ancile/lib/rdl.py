@@ -1,14 +1,12 @@
-
-from ancile_core.decorators import transform_decorator, external_request_decorator
-from ancile_web.errors import AncileException
-from flask import current_app
+from ancile.core.decorators import *
+from ancile.utils.errors import AncileException
 import requests
-from ancile_core.functions.general import get_token
+from ancile.lib.general import get_token
 
 name = 'rdl'
 
 
-@external_request_decorator()
+@ExternalDecorator()
 def rdl_fetch(user=None, url='https://localhost:9980', api_to_fetch=None, username=None,  **kwargs):
     """
     Fetches Web Search Data From RDL
@@ -60,7 +58,7 @@ def aggregate_rdl_data(data_date_pairs, keep_raw_data):
         return results_flat_list
 
 
-@transform_decorator
+@TransformDecorator()
 def rdl_group_usage_data_by_date(data, whole_word="False", query = ""):
     """
     Aggregates web searches by day (e.g. 1/1/2017 : 1, 1/1/2018 : 10)
@@ -105,7 +103,7 @@ def lookup(s):
     return list(map(lambda x: dates[x], s))
 
 
-@transform_decorator
+@TransformDecorator()
 def rdl_usage_date_passthrough(data, whole_word="False", query=""):
     """
     Returns a list of queries and dates
@@ -141,7 +139,7 @@ def rdl_usage_date_passthrough(data, whole_word="False", query=""):
     return data
 
 
-@transform_decorator
+@TransformDecorator()
 def rdl_urls_date_passthrough(data, query=""):
     """
     Returns a list of queries and dates
@@ -170,7 +168,7 @@ def rdl_urls_date_passthrough(data, query=""):
     return data
 
 
-@transform_decorator
+@TransformDecorator()
 def rdl_usage_data_freq(data, min_date="", max_date=""):
     """
     Returns top 10 words in frequency from google searches within date ranges
@@ -208,7 +206,7 @@ def rdl_usage_data_freq(data, min_date="", max_date=""):
     return data
 
 
-@transform_decorator
+@TransformDecorator()
 def rdl_usage_data_recurrence(data):
     """
     Returns top 10 words in frequency from google searches within date ranges
@@ -265,7 +263,7 @@ def rdl_usage_data_recurrence(data):
     return data
 
 
-@transform_decorator
+@TransformDecorator()
 def rdl_group_url_data_by_date(data, query=""):
     """
     Aggregates urls visited by day (e.g. 1/1/2017 : 1, 1/1/2018 : 10)
@@ -294,7 +292,7 @@ def rdl_group_url_data_by_date(data, query=""):
     del data['data']
 
 
-@transform_decorator
+@TransformDecorator()
 def rdl_url_data_recurrence(data):
     """
     Returns top 10 url in frequency from chrome searches within date ranges
@@ -347,7 +345,7 @@ def rdl_url_data_recurrence(data):
 
 
 
-@transform_decorator
+@TransformDecorator()
 def rdl_group_youtube_search_data_by_date(data):
     """
     Aggregates YouTube searches by day (e.g. 1/1/2017 : 1, 1/1/2018 : 10)
@@ -363,7 +361,7 @@ def rdl_group_youtube_search_data_by_date(data):
     return data
 
 
-@transform_decorator
+@TransformDecorator()
 def rdl_group_youtube_watch_data_by_date(data):
     """
     Aggregates YouTube Watched Videos by Day (e.g. 1/1/2017 : 1, 1/1/2018 : 10)
@@ -379,7 +377,7 @@ def rdl_group_youtube_watch_data_by_date(data):
     return data
 
 
-@transform_decorator
+@TransformDecorator()
 def rdl_group_location_data_by_date(data, xmin=None, xmax=None, ymin=None, ymax=None):
     """
     Aggregates Location Data by Day (e.g. 1/1/2017 : 1, 1/1/2018 : 10)
@@ -421,7 +419,7 @@ def rdl_group_location_data_by_date(data, xmin=None, xmax=None, ymin=None, ymax=
     return data
 
 
-@transform_decorator
+@TransformDecorator()
 def rdl_group_location_data_by_location_with_date_limits(data, min_date=None, max_date=None):
     """
     Aggregates Location Data by Location
@@ -480,7 +478,7 @@ def rdl_group_usage_data_by_usage_date(data):
     return data
 
 
-@transform_decorator
+@TransformDecorator()
 def rdl_group_url_data_by_url_date(data):
     """
     Aggregates urls visited by day and url. E.g. {"www.google.com", 1/1/2018, 20}
@@ -496,7 +494,7 @@ def rdl_group_url_data_by_url_date(data):
     return data
 
 
-@transform_decorator
+@TransformDecorator()
 def rdl_group_youtube_search_data_by_query_date(data):
     """
     Aggregates YouTube searches by day and search query e.g. {"funny videos", 1/1/2017, 8}
@@ -524,7 +522,7 @@ def delete_searched_for(searched_for_str):
     return new_str
 
 
-@transform_decorator
+@TransformDecorator()
 def rdl_group_youtube_watch_data_by_query_date(data):
     """
     Aggregates YouTube Watched videos by date and video title. e.g. {"Top 10 Funniest Moments in Airplane", 1/1/2019, 8}
@@ -552,7 +550,7 @@ def delete_watched(searched_for_str):
     return new_str
 
 
-@transform_decorator
+@TransformDecorator()
 def rdl_political_filter(data):
     """
     Filters out a few political words from data dictionary
@@ -577,7 +575,7 @@ def obj_political_filter(raw_obj):
 
 # Note: Makes 6 calls to YouTube API for Speed Purposes Mostly
 # There's sometimes an error when making 40-50 calls.
-@transform_decorator
+@TransformDecorator()
 def rdl_categorize_youtube_watch_data(data, youtube_api_key):
     """
     Categorizes YouTube Watched videos using YouTubes category API
@@ -643,7 +641,7 @@ def join_category_ids_to_orig(rdl_data, response_json):
         rdl_data_ele['categoryId'] = ele['snippet']['categoryId']
 
 
-@transform_decorator
+@TransformDecorator()
 def rdl_group_youtube_watch_data_by_query_date_and_category(data):
     """
     Groups RDL data By Video Category
