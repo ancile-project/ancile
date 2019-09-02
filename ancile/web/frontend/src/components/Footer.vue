@@ -15,8 +15,8 @@ export default {
 
 <style scoped>
 #footer {
-  position: absolute;
-  bottom: 5px;
+  position: static;
+  bottom: 0px;
   height: 60px;
   width: 100%;
   text-align: right;

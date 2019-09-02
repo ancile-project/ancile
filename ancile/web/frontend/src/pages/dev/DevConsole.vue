@@ -49,7 +49,7 @@
       <vs-row vs-align="flex-start"
       vs-type="flex" vs-justify="space-around" vs-w="12">
         <vs-col vs-type="flex" vs-justify="center" vs-align="center" vs-w="12">
-          <vs-button @click="execute()" color="primary" icon="fa-play" icon-pack="fas">Run</vs-button>
+          <vs-button :disabled="!runButton" @click="execute()" color="primary" icon="fa-play" icon-pack="fas">Run</vs-button>
         </vs-col>
       </vs-row>
     </div>
@@ -66,7 +66,8 @@ export default {
       output: "",
       users: [],
       apps: [],
-      app: -1
+      app: -1,
+      runButton: true,
     }
   },
 
@@ -100,9 +101,15 @@ export default {
         program: this.code
       }
 
+      this.runButton = false;
+
       this.$root.post("/api/browser_run", payload)
       .then(resp => {
         this.output = JSON.stringify(resp.data);
+        this.runButton = true;
+      })
+      .catch(() => {
+        this.$root.notify("fail", "Connection error.")
       })
     }
   },

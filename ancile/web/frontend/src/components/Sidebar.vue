@@ -1,6 +1,6 @@
 <template lang="html">
 
-  <div class="parentx">
+  <div id="sidebar">
 
     <vs-sidebar
       ref="sidebar"
@@ -11,10 +11,6 @@
       color="primary" 
       class="sidebarx" 
       spacer v-model="active">
-
-      <div class="header-sidebar" slot="header">
-        <router-link to="/"><vs-icon color="white" size="30px" icon-pack="fas" icon="fa-fingerprint"></vs-icon></router-link>
-      </div>
 
 
       <SidebarItem :inUser="true" :showAtLogout="true" :index="1" icon="fa-home" to="/" label="Home" />
@@ -57,15 +53,10 @@ export default {
 </script>
 
 <style>
-.header-sidebar {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	flex-direction: column;
-	width: 100%;
-}
 
-.vs-sidebar > header {
-  background-color: rgb(var(--vs-primary));
+
+.vs-sidebar-parent.vs-sidebar {
+  top: 52px;
+  height: calc(100% - 52px) !important;
 }
 </style>

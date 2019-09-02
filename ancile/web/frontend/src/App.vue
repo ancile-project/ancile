@@ -1,15 +1,13 @@
 <template>
   <div id="app">
-    <Sidebar ref="sidebar"/>
-    <div id="left-padding">
-      <Header />
-      <div id="main">
-        <transition name="fade" v-on:before-leave="updateIndex">
-          <router-view></router-view>
-        </transition>
-      </div>
+    <Header />
+    <div id="main">
+      <transition name="fade" v-on:before-leave="updateIndex">
+        <router-view></router-view>
+      </transition>
+      <Footer />
     </div>
-    <Footer />
+    <Sidebar ref="sidebar"/>
   </div>
 </template>
 
@@ -47,18 +45,22 @@ export default {
 
 #app {
   min-height: 100%;
+  width: 100%;
 }
 
-#left-padding {
-  margin-left: 54px;
-  margin-right: 0px;
+@media (max-width: 1084px) {
+  #main {
+    padding-left: 69px;
+    padding-right: 15px;
+  }
 }
 
 #main {
   margin-top: 20px;
-  padding-bottom: 60px;
-  margin-left: 20px;
-  margin-right: 20px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  max-width: 1000px;
 }
 
 h1, h2, h3, h4 {
@@ -66,6 +68,7 @@ h1, h2, h3, h4 {
 }
 
 body {
+  width: 100%;
   font-family: 'Open Sans', sans-serif;
 }
 
@@ -73,5 +76,6 @@ body {
   transition: opacity .5s;
   opacity: 0;
 }
+
 
 </style>

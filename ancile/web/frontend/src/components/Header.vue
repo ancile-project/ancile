@@ -1,7 +1,10 @@
 <template>
   <div id="header">
-    <vs-row vs-align="center" vs-justify="space-between">
-      <vs-col vs-offset="4" type="flex" vs-justify="center" vs-align="center" vs-w="4">
+    <vs-row vs-align="center" vs-justify="space-between" vs-w="12">
+      <vs-col type="flex" vs-justify="center" vs-align="center" vs-w="4">
+        <vs-icon id="header-icon" size="30px" color="white" icon-pack="fas" icon="fa-fingerprint" />
+      </vs-col>
+      <vs-col type="flex" vs-justify="center" vs-align="center" vs-w="4">
           <div id="title">
             <router-link to="/">
               <h2 id="title-text">
@@ -10,7 +13,7 @@
             </router-link>
           </div>
       </vs-col>
-      <vs-col style="text-align:center" type="flex" vs-justify="center" vs-align="center" vs-w="1">
+      <vs-col style="text-align:right" type="flex" vs-justify="center" vs-align="center" vs-w="4">
         <vs-dropdown v-if="user.isSuperuser || user.isDeveloper" id="user-dropdown" vs-custom-content vs-trigger-click>
           <vs-button class="btn-drop" type="filled" icon-pack="fas" icon="fa-user"/>
           <!-- <a href="#">Hola mundo</a> -->
@@ -76,9 +79,6 @@ export default {
   text-align: center;
 }
 
-#user-dropdown > .btn-drop {
-  height: 25px !important;
-}
 
 #user-dropdown-content {
   padding: 5px 10px;
@@ -86,5 +86,9 @@ export default {
 
 #user-dropdown-content > .vs-radio-primary {
   justify-content: left;
+}
+
+#header-icon {
+  margin-left: 12px;
 }
 </style>
