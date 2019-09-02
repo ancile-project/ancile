@@ -14,6 +14,7 @@ from django.views.decorators.csrf import csrf_exempt
 import logging
 import pika
 import dill
+from ancile.utils.messaging import RpcClient
 
 logger = logging.getLogger(__name__)
 
@@ -82,18 +83,12 @@ def browser_execute(request):
              app_id, None)
         )
         print(user_pickled)
+        rabbit = RpcClient()
+        res_dill = rabbit.call(user_pickled)
+        res = dill.loads(res_dill)
+        print(f'Result: {res}')
 
-        connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
-        channel = connection.channel()
-        channel.queue_declare(queue='ancile')
 
-        channel.basic_publish(exchange='',
-                              routing_key='ancile',
-                              body=user_pickled)
-        print(" [x] Sent execute request")
-
-        logger.info(f"Returning response: {res}")
-        connection.close()
         return JsonResponse(res)
     else:
         return JsonResponse({"result": "error",
