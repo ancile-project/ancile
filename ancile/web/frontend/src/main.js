@@ -1,53 +1,22 @@
-import Vue from 'vue'
-import App from './App.vue'
-import Vuesax from 'vuesax'
-import routerFactory from './router'
-import 'vuesax/dist/vuesax.css'
-import VueCookie from 'vue-cookies'
 import axios from 'axios';
+import Vue from 'vue';
+import Vuesax from 'vuesax';
+import 'vuesax/dist/vuesax.css';
 
-Vue.config.productionTip = false
+import App from './App.vue';
+import router from './router';
+import store from './store';
 
-Vue.use(Vuesax)
-Vue.use(VueCookie)
-
-const state = {
-  loggedIn: false,
-  user: {}
-};
-
-if (Vue.cookies.get("csrftoken") && document.getElementById("loggedin")) {
-  state.loggedIn = true;
-}
-// This is the logout function, it takes care of
-// changing the state.
-function logout() {
-  axios.get('/logout/')
-  .then(() => {
-    state.loggedIn = false;
-    Vue.prototype.$vs.notify({
-      title: "Sucessfully logged out.",
-      icon: "fa-check",
-      iconPack: "fas",
-      color: "success",
-      position: "top-center"
-    })
-  })
-  .catch(() => {
-    Vue.prototype.$vs.notify({
-      title: "Error while logging out.",
-      icon: "fa-times",
-      iconPack: "fas",
-      color: "danger",
-      position: "top-center"
-    })
-  })
-}
-
-const router = routerFactory(state, logout);
+Vue.use(Vuesax);
 
 new Vue({
-  data: state,
+  data() {
+    return {
+      loggedIn: this.$cookies.get("csrftoken") && document.getElementById("loggedin") ? true: false,
+      activeMode: "user",
+      user: {}
+    }
+  },
   methods: {
   getUserData() {
     const query = `
@@ -63,17 +32,18 @@ new Vue({
     }
     `
   
-    this.dataFetch(query, (resp) => {
-      this.user = resp.currentUser;
+    this.query(query, (resp) => {
+      store.commit('updateUser', resp.currentUser);
     })
   },
+
   login(username, password) {
-    this.postRequest("/login/", {username, password})
+    this.post("/login/", {username, password})
       .then(response => {
         if (response.data.status === 'ok') {
           this.notify("success", "Sucessfully logged in!");
           this.getUserData();
-          this.loggedIn = true;
+          store.loggedIn = true;
           this.$router.push("/");
         } else if (response.data.status === 'error') {
           this.notify("fail", response.data.error)
@@ -84,7 +54,17 @@ new Vue({
       })
 
     },
-    logout,
+
+    logout() {
+      axios.get('/logout/')
+      .then(() => {
+        store.loggedIn = false;
+        store.user = {};
+        this.notify("success", "Sucessfully logged out.")
+      })
+      .catch(() => this.notify("fail", "Error while logging out."))
+    },
+
     notify(type, title, text) {
       var icon = "fa-info";
       var color = "primary";
@@ -107,35 +87,35 @@ new Vue({
       })
     },
 
-    postRequest(endpoint, data) {
+    async post(endpoint, data) {
       axios.defaults.headers["X-CSRFToken"] = Vue.cookies.get("csrftoken");
-      return axios.post(endpoint, data);
+      return await axios.post(endpoint, data);
     },
 
-    async dataFetch(query, callback) {
+    async query(query, callback) {
       this.$vs.loading();
 
-      await this.postRequest('/api/graphene', {query: query})
-      .then(resp => {
-        if (resp.status === 200) callback(resp.data.data)
-      })
-      .catch(err => {
-        if (err.response.status === 403) {
-          this.notify("fail", "Your session has expired.");
-          this.loggedIn = false;
-          this.$router.push('/login');
-        } else if (err.response.status === 500) {
-          this.notify("fail", "Server side error.");
-        } else if (err.response.status === 400) {
-          this.notify("fail", "Query error.")
-        }
-      })
-      .catch(() => {
-        this.notify("fail", "Connection error.");
-      })
+      await this.post('/api/graphene', {query: query})
+        .then(resp => {
+          if (resp.status === 200) callback(resp.data.data)
+        })
+        .catch(err => {
+          if (err.response.status === 403) {
+            this.notify("fail", "Your session has expired.");
+            store.loggedIn = false;
+            store.commit('updateUser', resp.currentUser);
+            this.$router.push('/login');
+          } else if (err.response.status === 500) {
+            this.notify("fail", "Server side error.");
+          } else if (err.response.status === 400) {
+            this.notify("fail", "Query error.")
+          }
+        })
+        .catch(() => {
+          this.notify("fail", "Connection error.");
+        })
 
       this.$vs.loading.close();
-
 
     },
 
@@ -149,10 +129,20 @@ new Vue({
       return obj;
     }
   },
-
-  beforeMount() {
-    if (this.loggedIn) this.getUserData();
+  watch: {
+    activeMode(mode) {
+      if (mode === "user") {
+        this.$router.push("/");
+      }
+      else { 
+        this.$router.push("/" + mode);
+      }
+    }
   },
+  created() {
+    if (store.state.loggedIn) this.getUserData();
+  },
+  store,
   render: h => h(App),
   router,
-}).$mount('#app')
+}).$mount('#app');

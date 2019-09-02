@@ -131,6 +131,7 @@ class Query(object):
     all_scopes = graphene.List(ScopeType)
     all_tokens = graphene.List(TokenType)
     all_apps = graphene.List(AppType)
+    developer_apps = graphene.List(AppType)
     current_user = graphene.Field(UserType)
 
     def resolve_all_providers(self, info, **args):
@@ -144,6 +145,10 @@ class Query(object):
     
     def resolve_all_apps(self, info, **args):
         return models.App.objects.all()
+    
+    def resolve_developer_apps(self, info, **args):
+        if info.context.user.is_developer:
+            return models.App.objects.filter(developers=info.context.user)
     
     def resolve_current_user(self, info, **args):
         return info.context.user

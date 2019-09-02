@@ -15,12 +15,12 @@
             <span>
               Ancile is a light, flexible framework for privacy-aware applications.
             </span>
-            <div v-if="!$root.loggedIn" class="login-buttons">
-              <vs-button type="gradient" to="/login">Login</vs-button>
-              <vs-button type="gradient" to="/signup">Signup</vs-button>
+            <div v-if="loggedIn" class="login-buttons">
+              <vs-button type="gradient" color="danger" to="/logout">Logout</vs-button>
             </div>
             <div v-else class="login-buttons">
-              <vs-button type="gradient" color="danger" to="/logout">Logout</vs-button>
+              <vs-button type="gradient" to="/login">Login</vs-button>
+              <vs-button type="gradient" to="/signup">Signup</vs-button>
             </div>
           </div>
         </vs-card>
@@ -30,8 +30,13 @@
 </template>
 
 <script>
+import { mapState } from 'vuex';
+
 export default {
   name: 'Home',
+  computed: mapState({
+    loggedIn: "loggedIn"
+  })
 }
 </script>
 

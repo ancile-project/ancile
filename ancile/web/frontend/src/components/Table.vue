@@ -42,10 +42,6 @@ export default {
 </script>
 
 <style lang="scss">
-.data-table {
-  margin: 20px;
-}
-
 .content-tr-expand {
   justify-content: left;
 }

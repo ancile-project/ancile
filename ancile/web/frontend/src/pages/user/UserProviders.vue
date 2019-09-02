@@ -140,7 +140,7 @@ export default {
       }
     `
 
-    this.$root.dataFetch(query, data => {
+    this.$root.query(query, data => {
       this.allProviders = this.$root.listToObject(data.allProviders);
       this.allTokens = this.$root.listToObject(data.allTokens);
       this.allScopes = this.$root.listToObject(data.allScopes);
@@ -248,7 +248,7 @@ export default {
               }
             }
             `
-            this.$root.dataFetch(query, resp => {
+            this.$root.query(query, resp => {
               if (resp.deleteToken.ok) {
                 this.$root.notify("success", "Provider removed");
               } else {

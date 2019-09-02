@@ -57,13 +57,15 @@ export default {
 #main {
   margin-top: 20px;
   padding-bottom: 60px;
+  margin-left: 20px;
+  margin-right: 20px;
 }
 
 h1, h2, h3, h4 {
   font-family: 'Montserrat', sans-serif;
 }
 
-* {
+body {
   font-family: 'Open Sans', sans-serif;
 }
 

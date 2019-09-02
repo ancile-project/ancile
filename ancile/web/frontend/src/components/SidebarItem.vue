@@ -7,23 +7,56 @@
 <script>
 export default {
   name: "SidebarItem",
+  data() {
+    return {
+      state: this.$root,
+      test: true
+    }
+  },
   props: {
     label: String,
     icon: String,
     index: Number,
     to: String,
     href: String,
-    loggedIn: Number
+    inUser: {
+      type: Boolean,
+      default: false
+    },
+    inDeveloper: {
+      type: Boolean,
+      default: false
+    },
+    inAdmin: {
+      type: Boolean,
+      default: false
+    },
+    showAtLogout: {
+      type: Boolean,
+      default: false
+    }
   },
   computed: {
-    visible: function() { return this.loggedIn === undefined || this.loggedIn == this.$root.loggedIn }
+    visible: function() {
+      const { inUser, inDeveloper, inAdmin, showAtLogout } = this;
+      const { loggedIn, mode } = this.$store.state;
+
+      if (loggedIn) {
+        if (mode === "user") return inUser;
+        if (mode === "dev") return inDeveloper;
+        return inAdmin;
+      }
+
+      return showAtLogout || !(inAdmin || inUser || inDeveloper);
+    }
   },
   methods: {
     getActive: function() { return this.$parent.getActive() },
     setIndexActive: function(i) { return this.$parent.setIndexActive(i) },
 
     checkActive: function() {
-      if (this.$el.children && this.$el.children[0].className.search("router-link-exact-active") > -1) {
+      const { path } = this.$router.currentRoute;
+      if (path === this.to) {
         this.$children[0].setIndexActive();
       }
     }

@@ -17,14 +17,16 @@
       </div>
 
 
-      <SidebarItem :index="1" icon="fa-home" to="/" label="Home" />
+      <SidebarItem :inUser="true" :showAtLogout="true" :index="1" icon="fa-home" to="/" label="Home" />
 
-      <SidebarItem :loggedIn="0" :index="2" icon="fa-sign-in-alt" to="/login" label="Login" />
-      <SidebarItem :loggedIn="0" :index="3" icon="fa-user-plus" to="/signup" label="Signup" />
+      <SidebarItem :index="2" icon="fa-sign-in-alt" to="/login" label="Login" />
+      <SidebarItem :index="3" icon="fa-user-plus" to="/signup" label="Signup" />
 
-      <SidebarItem :loggedIn="1" :index="2" icon="fa-server" to="/providers" label="Providers" />
-      <SidebarItem :loggedIn="1" :index="3" icon="fa-rocket" to="/apps" label="Apps" />
-      <SidebarItem :index="50" :loggedIn="1" icon="fa-sign-out-alt" label="Logout" to="/logout" />
+      <SidebarItem :inUser="true" :index="2" icon="fa-server" to="/providers" label="Providers" />
+      <SidebarItem :inUser="true" :index="3" icon="fa-rocket" to="/apps" label="Apps" />
+
+      <SidebarItem :inDeveloper="true" :index="1" icon="fa-terminal" to="/dev" label="Console" />
+      <SidebarItem :index="4" :inUser="true" :inAdmin="true" :inDeveloper="true" :loggedIn="true" icon="fa-sign-out-alt" label="Logout" to="/logout" />
 
     </vs-sidebar>
 
