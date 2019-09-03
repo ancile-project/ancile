@@ -7,6 +7,8 @@ import Signup from '@/pages/Signup'
 import UserApps from '@/pages/user/UserApps'
 import UserProviders from '@/pages/user/UserProviders'
 
+import Dev from '@/pages/dev/Dev'
+import DevApps from '@/pages/dev/DevApps'
 import DevConsole from '@/pages/dev/DevConsole'
 
 import store from '@/store';
@@ -42,9 +44,21 @@ const router = new Router({
     },
     {
       path: '/dev',
-      name: 'DevConsole',
-      component: DevConsole,
-    } 
+      component: Dev,
+      children: [
+        {
+          path: "",
+          name: 'DevConsole',
+          component: DevConsole
+        },
+        {
+          path: "apps",
+          name: 'DevApps',
+          component: DevApps
+        }
+      ]
+    },
+
   ]});
 
 const logoutRequired = {
@@ -61,12 +75,11 @@ const loginRequired = {
 
 router.beforeEach(async function(to, from, next) {
   const { path } = to;
-  const { app } = router;
 
   let loggedIn = store.state.loggedIn;
 
   if (path === '/logout') {
-    app.logout();
+    this.$store.dispatch("logout");
     return from.path === "/" ? "" : next('/');
   }
 

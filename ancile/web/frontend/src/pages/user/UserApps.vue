@@ -22,7 +22,7 @@
       </vs-row>
     </vs-popup>
     
-    <vs-popup title="New app" :active.sync="newAppActive">
+    <vs-popup title="New application" :active.sync="newAppActive">
       <div class="popup-form">
         <vs-select class="inputx" label="Application" v-model="newApp">
           <vs-select-item :key="index" :value="app.id" :text="app.name" v-for="(app, index) in availableApps" />
@@ -42,7 +42,7 @@
           </div>
         </vs-list>
         <div>
-        <vs-button @click="addGroup()" :disabled="disabledAddGroupButton" @onclick="addGroup()" type="gradient" icon="fa-plus" icon-pack="fas">
+        <vs-button @click="addGroup()" :disabled="disabledAddGroupButton" type="gradient" icon="fa-plus" icon-pack="fas">
           Add
         </vs-button>
         </div>
@@ -117,14 +117,15 @@ export default {
                 }
               }
               `
-              this.$root.query(query, resp => {
-                if (resp.deleteApp.ok) {
-                  this.$root.notify("success", "Application deleted.");
-                } else {
-                  this.$root.notify("fail", "An error has occurred");
-                }
-                this.getData();
-              });
+              this.$root.query(query)
+                .then(resp => {
+                  if (resp.deleteApp.ok) {
+                    this.$root.notify("success", "Application deleted.");
+                  } else {
+                    this.$root.notify("fail", "An error has occurred");
+                  }
+                  this.getData();
+                });
           }
         }
       ]
@@ -155,16 +156,17 @@ export default {
         }
       `
       this.newAppActive = false;
-      this.$root.query(query, resp => {
-        if (resp.addPermissionGroup.ok) {
-          this.$root.notify("success", "Application added");
-        } else {
-          this.$root.notify("fail", "An error has occurred");
-        }
-        this.getData(() => {
-          this.addGroupButton = false;
+      this.$root.query(query)
+        .then(resp => {
+          if (resp.addPermissionGroup.ok) {
+            this.$root.notify("success", "Application added");
+          } else {
+            this.$root.notify("fail", "An error has occurred");
+          }
+          this.getData(() => {
+            this.addGroupButton = false;
+          });
         });
-      });
     },
     authorize(provider, scopes) {
       let url = "/oauth/"
@@ -241,10 +243,11 @@ export default {
       }
       `
     
-    this.$root.query(query, (resp) => {
-      resp.allProviders.forEach(provider => {
-        this.providers[provider.id] = provider;
-      })
+    this.$root.query(query)
+      .then(resp => {
+        resp.allProviders.forEach(provider => {
+          this.providers[provider.id] = provider;
+        })
 
       resp.allTokens.forEach(token => {
         this.providers[token.provider.id].authorized = true;

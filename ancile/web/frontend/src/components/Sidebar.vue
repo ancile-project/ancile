@@ -4,6 +4,7 @@
 
     <vs-sidebar
       ref="sidebar"
+      :click-not-close="true"
       :reduce="true" 
       :reduce-not-rebound="true" 
       :reduce-not-hover-expand="false" 
@@ -22,6 +23,8 @@
       <SidebarItem :inUser="true" :index="3" icon="fa-rocket" to="/apps" label="Apps" />
 
       <SidebarItem :inDeveloper="true" :index="1" icon="fa-terminal" to="/dev" label="Console" />
+      <SidebarItem :inDeveloper="true" :index="2" icon="fa-rocket" to="/dev/apps" label="Apps" />
+
       <SidebarItem :index="4" :inUser="true" :inAdmin="true" :inDeveloper="true" :loggedIn="true" icon="fa-sign-out-alt" label="Logout" to="/logout" />
 
     </vs-sidebar>
@@ -32,6 +35,20 @@
 
 <script>
 import SidebarItem from './SidebarItem.vue';
+
+window.onscroll = (e) => {
+  const el = document.getElementsByClassName("vs-sidebar")[0];
+
+  if (e.pageY > 52) {
+    if (!el.classList.contains("scrolled")) {
+      el.className += " scrolled";
+    }
+  } else {
+    if (el.classList.contains("scrolled")) {
+      el.className = Array.prototype.filter.call(el.classList, c => c !== "scrolled").join(" ");
+    }
+  }
+}
 
 export default {
   data:()=>({
@@ -53,10 +70,14 @@ export default {
 </script>
 
 <style>
-
-
 .vs-sidebar-parent.vs-sidebar {
   top: 52px;
   height: calc(100% - 52px) !important;
+}
+
+.vs-sidebar-parent.vs-sidebar.scrolled {
+  top: 0px;
+  height: 100% !important;
+  position: fixed; 
 }
 </style>

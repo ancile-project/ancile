@@ -121,10 +121,30 @@ class AddPermissionGroup(graphene.Mutation):
         
         return AddPermissionGroup(ok=True)
 
+class AddApp(graphene.Mutation):
+    class Arguments:
+        name = graphene.String()
+        description = graphene.String()
+    
+    ok = graphene.Boolean()
+    error = graphene.String()
+    
+    def mutate(root, info, name, description):
+        if info.context.user.is_developer:
+            if not models.App.objects.filter(name=name):
+                app = models.App(name=name, description=description)
+                app.save()
+                app.developers.add(info.context.user)
+                return AddApp(ok=True)
+            return AddApp(ok=False, error="App with same name already exists")
+        return AddApp(ok=False, error="Insufficient privileges")
+
+
 class Mutations(graphene.ObjectType):
     delete_token = DeleteToken.Field()
     delete_app = DeleteApp.Field()
     add_permission_group = AddPermissionGroup.Field()
+    add_app = AddApp.Field()
 
 class Query(object):
     all_providers = graphene.List(ProviderType)

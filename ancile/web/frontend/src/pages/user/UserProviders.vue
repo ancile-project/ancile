@@ -140,13 +140,14 @@ export default {
       }
     `
 
-    this.$root.query(query, data => {
-      this.allProviders = this.$root.listToObject(data.allProviders);
-      this.allTokens = this.$root.listToObject(data.allTokens);
-      this.allScopes = this.$root.listToObject(data.allScopes);
+    this.$root.query(query)
+      .then(data => {
+        this.allProviders = this.$root.listToObject(data.allProviders);
+        this.allTokens = this.$root.listToObject(data.allTokens);
+        this.allScopes = this.$root.listToObject(data.allScopes);
 
-      if (callback) callback();
-    });
+        if (callback) callback();
+      });
     }
 
   },
@@ -248,14 +249,15 @@ export default {
               }
             }
             `
-            this.$root.query(query, resp => {
-              if (resp.deleteToken.ok) {
-                this.$root.notify("success", "Provider removed");
-              } else {
-                this.$root.notify("fail", "An error has occurred");
-              }
-              this.getData();
-            });
+            this.$root.query(query)
+              .then(resp => {
+                if (resp.deleteToken.ok) {
+                  this.$root.notify("success", "Provider removed");
+                } else {
+                  this.$root.notify("fail", "An error has occurred");
+                }
+                this.getData();
+              });
           }
         },
       ]

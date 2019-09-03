@@ -33,5 +33,6 @@ export default {
 <style>
 #editor {
   font-family: monospace !important;
+  border-radius: 5px;
 }
 </style>

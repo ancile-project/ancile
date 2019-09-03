@@ -32,7 +32,21 @@ export default {
   },
   methods: {
   login() {
-    this.$root.login(this.username, this.password);
+    const { username, password } = this;
+    this.$store.dispatch("login", { username, password })
+      .then(() => {
+        this.$root.notify("success", "Successfully logged in.");
+        this.$router.push("/");
+      })
+      .catch((err) => {
+        let msg = "Connection error."
+        if (err.name === "AncileError") {
+          msg = err.description;
+        }
+
+        this.$root.notify("fail", msg);
+      })
+
     }
   },
 }

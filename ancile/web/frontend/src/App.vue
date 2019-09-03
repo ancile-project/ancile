@@ -69,6 +69,12 @@ h1, h2, h3, h4 {
 
 body {
   width: 100%;
+}
+
+.vs-button-text,
+.vs-button--text,
+.vs-textarea,
+body {
   font-family: 'Open Sans', sans-serif;
 }
 

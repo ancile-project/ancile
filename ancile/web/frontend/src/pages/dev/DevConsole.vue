@@ -89,9 +89,10 @@ export default {
         }
       `
 
-      this.$root.query(query, resp => {
-        this.apps = resp.developerApps;
-      })
+      this.$root.query(query)
+        .then(resp => {
+          this.apps = resp.developerApps;
+        })
     },
 
     execute() {
@@ -103,7 +104,10 @@ export default {
 
       this.runButton = false;
 
-      this.$root.post("/api/browser_run", payload)
+      this.$store.dispatch("post", {
+        endpoint: "/api/browser_run",
+        data: payload
+      })
       .then(resp => {
         this.output = JSON.stringify(resp.data);
         this.runButton = true;
