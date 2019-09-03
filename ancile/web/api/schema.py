@@ -12,8 +12,17 @@ class ScopeType(DjangoObjectType):
     class Meta:
         model = models.Scope
 
+
+class TokenType(DjangoObjectType):
+    
+    class Meta:
+        model = models.Token
+        only_fields = ('id', 'provider', 'expires_at', 'scopes', )
+        
+
 class ProviderType(DjangoObjectType):
     scopes = graphene.List(ScopeType)
+    token = graphene.Field(TokenType)
     
     class Meta:
         model = models.DataProvider
@@ -22,11 +31,9 @@ class ProviderType(DjangoObjectType):
     def resolve_scopes(self, info, **args):
         return models.Scope.objects.filter(provider=self)
 
-class TokenType(DjangoObjectType):
-    
-    class Meta:
-        model = models.Token
-        
+    def resolve_token(self, info, **args):
+        return models.Token.objects.filter(provider=self, user=info.context.user).first()
+
 class DeleteToken(graphene.Mutation):
     class Arguments:
         token = graphene.Int()

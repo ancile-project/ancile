@@ -1,44 +1,46 @@
 <template>
   <div id="user-providers">
-    <Table :actions="actions" :data="providers" header="Providers" :fields="fields">
-      <vs-button radius color="primary" type="filled" icon="fa-plus" icon-pack="fas" @click="popupActive = true"/>
+    <Table :actions="actions" :data="authenticatedProviders" header="Providers" :fields="fields">
+      <vs-button radius color="primary" type="filled" icon="fa-plus" icon-pack="fas" @click="addProviderActive = true"/>
     </Table>
 
-    <vs-popup title="New provider" :active.sync="popupActive">
+    <vs-popup title="New provider" :active.sync="addProviderActive">
       <div class="popup-form">
-        <vs-select class="inputx" label="Provider" v-model="newProvider" @change="updateScopes()">
-          <vs-select-item :key="index" :value="item.value" :text="item.name" v-for="(item, index) in availableProviders" />
+        <vs-select class="inputx" label="Provider" v-model="newProvider">
+          <vs-select-item :key="index" :value="provider" :text="provider.displayName" v-for="(provider, index) in availableProviders" />
         </vs-select>
-        <div class="vs-select--label">
-          Available scopes
-        </div>
-        <vs-chips color="rgb(145, 32, 159)" :placeholder="scopePickerLabel" v-model="unusedScopes" @change="validateScopes()" remove-icon="add">
-          <vs-chip :key="index" @click="addScope(scope)" v-for="(scope, index) in unusedScopes" closable close-icon="add">
-            {{ scope.simpleName }}
-          </vs-chip>
-        </vs-chips>
+        <div>
+          <div class="vs-select--label">
+            Available scopes
+          </div>
+          <vs-chips class="no-icon" color="rgb(145, 32, 159)" :placeholder="scopePickerLabel" v-model="nonSelectedScopes">
+            <vs-chip :key="index" @click="addScope(scope)" v-for="(scope, index) in nonSelectedScopes" closable close-icon="add">
+              {{ scope.simpleName }}
+            </vs-chip>
+          </vs-chips>
 
-        <div class="vs-select--label">
-          Selected scopes
+          <div class="vs-select--label">
+            Selected scopes
+          </div>
+          <vs-chips class="no-icon" color="rgb(145, 32, 159)" placeholder="No scopes chosen." v-model="selectedScopes">
+            <vs-chip :key="index" @click="removeScope(scope)" v-for="(scope, index) in selectedScopes" closable close-icon="delete">
+              {{ scope.simpleName }}
+            </vs-chip>
+          </vs-chips>
         </div>
-        <vs-chips color="rgb(145, 32, 159)" placeholder="No scopes chosen." v-model="usedScopes" remove-icon="delete_forever">
-          <vs-chip :key="index" @click="removeScope(scope)" v-for="(scope, index) in usedScopes" closable close-icon="delete">
-            {{ scope.simpleName }}
-          </vs-chip>
-        </vs-chips>
 
-        <vs-button :disabled="buttonDisabled" @click="authorize()" color="primary" type="gradient" icon="fa-lock" icon-pack="fas">
+        <vs-button :disabled="!addProviderButton || !newProvider.id" @click="authorize()" color="primary" type="gradient" icon="fa-lock" icon-pack="fas">
           Authorize
         </vs-button>
       </div>
     </vs-popup>
 
-    <vs-popup :title="currentToken.provider" :active.sync="viewProviderActive">
+    <vs-popup :title="currentProvider.displayName" :active.sync="viewProviderActive">
       <h3>
         Scopes
       </h3>   
-      <vs-list v-if="currentToken">
-        <vs-list-item :key="index" v-for="(scope, index) in currentToken.scopes" :title="scope.simpleName" :subtitle="scope.description"></vs-list-item>
+      <vs-list v-if="currentProvider.id">
+        <vs-list-item icon-pack="fas" icon="fa-lock" :key="index" v-for="(scope, index) in currentProvider.token.scopes" :title="scope.simpleName" :subtitle="scope.description"></vs-list-item>
       </vs-list>
     </vs-popup>
   </div>
@@ -56,142 +58,80 @@ export default {
 
   methods: {
     addScope(scope) {
-      this.unusedScopes = this.unusedScopes.filter(s => scope !== s);
-      this.usedScopes = [...this.usedScopes, scope];
+      this.allSelectedScopes = [...this.allSelectedScopes, scope];
     },
     removeScope(scope) {
-      this.usedScopes = this.unusedScopes.filter(s => scope !== s);
-      this.unusedScopes = [...this.usedScopes, scope];
+      this.allSelectedScopes = this.allSelectedScopes.filter(s => scope !== s);
     },
-    updateScopes() {
-      if (this.newProvider) {
-        this.unusedScopes = this.allProviders[this.newProvider].scopes.map(scope => this.allScopes[scope.id]);
-        this.usedScopes = [];
-        this.buttonDisabled = false;
-      } else {
-        this.unusedScopes = [];
-        this.usedScopes = [];
-        this.buttonDisabled = true;
-      }
-      
-    },
+
     authorize() {
-      let url = "/oauth/"
+      const { id } = this.newProvider;
+      this.addProviderButton = false;
+      this.$root.oauth(this.newProvider, this.selectedScopes.map(scope => scope.value))
+        .then(() => {
+          this.addProviderButton = true;
+          this.addProviderActive = false;
 
-      if (this.newProvider) {
-        this.buttonDisabled = true;
-        let provider = this.allProviders[this.newProvider];
-
-        url += provider.pathName;
-        url += "?scopes=" + this.usedScopes.map(scope => scope.value).join(" ");
-        let w = window.open(url);
-        
-        let refreshId =  setInterval(() => {
-          if (w.closed) {
-            this.buttonDisabled = false;
-            this.popupActive = false;
-            this.getData(() => {
-              for (let i in this.allTokens) {
-                if (this.allTokens[i].provider.id === provider.id) {
-                  return this.$root.notify("success", "Provider successfully added")
-                }
-
-                this.$root.notify("fail", "Provider authentication failed")
+          this.getData()
+            .then(() => {
+              if (this.authenticatedProviders.reduce((prev, provider) => prev || (provider.id === id), false)) {
+                this.$root.notify("success", "Successfully authorized");
+              } else {
+                this.$root.notify("fail", "Authorization failed");
               }
-            });
-
-            clearInterval(refreshId);
-          }
-        }, 1000);
-      }
+            })
+        });
     },
 
-    getData(callback) {
-      this.allProviders = {};
-      this.allTokens = {};
-      this.allScopes = {};
+    async getData() {
+      this.allProviders = [];
 
       const query = 
     `
       {
-        allTokens {
-          id
-          expiresAt
-          provider {
-            id
-          }
-          scopes {
-            id
-          }
-        }
         allProviders {
           id
           displayName
           pathName
           scopes {
             id
+            value
+            simpleName
+            description
           }
-        }
-        allScopes {
-          id
-          value
-          simpleName
+          token {
+            id
+            expiresAt
+            scopes {
+              id
+              value
+              simpleName
+              description
+            }
+          }
         }
       }
     `
-
-    this.$root.query(query)
-      .then(data => {
-        this.allProviders = this.$root.listToObject(data.allProviders);
-        this.allTokens = this.$root.listToObject(data.allTokens);
-        this.allScopes = this.$root.listToObject(data.allScopes);
-
-        if (callback) callback();
-      });
-    }
-
+    const data = await this.$root.query(query);
+    this.allProviders = data.allProviders;
+    },
   },
   
   computed: {
-    providers() {
-      let providers = [];
-      let used = {};
-
-      for (let id in this.allTokens) {
-        let token = this.allTokens[id];
-        used[token.provider.id] = true;
-
-        providers.push({
-          name: this.allProviders[token.provider.id].displayName,
-          expiry: new Date(token.expiresAt * 1000).toUTCString(),
-          id: id
-        })
-      }
-
-      return providers;
+    authenticatedProviders() {
+      return this.allProviders
+        .filter(provider => provider.token)
+        .map(provider => ({...provider, expiry: new Date(provider.token.expiresAt * 1000).toUTCString()}));
     },
 
     availableProviders() {
-      let available = [];
-      let unavailable = {}
-
-      this.providers.forEach(prov => unavailable[prov.id] = true);
-  
-      for (let id in this.allProviders) {
-        if (!unavailable[id]) {
-          available.push({
-            name: this.allProviders[id].displayName,
-            value: id
-          })
-        }
-      }
-
-      return available;
+      return this.allProviders
+        .filter(provider => !provider.token);
     },
 
     scopePickerLabel() {
       if (this.newProvider) {
-        if (this.usedScopes.length) {
+        if (this.selectedScopes.length) {
           return "No scopes left"
         }
         return "No scopes available for this provider"
@@ -199,24 +139,35 @@ export default {
       return "Please select a provider"
     },
 
+    nonSelectedScopes() {
+      return !this.newProvider.id ? [] : this.newProvider.scopes.filter(s => !this.selectedScopes.includes(s));
+    },
+
+    selectedScopes: {
+      get() {
+        return this.allSelectedScopes.filter(scope => this.newProvider.scopes.includes(scope));
+      }
+    }
+
   },
 
   data() {
     return {
-      buttonDisabled: true,
-      popupActive: false,
-      unusedScopes: [],
-      usedScopes: [],
-      newProvider: "",
-      allProviders: {},
-      allTokens: {},
-      allScopes: {},
-      currentToken: false,
+      addProviderButton: true,
+      addProviderActive: false,
+
+      allSelectedScopes: [],
+  
+      newProvider: {},
+      allProviders: [],
+
+      currentProvider: {},
       viewProviderActive: false,
+
       fields: [
         {
           "title": "Data Provider",
-          "value": "name"
+          "value": "displayName"
         },
         {
           "title": "Expiry Date",
@@ -228,23 +179,18 @@ export default {
         {
           icon: "fa-info",
           color: "primary",
-          callback: (tr) => {
-            let token = this.allTokens[tr.id];
-
-            this.currentToken = {
-              provider: this.allProviders[token.provider.id].displayName,
-              scopes: token.scopes.map(scope => this.allScopes[scope.id])
-            }
+          callback: (provider) => {
+            this.currentProvider = provider;
             this.viewProviderActive = true;
           }
         },
         {
           icon: "fa-trash",
           color: "danger",
-          callback: (tr) => {
+          callback: (provider) => {
             let query = `
             mutation deleteToken {
-              deleteToken(token: ${tr.id}) {
+              deleteToken(token: ${provider.token.id}) {
                 ok
               }
             }
@@ -283,7 +229,7 @@ input[type="text"]:disabled {
   background-color: white;
 }
 
-.con-chips--remove-all {
+.no-icon > .con-chips > .con-chips--remove-all {
   display: none !important;
 }
 </style>

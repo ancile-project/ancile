@@ -10,6 +10,19 @@ Vue.use(Vuesax);
 
 new Vue({
   methods: {
+    async oauth(provider, scopes) {
+      const url = "/oauth/" + provider.pathName + "?scopes=" + scopes.join("|")
+      const w = window.open(url);
+
+      return new Promise((resolve) => {
+        const refreshId = setInterval(() => {
+          if (w.closed) {
+            resolve();
+            clearInterval(refreshId);
+          }
+        }, 1000);
+      });
+    },
 
     notify(type, title, text) {
       var icon = "fa-info";
