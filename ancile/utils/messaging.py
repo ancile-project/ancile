@@ -6,9 +6,11 @@ import uuid
 class RpcClient(object):
     response = None
 
-    def __init__(self, host='localhost'):
+    def __init__(self):
+        from config.loader import ENDPOINT
+
         self.connection = pika.BlockingConnection(
-            pika.ConnectionParameters(host=host))
+            pika.ConnectionParameters(host=ENDPOINT))
 
         self.channel = self.connection.channel()
 

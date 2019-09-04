@@ -50,12 +50,12 @@ class UserSecrets:
 
     @staticmethod
     def prepare_users_secrets(user_info, app_id):
-        users_specific = dict()
+        users_secrets = dict()
         for user in user_info:
-            user_specific = UserSecrets(user.policies, user.tokens,
+            user_secret = UserSecrets(user.policies, user.tokens,
                                         user.private_data,
                                         username=user.username,
                                         app_id=app_id)
-            users_specific[user.username] = user_specific
-        return users_specific
+            users_secrets[user.username] = user_secret
+        return users_secrets
 
