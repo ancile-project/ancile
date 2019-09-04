@@ -47,3 +47,15 @@ class UserSecrets:
         else:
             raise AncileException(f"No policies for provider {data_source}, for"
                                   f" this user. Please ask the user to add the policy.")
+
+    @staticmethod
+    def prepare_users_secrets(user_info, app_id):
+        users_specific = dict()
+        for user in user_info:
+            user_specific = UserSecrets(user.policies, user.tokens,
+                                        user.private_data,
+                                        username=user.username,
+                                        app_id=app_id)
+            users_specific[user.username] = user_specific
+        return users_specific
+

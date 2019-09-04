@@ -7,9 +7,9 @@ def on_request(ch, method, props, body):
 
     print(" [x] Received message")
 
-    users_specific, program, app_id, app_module = dill.loads(body)
+    users_secrets, program, app_id, app_module = dill.loads(body)
 
-    res = execute(users_specific=users_specific,
+    res = execute(users_secrets=users_secrets,
                   program=program,
                   app_id=app_id,
                   app_module=app_module)
