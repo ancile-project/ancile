@@ -79,7 +79,7 @@ router.beforeEach(async function(to, from, next) {
   let loggedIn = store.state.loggedIn;
 
   if (path === '/logout') {
-    this.$store.dispatch("logout");
+    store.dispatch("logout");
     return from.path === "/" ? "" : next('/');
   }
 

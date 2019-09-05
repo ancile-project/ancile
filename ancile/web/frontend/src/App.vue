@@ -2,7 +2,7 @@
   <div id="app">
     <Header />
     <div id="main">
-      <transition name="fade" v-on:before-leave="updateIndex">
+      <transition name="fade" mode="out-in" v-on:after-leave="updateIndex">
         <router-view></router-view>
       </transition>
       <Footer />
@@ -42,7 +42,6 @@ export default {
 </script>
 
 <style lang="scss">
-
 #app {
   min-height: 100%;
   width: 100%;
@@ -80,8 +79,5 @@ body {
 
 .fade-enter-active, .fade-leave-active {
   transition: opacity .5s;
-  opacity: 0;
 }
-
-
 </style>
