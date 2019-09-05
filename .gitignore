@@ -17,3 +17,6 @@ env
 config/*.yaml
 .pidfile
 ancile/web/static/
+
+
+.DS_Store

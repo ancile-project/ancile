@@ -4,14 +4,21 @@ from ancile.core.core import execute
 from django.http import HttpResponse, Http404, JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth.decorators import login_required
+
+from ancile.core.user_secrets import UserSecrets
 from ancile.web.api.queries import get_app_id, get_user_bundle, get_app_module
 from ancile.web.dashboard.models import User, Token, PermissionGroup, DataProvider, App, PolicyTemplate, Policy, Scope
 from ancile.web.api.visualizer import parse_policy as parse_policy_string
 import traceback
 from django.views.decorators.csrf import csrf_exempt
 import logging
+import pika
+import dill
+from ancile.utils.messaging import RpcClient
+from config.loader import configs
 
 logger = logging.getLogger(__name__)
+
 
 @csrf_exempt
 @require_http_methods(["POST"])
@@ -38,10 +45,19 @@ def execute_api(request):
         return JsonResponse({"result": "error",
                              "error": "Problem in retreiving user information"})
 
-    res = execute(user_info=user_info,
-                  program=program,
-                  app_id=app_id,
-                  app_module=get_app_module(app_id))
+    users_secrets = UserSecrets.prepare_users_secrets(user_info, app_id)
+    if configs.get('DISTRIBUTED', False):
+        user_pickled = dill.dumps((users_secrets, program,
+                                   app_id, None))
+        rabbit = RpcClient()
+        res_dill = rabbit.call(user_pickled)
+        res = dill.loads(res_dill)
+    else:
+        res = execute(users_secrets=users_secrets,
+                      program=program,
+                      app_id=app_id,
+                      app_module=get_app_module(app_id))
+
     logger.info(f"Returning response: {res}")
     return JsonResponse(res)
 
@@ -64,16 +80,36 @@ def browser_execute(request):
         except Exception:
             return JsonResponse({"result": "error",
                                  "error": "Problem in retreiving user information"})
-        res = execute(user_info=user_info,
-                    program=program,
-                    app_id=app_id,
-                    app_module=get_app_module(app_id))
+        res = {'dumb_output': None}
+        users_secrets = UserSecrets.prepare_users_secrets(user_info, app_id)
+        if configs.get('DISTRIBUTED', False):
+            user_pickled = dill.dumps((users_secrets, program,
+                                         app_id, None))
+            rabbit = RpcClient()
+            res_dill = rabbit.call(user_pickled)
+            res = dill.loads(res_dill)
+        else:
+            res = execute(users_secrets=users_secrets,
+                            program=program,
+                            app_id=app_id,
+                            app_module=get_app_module(app_id))
+        print(f'Result: {res}')
 
-        logger.info(f"Returning response: {res}")
         return JsonResponse(res)
     else:
         return JsonResponse({"result": "error",
                              "error": "You are not a developer for this app"})
+
+
+def prepare_user_specific(user_info, app_id):
+    users_specific = dict()
+    for user in user_info:
+        user_specific = UserSecrets(user.policies, user.tokens,
+                                    user.private_data,
+                                    username=user.username,
+                                    app_id=app_id)
+        users_specific[user.username] = user_specific
+    return users_specific
 
 
 @login_required
@@ -85,14 +121,20 @@ def check_permission_group(request):
     app = App.objects.get(name=app_name)
     perm_group = PermissionGroup.objects.get(name=group_name, app=app)
 
-    provider_scope = {tk.provider:tk.scopes.all() for tk in request.user.tokens}
+    provider_scope = {tk.provider: tk.scopes.all() for tk in request.user.tokens}
 
     return JsonResponse({"description": perm_group.description, "providers": [{"path_name": provider.path_name,
-             "display_name": provider.display_name,
-             "status": len(set(wanted_scopes) - set(provider_scope.get(provider, set()))) == 0 and provider in provider_scope, 
-             "scopes": [{"simple_name": sc.simple_name,
-                         "value": sc.value} for sc in wanted_scopes]
-             } for provider, wanted_scopes in perm_group.provider_scope_list]})
+                                                                               "display_name": provider.display_name,
+                                                                               "status": len(set(wanted_scopes) - set(
+                                                                                   provider_scope.get(provider,
+                                                                                                      set()))) == 0 and provider in provider_scope,
+                                                                               "scopes": [
+                                                                                   {"simple_name": sc.simple_name,
+                                                                                    "value": sc.value} for sc in
+                                                                                   wanted_scopes]
+                                                                               } for provider, wanted_scopes in
+                                                                              perm_group.provider_scope_list]})
+
 
 @login_required
 @require_http_methods(["POST"])
@@ -105,7 +147,7 @@ def add_predefined_policy_to_user(request):
         perm_group = PermissionGroup.objects.get(name=group_name, app=app)
 
         needed_policies = PolicyTemplate.objects.filter(group=perm_group,
-                                                          app=app)
+                                                        app=app)
 
         new_policies = []
 
@@ -130,6 +172,7 @@ def add_predefined_policy_to_user(request):
     except Exception:
         return JsonResponse({"status": "error", "error": "An error has occurred."})
 
+
 @login_required
 @require_http_methods(["POST"])
 def remove_app_for_user(request):
@@ -139,10 +182,11 @@ def remove_app_for_user(request):
         user_policies = Policy.objects.filter(user=request.user,
                                               app=app)
         user_policies.delete()
-        
+
         return JsonResponse({"status": "ok"})
     except Exception:
         return JsonResponse({"status": "error", "error": "An error has occurred."})
+
 
 @login_required
 @require_http_methods(["POST"])
@@ -152,6 +196,7 @@ def get_app_groups(request):
         group_names = [group.name for group in PermissionGroup.objects.filter(app__name=app, approved=True)]
         return JsonResponse(group_names, safe=False)
     raise Http404
+
 
 @login_required
 @require_http_methods(["POST"])
@@ -165,6 +210,7 @@ def remove_provider_for_user(request):
         return JsonResponse({"status": "ok"})
     except Exception:
         return JsonResponse({"status": "error", "error": "An error has occurred."})
+
 
 @login_required
 @require_http_methods(["POST"])
@@ -186,6 +232,7 @@ def get_provider_scopes(request):
     except Exception:
         return JsonResponse({"status": "error", "error": "An error has occurred."})
 
+
 @login_required
 @require_http_methods(["POST"])
 def parse_policy(request):
@@ -194,6 +241,7 @@ def parse_policy(request):
         return JsonResponse(parse_policy_string(policy))
     except Exception:
         return JsonResponse({"status": "error", "error": traceback.format_exc()})
+
 
 @login_required
 @require_http_methods(["POST"])
