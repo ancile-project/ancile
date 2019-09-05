@@ -89,7 +89,7 @@ export default {
         }
       `
 
-      this.$root.query(query)
+      this.$root.getData(query)
         .then(resp => {
           this.apps = resp.developerApps;
         })

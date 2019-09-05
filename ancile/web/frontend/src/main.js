@@ -9,7 +9,9 @@ import store from './store';
 Vue.use(Vuesax);
 
 new Vue({
+
   methods: {
+
     async oauth(provider, scopes) {
       const url = "/oauth/" + provider.pathName + "?scopes=" + scopes.join("|")
       const w = window.open(url);
@@ -46,7 +48,7 @@ new Vue({
       })
     },
 
-    async query(query) {
+    async getData(query) {
       this.$vs.loading();
 
       let output = {};
@@ -72,15 +74,6 @@ new Vue({
 
     },
 
-    listToObject(list) {
-      let obj = {};
-
-      list.forEach(el => {
-        obj[el.id] = el;
-      })
-
-      return obj;
-    },
   },
   created() {
     if (store.state.loggedIn) store.dispatch("updateUserData");

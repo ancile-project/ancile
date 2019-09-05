@@ -112,7 +112,7 @@ export default {
         }
       }
     `
-    const data = await this.$root.query(query);
+    const data = await this.$root.getData(query);
     this.allProviders = data.allProviders;
     },
   },
@@ -195,7 +195,7 @@ export default {
               }
             }
             `
-            this.$root.query(query)
+            this.$root.getData(query)
               .then(resp => {
                 if (resp.deleteToken.ok) {
                   this.$root.notify("success", "Provider removed");

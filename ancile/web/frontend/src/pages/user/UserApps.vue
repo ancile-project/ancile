@@ -117,7 +117,7 @@ export default {
                 }
               }
               `
-              this.$root.query(query)
+              this.$root.getData(query)
                 .then(resp => {
                   if (resp.deleteApp.ok) {
                     this.$root.notify("success", "Application deleted.");
@@ -156,7 +156,7 @@ export default {
         }
       `
       this.newAppActive = false;
-      this.$root.query(query)
+      this.$root.getData(query)
         .then(resp => {
           if (resp.addPermissionGroup.ok) {
             this.$root.notify("success", "Application added");
@@ -243,7 +243,7 @@ export default {
       }
       `
     
-    this.$root.query(query)
+    this.$root.getData(query)
       .then(resp => {
         resp.allProviders.forEach(provider => {
           this.providers[provider.id] = provider;
