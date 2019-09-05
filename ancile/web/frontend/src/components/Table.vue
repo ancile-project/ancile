@@ -21,7 +21,7 @@
             {{dp[field.value]}}
           </vs-td>
           <vs-td v-if="actionsEnabled">
-            <vs-button id="action-button" radius :key="index2" v-for="(action, index2) in actions" @click="action.callback(dp)" :color="action.color" type="flat" :icon="action.icon" icon-pack="fas" />
+            <vs-button id="action-button" radius :key="index2" v-for="(action, index2) in actions" @click="action.callback(dp)" :to="action.to ? action.to(dp) : undefined" :color="action.color" type="flat" :icon="action.icon" icon-pack="fas" />
           </vs-td>
         </vs-tr>
       </template>
