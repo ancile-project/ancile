@@ -169,7 +169,7 @@ def visualize_policies(tree, start="graph TD\n"):
                 connections.add(connection_string)
 
         else:
-            args = args = "<div class=args>" + "<br/>".join(node.args) + "</div>"
+            args = "<div class=args>" + "<br/>".join(node.args) + "</div>"
             content += f"A{node.id_num}[\"{node.content} {args}\"]\nstyle A{node.id_num} fill:{COLORS[node.func_type]}\n"
             for child in node.children:
 
@@ -242,10 +242,7 @@ def parse_policy(policy):
     top_nodes, _ = traverse_tree(parsed_policy)
     mermaid_string = visualize_policies(top_nodes)
 
-    return {
-        "status": "ok",
-        "parsed_policy": mermaid_string
-    }
+    return mermaid_string
 
 def param_cell_to_str(param_cells):
     """

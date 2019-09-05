@@ -1,4 +1,4 @@
 #!/usr/bin/bash
 
 source .env/bin/activate;
-python manage.py runserver
+bash scripts/start_dev_vue.sh & python manage.py runserver

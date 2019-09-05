@@ -26,12 +26,7 @@ SECRET_KEY = config.SECRET_KEY
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config.SERVER_DEBUG
 
-LOGIN_URL = "/login"
-
 ALLOWED_HOSTS = [config.SERVER_NAME]
-
-LOGIN_REDIRECT_URL = LOGOUT_REDIRECT_URL = "/"
-# Application definition
 
 INSTALLED_APPS = [
     "ancile.web.dashboard.apps.DashboardConfig",
@@ -43,10 +38,9 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "crispy_forms",
+    'graphene_django',
+    'webpack_loader'
 ]
-
-CRISPY_TEMPLATE_PACK = "bootstrap3"
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -55,8 +49,7 @@ MIDDLEWARE = [
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
-    "django.middleware.clickjacking.XFrameOptionsMiddleware",
-]
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",]
 
 ROOT_URLCONF = "ancile.web.ancile_web.urls"
 
@@ -78,14 +71,12 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "ancile.web.ancile_web.wsgi.application"
 
-
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
 DATABASES = {
     "default": config.DATABASE_CONFIG
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/2.2/ref/settings/#auth-password-validators
@@ -121,6 +112,17 @@ USE_TZ = True
 
 STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "ancile/web" + STATIC_URL)
+
+WEBPACK_LOADER = {
+    'DEFAULT': {
+        'CACHE': not DEBUG,
+        'BUNDLE_DIR_NAME': "bundles/", # must end with slash
+        'STATS_FILE': os.path.join(BASE_DIR, "ancile/web/frontend/node_modules/@vue/cli-service/webpack-stats.json"),
+        'POLL_INTERVAL': 0.1,
+        'TIMEOUT': None,
+        'IGNORE': [r'.+\.hot-update.js', r'.+\.map']
+    }
+}
 
 if config.ENABLE_LOGGING:
     LOGGING = {
@@ -174,3 +176,7 @@ if config.ENABLE_LOGGING:
             "ancile.web.oauth": {"level": "INFO", "propagate": False, "handlers": ["file", "console"]},
         },
     }
+
+GRAPHENE = {
+    'SCHEMA': 'ancile.web.ancile_web.schema.schema'
+}
