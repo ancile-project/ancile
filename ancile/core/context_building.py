@@ -39,11 +39,11 @@ def gen_module_namespace():
 module_namespace = gen_module_namespace()
 
 
-def assemble_locals(storage, result, user_specific, app_id, app_module=None):
+def assemble_locals(storage, result, users_secrets, app_id, app_module=None):
     lcls = module_namespace
 
     def user(name: str) -> UserSecrets:
-        return user_specific[name]
+        return users_secrets[name]
 
     def store(obj, name):
         key = storage.gen_key()

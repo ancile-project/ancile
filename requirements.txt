@@ -18,6 +18,7 @@ gunicorn==19.9.0
 idna==2.8
 numpy==1.17.1
 oauthlib==3.1.0
+pika==1.1.0
 promise==2.2.1
 psycopg2-binary==2.8.3
 pycparser==2.19

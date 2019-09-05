@@ -16,23 +16,16 @@ UserInfoBundle = namedtuple("UserInfoBundle", ['username', 'policies',
                                                'tokens', 'private_data'])
 
 
-def execute(user_info, program, app_id=None, app_module=None):
+def execute(users_secrets, program, app_id=None, app_module=None):
     r = redis.Redis(**REDIS_CONFIG)
     storage = Storage(redis_conneciton=r)
     json_output = dict()
     # object to interact with the program
     result = Result()
-    users_specific = dict()
-    for user in user_info:
-        user_specific = UserSecrets(user.policies, user.tokens,
-                                    user.private_data,
-                                    username=user.username,
-                                    app_id=app_id)
-        users_specific[user.username] = user_specific
 
     glbls = {'__builtins__': safe_builtins}
     lcls = assemble_locals(storage=storage, result=result,
-                           user_specific=users_specific,
+                           users_secrets=users_secrets,
                            app_id=app_id,
                            app_module=app_module)
     try:
