@@ -37,6 +37,10 @@ class TransformDecorator(BaseDecorator):
             if isinstance(param, DataPolicyPair):
                 logger.info(f'Found DataPolicyPair for param: {name}')
                 dp_pairs[name] = param
+            elif isinstance(param, list):
+                # check all items in list are DPPs
+                if len(param) == len([True for i in param if isinstance(i, DataPolicyPair)]):
+                    dp_pairs[name] = DataPolicyPair.combine_dpps_list(param)
 
         if len(dp_pairs) == 0:
             logger.info(f'Calling function without DPPs')

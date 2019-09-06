@@ -91,17 +91,22 @@ class DataPolicyPair:
 
     @classmethod
     def combine_dpps_list(cls, dpp_list):
+        """
+        Combine dpps when they are provided as a list. Not used yet.
+        """
 
         new_dpp = deepcopy(dpp_list[0])
-        for key, dpp in dpp_list:
+        new_dpp._data = [new_dpp._data]
+        for dpp in dpp_list[1:]:
             if new_dpp._name != dpp._name:
                 new_dpp._name = f'{new_dpp._name}, {dpp._name}'
             if new_dpp._username != dpp._username:
                 new_dpp._username = f'{new_dpp._username}, {dpp._username}'
             if new_dpp._token != dpp._token:
                 new_dpp._token = {new_dpp._uuid: new_dpp._token, dpp._uuid: dpp._token}
-
+            new_dpp._policy = new_dpp._policy.intersect(dpp._policy)
             new_dpp._previous_dpp[dpp._uuid] = dpp
+            new_dpp._data.append(dpp._data)
 
         return new_dpp
 
