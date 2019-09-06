@@ -126,6 +126,7 @@ class DataPolicyPair:
                     new_dpp._username = f'{new_dpp._username}, {dpp._username}'
                 if new_dpp._token != dpp._token:
                     new_dpp._token = {new_dpp._uuid: new_dpp._token, dpp._uuid: dpp._token}
+                new_dpp._policy = new_dpp._policy.intersect(dpp._policy)
 
             new_dpp._data[key] = dpp._data
             new_dpp._previous_dpp[dpp._uuid] = dpp

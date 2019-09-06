@@ -39,14 +39,14 @@ class DecoratorsTests(unittest.TestCase):
 
     def test_transform_multiparam(self):
 
-        new_dp1 = DataPolicyPair('ANYF*', None, 'a', 'a', None)
+        new_dp1 = DataPolicyPair('ANYF*.a', None, 'a', 'a', None)
         new_dp1._data = 1
-        new_dp2 = DataPolicyPair('ANYF*', None, 'a', 'a', None)
+        new_dp2 = DataPolicyPair('ANYF*.a', None, 'a', 'a', None)
         new_dp2._data = 2
         result = sample2(data1=new_dp1, data2=new_dp2)
 
-        print(result)
-        print(result._data)
+        self.assertEqual(result._data, {'data1': 1, 'data2': 2})
+        print(result._policy)
 
     def test_external(self):
         user = UserSecrets({'test_module_name': 'fetch_data.sample'},
