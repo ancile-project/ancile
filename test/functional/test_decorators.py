@@ -81,6 +81,13 @@ class DecoratorsTests(unittest.TestCase):
 
         self.assertEqual(result._data, 3)
 
+    def test_list_access(self):
+
+        new_dp = DataPolicyPair('ANYF*', None, 'a', 'a', None)
+        new_dp._data = [0,1,2,3,4]
+        result = new_dp[2]
+
+        self.assertEqual(result._data, 2)
 
 
 
