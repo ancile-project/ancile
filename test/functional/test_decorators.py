@@ -73,6 +73,14 @@ class DecoratorsTests(unittest.TestCase):
         dpp2 = sample(data=dpp)
         print(dpp2, dpp2._data)
 
+    def test_dict_access(self):
+
+        new_dp = DataPolicyPair('ANYF*', None, 'a', 'a', None)
+        new_dp._data = {'a': 3}
+        result = new_dp['a']
+
+        self.assertEqual(result._data, 3)
+
 
 
 

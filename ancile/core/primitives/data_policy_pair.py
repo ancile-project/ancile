@@ -70,6 +70,12 @@ class DataPolicyPair:
 
         return dpp
 
+    def __getitem__(self, item):
+        dpp = copy(self)
+        dpp._data = dpp._data[item]
+
+        return dpp
+
     @property
     def is_expired(self):
         """Return a True if the point has expired."""
