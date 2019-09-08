@@ -76,9 +76,15 @@ class BaseDecorator(ABC):
         for arg in args:
             if isinstance(arg, DataPolicyPair):
                 return True
+            elif isinstance(arg, list) and \
+                    len(arg) == len([True for i in arg if isinstance(i, DataPolicyPair)]):
+                return True
 
         for name, arg in kwargs.items():
             if isinstance(arg, DataPolicyPair):
+                return True
+            elif isinstance(arg, list) and \
+                    len(arg) == len([True for i in arg if isinstance(i, DataPolicyPair)]):
                 return True
 
         return False
