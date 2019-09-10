@@ -8,7 +8,6 @@ from ancile.utils.errors import AncileException
 
 logger = logging.getLogger(__name__)
 
-@DeprecationWarning
 class AggregateDecorator(BaseDecorator):
 
     def __init__(self, scopes=None, is_collection=False, reduce=False):
