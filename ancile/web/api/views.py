@@ -94,7 +94,6 @@ def browser_execute(request):
     else:
         return JsonResponse({"result": "error",
                              "error": "You are not a developer for this app"})
-                             "error": "You are not a developer for this app"})
 
 
 def prepare_user_specific(user_info, app_id):
