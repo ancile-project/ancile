@@ -70,10 +70,11 @@ class AppType(DjangoObjectType):
     
     policies = graphene.List(PolicyType)
     groups = graphene.List(PermissionGroupType)
-    
+    token = graphene.String()
+
     class Meta:
         model = models.App
-        only_fields = ('id', 'name', 'description')
+        only_fields = ('id', 'name', 'description', 'developers', )
     
     def resolve_policies(self, info, **args):
         policies = models.Policy.objects.filter(user=info.context.user, app=self)
@@ -82,6 +83,14 @@ class AppType(DjangoObjectType):
     def resolve_groups(self, info, **args):
         permission_groups = models.PermissionGroup.objects.filter(app=self)
         return permission_groups
+    
+    def resolve_developers(self, info, **args):
+        if info.context.user.is_developer:
+            return self.developers
+
+    def resolve_token(self, info, **args):
+        if info.context.user.is_developer:
+            return self.encoded_salt
 
 class DeleteApp(graphene.Mutation):
     class Arguments:
@@ -128,6 +137,35 @@ class AddPermissionGroup(graphene.Mutation):
         
         return AddPermissionGroup(ok=True)
 
+class CreatePermissionGroup(graphene.Mutation):
+    class Arguments:
+        app = graphene.Int()
+        name = graphene.String()
+        description = graphene.String()
+        approved = graphene.Boolean(default_value=False)
+
+    ok = graphene.Boolean()
+    error = graphene.String()
+
+    def mutate(self, info, approved, description, name, app):
+        try:
+            app = models.App.objects.get(id=app)
+        except models.app.DoesNotExist:
+            return CreatePermissionGroup(ok=False, error="App not found")
+
+        approved = approved if info.context.user.is_superuser else False
+
+        if info.context.user.is_superuser or (info.context.user.is_developer and info.context.user in app.developers):
+            if name and description:
+                group = models.PermissionGroup(name=name,
+                                               description=description,
+                                               app=app,
+                                               approved=approved)
+                group.save()
+                return CreatePermissionGroup(ok=True)
+            return CreatePermissionGroup(ok=False, error="Name and/or description missing")
+        return CreatePermissionGroup(ok=False, error="Insufficient permissions")
+
 class AddApp(graphene.Mutation):
     class Arguments:
         name = graphene.String()
@@ -152,13 +190,14 @@ class Mutations(graphene.ObjectType):
     delete_app = DeleteApp.Field()
     add_permission_group = AddPermissionGroup.Field()
     add_app = AddApp.Field()
+    create_permission_group = CreatePermissionGroup.Field()
 
 class Query(object):
     all_providers = graphene.List(ProviderType)
     all_scopes = graphene.List(ScopeType)
     all_tokens = graphene.List(TokenType)
     all_apps = graphene.List(AppType)
-    developer_apps = graphene.List(AppType)
+    developer_apps = graphene.List(AppType, id=graphene.Int(default_value=-1))
     current_user = graphene.Field(UserType)
 
     def resolve_all_providers(self, info, **args):
@@ -173,9 +212,11 @@ class Query(object):
     def resolve_all_apps(self, info, **args):
         return models.App.objects.all()
     
-    def resolve_developer_apps(self, info, **args):
+    def resolve_developer_apps(self, info, id, **args):
         if info.context.user.is_developer:
-            return models.App.objects.filter(developers=info.context.user)
-    
+            if id < 0:
+                return models.App.objects.filter(developers=info.context.user)
+        return models.App.objects.filter(id=id, developers=info.context.user)
+
     def resolve_current_user(self, info, **args):
         return info.context.user
