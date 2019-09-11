@@ -28,7 +28,7 @@ PyYAML==5.1.2
 redis==3.3.8
 requests==2.22.0
 requests-oauthlib==1.2.0
-RestrictedPython==4.0
+RestrictedPython>=5.0
 Rx==1.6.1
 singledispatch==3.4.0.3
 six==1.12.0

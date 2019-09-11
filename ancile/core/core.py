@@ -1,6 +1,6 @@
-from ancile.core.user_secrets import UserSecrets
 from ancile.core.primitives.result import Result
 from RestrictedPython import safe_builtins
+from RestrictedPython.Eval import default_guarded_getitem
 import traceback
 import redis
 from collections import namedtuple
@@ -23,7 +23,10 @@ def execute(users_secrets, program, app_id=None, app_module=None):
     # object to interact with the program
     result = Result()
 
-    glbls = {'__builtins__': safe_builtins}
+    glbls = {'__builtins__': safe_builtins,
+             '_getitem_': default_guarded_getitem
+             }
+
     lcls = assemble_locals(storage=storage, result=result,
                            users_secrets=users_secrets,
                            app_id=app_id,
