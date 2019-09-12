@@ -95,6 +95,7 @@ def browser_execute(request):
         return JsonResponse({"result": "error",
                              "error": "You are not a developer for this app"})
 
+
 def prepare_user_specific(user_info, app_id):
     users_specific = dict()
     for user in user_info:

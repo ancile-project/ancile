@@ -60,11 +60,11 @@ class DataPolicyPair:
                              name=self._name, username=self._username,
                              private_data=self._private_data, app_id=self._app_id)
         if self._data is not None:
-            dpp._data = self._data.copy()
+            dpp._data = copy(self._data)
         else:
             dpp._data = None
         dpp._expires_at = self._expires_at
-        dpp._previous_dpp = {self._uuid, self}
+        dpp._previous_dpp = {self._uuid: self}
         dpp._was_loaded = self._was_loaded
         dpp._load_key = self._load_key
 
