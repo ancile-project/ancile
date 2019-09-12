@@ -41,8 +41,9 @@
             <Editor v-model="code" lang="python" theme="tomorrow" width="100%" height="500px"/>
           </vs-col>
           <vs-col vs-type="flex" vs-justify="center" vs-align="center" vs-w="5">
-            <vs-textarea :value="output" width="100%" style="height:500px" >
-            </vs-textarea>
+            <p id="output" class="vs-select--input">
+              {{ output }}
+            </p>
           </vs-col>
         </vs-row>
       </div>
@@ -131,5 +132,14 @@ export default {
 
 .vs-select--label {
   margin-bottom: 5px;
+}
+
+#output.vs-select--input {
+  height: 500px;
+  overflow: auto;
+  padding-right: 7px;
+  font-family: monospace;
+  font-size: medium;
+  cursor: auto;
 }
 </style>
