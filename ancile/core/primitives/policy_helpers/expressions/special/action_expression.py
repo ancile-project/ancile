@@ -1,7 +1,7 @@
 from ancile.core.primitives.policy_helpers.expressions import *
 
 
-class ExecExpression(BaseExpression):
+class ActionExpression(BaseExpression):
 
     def __init__(self, command: str, params=None):
         super().__init__()

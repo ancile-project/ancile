@@ -8,7 +8,7 @@ class StarExpression(UnaryExpression):
         super().__init__(expression)
 
     def __repr__(self):
-        if type(self.expression) in [ConstantExpression, ExecExpression]:
+        if type(self.expression) in [ConstantExpression, ActionExpression]:
             return f'{self.expression}*'
         else:
             return f'({self.expression})*'

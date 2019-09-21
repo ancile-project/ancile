@@ -1,6 +1,7 @@
 from sly import Parser
 import operator
 
+from ancile.core.primitives.policy_helpers.expressions.special.assignment_expression import AssignmentExpression
 from ancile.utils.errors import ParseError
 from ancile.core.primitives.policy_helpers.private_data import PrivateData
 from ancile.core.primitives.policy_helpers.policy_lexer import *
@@ -57,6 +58,22 @@ class PolicyParser(Parser):
     def policy(self, p):
         return StarExpression(p.policy)
 
+    @_('TEST test_expr')
+    def policy(self, p):
+        return ConstantExpression(Constants.ONE)
+    #
+    # @_('testvar UNION test_expr')
+    # def test_expr(self, p):
+    #     return UnionExpression(p.testvar, p.test_expr)
+
+    @_('testvar')
+    def test_expr(self, p):
+        return p.testvar
+
+    @_('TESTVAR')
+    def testvar(self, p):
+        return AssignmentExpression(p.TESTVAR, Constants.ONE)
+
     @_('policy')
     def clause(self, p):
         return p.policy
@@ -77,15 +94,15 @@ class PolicyParser(Parser):
 
     @_('TEXT')
     def policy(self, p):
-        return ExecExpression(p.TEXT)
+        return ActionExpression(p.TEXT)
 
     @_('ANYF')
     def policy(self, p):
-        return ExecExpression("ANYF")
+        return ActionExpression("ANYF")
 
     @_('TEXT LPAREN params RPAREN')
     def policy(self, p):
-        return ExecExpression(p.TEXT, p.params)
+        return ActionExpression(p.TEXT, p.params)
 
     @_('param COMMA params')
     def params(self, p):

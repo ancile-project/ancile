@@ -71,7 +71,7 @@ def get_fn_type(function_name):
 
 
 def annotate(parsed):
-    if type(parsed) == ExecExpression:
+    if type(parsed) == ActionExpression:
         name = parsed.policy_command
         parsed.type = get_fn_type(name)
     elif isinstance(parsed, UnaryExpression):

@@ -5,13 +5,13 @@ class PolicyLexer(Lexer):
     tokens = { TEXT, NUMBER, FLOAT, UNION, CONCAT, INTERSECT,  NEG, STAR,
                ANYF, LPAREN, RPAREN, LBRACKET, RBRACKET, COMMA, EQ,
                PRIVATE, STRING, NEQ, LEQ, LE, GEQ, GE, LBRACE, RBRACE, IN,
-               TRUE, FALSE }
+               TRUE, FALSE, TESTVAR, TEST}
     ignore = ' \t\n\r\f\v'
 
 
     # Tokens
-    TEXT = r'[a-zA-Z_][a-zA-Z0-9_]*'
-
+    TESTVAR = r't_[a-zA-Z][a-zA-Z0-9_]*'
+    TEXT = r'(?!t_)[a-zA-Z_][a-zA-Z0-9_]*'
     @_(r'[-]?\d+\.\d+')
     def FLOAT(self, t):
         t.value = float(t.value)
@@ -59,6 +59,7 @@ class PolicyLexer(Lexer):
     EQ = r'\='
     NEG = r'\!'
     STAR = r'\*'
+    TEST = r'\?'
 
     # Ignored pattern
     ignore_newline = r'\n+'

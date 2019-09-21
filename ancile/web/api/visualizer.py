@@ -93,7 +93,7 @@ def traverse_tree(policy, count=0, children=None):
         :returns List of nodes
     """
 
-    if type(policy) == ExecExpression:
+    if type(policy) == ActionExpression:
         return [Node(count, policy.policy_command, policy.params, policy.type, children)], count+1
 
     if type(policy) == ConcatExpression:

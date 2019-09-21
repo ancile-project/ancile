@@ -18,7 +18,7 @@ class ParserTests(unittest.TestCase):
         policy = 'test.ret'
 
         parsed_policy = Policy(policy)
-        self.assertTrue(ConcatExpression(ExecExpression('test'), ExecExpression('ret'))==
+        self.assertTrue(ConcatExpression(ActionExpression('test'), ActionExpression('ret')) ==
                         parsed_policy._policy_expr)
 
 
