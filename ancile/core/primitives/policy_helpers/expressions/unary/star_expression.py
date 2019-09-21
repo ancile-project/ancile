@@ -13,18 +13,20 @@ class StarExpression(UnaryExpression):
         else:
             return f'({self.expression})*'
 
-    def d_step(self, command):
+    def d_step(self, command, atoms):
         """
         D(P*) = D(P,C).P*
+        :param atoms:
 
         """
         self.expression = self.expression.simplify()
 
-        return ConcatExpression(self.expression.d_step(command), self).simplify()
+        return ConcatExpression(self.expression.d_step(command, atoms), self).simplify()
 
-    def e_step(self):
+    def e_step(self, atoms):
         """
         E(P*) = 1
+        :param atoms:
         """
 
         return Constants.ONE

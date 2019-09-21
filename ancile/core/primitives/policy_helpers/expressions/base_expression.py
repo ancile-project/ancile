@@ -16,12 +16,12 @@ class BaseExpression(ABC):
 
     @abstractmethod
     @lru_cache(maxsize=1200)
-    def d_step(self, command: Command) -> BaseExpression:
+    def d_step(self, command: Command, atoms) -> BaseExpression:
         pass
 
     @abstractmethod
     @lru_cache(maxsize=1200)
-    def e_step(self) -> Constants:
+    def e_step(self, atoms) -> Constants:
         pass
 
     @abstractmethod

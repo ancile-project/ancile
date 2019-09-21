@@ -1,16 +1,17 @@
 from ancile.core.primitives.policy_helpers.expressions import *
 
 
-class ConstantExpression(BaseExpression):
+class TestExpression(BaseExpression):
     command: Constants
 
-    def __init__(self, command: Constants):
+    def __init__(self, name):
         super().__init__()
 
-        self.command = command
+        self.name = name
+        self.val = Constants.ZERO
 
     def __repr__(self):
-        return f'{self.command}'
+        return f'?{self.name}'
 
     def __eq__(self, other):
         if isinstance(other, self.__class__) and self.command == other.command:
@@ -25,7 +26,6 @@ class ConstantExpression(BaseExpression):
         :param atoms:
 
         """
-
         return ConstantExpression(Constants.ZERO)
 
     def e_step(self, atoms) -> Constants:
@@ -36,7 +36,10 @@ class ConstantExpression(BaseExpression):
         :param atoms:
         :return:
         """
-        return self.command
+        if atoms.get(self.name, False):
+            return Constants.ONE
+        else:
+            return Constants.ZERO
 
     def simplify(self):
 

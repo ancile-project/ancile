@@ -17,27 +17,29 @@ class ConcatExpression(BinaryExpression):
         else:
             return False
 
-    def d_step(self, command):
+    def d_step(self, command, atoms):
         """
         D(P1.P2, C) = D(P1,C).P2 + E(P1).D(P2,C)
+        :param atoms:
         """
         self.l_expr = self.l_expr.simplify()
         self.r_expr = self.r_expr.simplify()
 
-        new_l_expr = ConcatExpression(self.l_expr.d_step(command),
+        new_l_expr = ConcatExpression(self.l_expr.d_step(command, atoms),
                                       self.r_expr)
-        new_r_expr = ConcatExpression(ConstantExpression(self.l_expr.e_step()),
-                                      self.r_expr.d_step(command))
+        new_r_expr = ConcatExpression(ConstantExpression(self.l_expr.e_step(atoms)),
+                                      self.r_expr.d_step(command, atoms))
 
         return UnionExpression(new_l_expr, new_r_expr).simplify()
 
-    def e_step(self):
+    def e_step(self, atoms):
         """
         E(P1.P2) = E(P1) * E(P2)
+        :param atoms:
         :return:
         """
 
-        return self.l_expr.e_step() * self.r_expr.e_step()
+        return self.l_expr.e_step(atoms) * self.r_expr.e_step(atoms)
 
     def simplify(self):
         """

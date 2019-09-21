@@ -13,22 +13,24 @@ class NegationExpression(UnaryExpression):
         else:
             return f'!({self.expression})'
 
-    def d_step(self, command) -> BaseExpression:
+    def d_step(self, command, atoms) -> BaseExpression:
         """
         D(!P) = !D(P,C)
+        :param atoms:
         """
         self.expression = self.expression.simplify()
 
-        return NegationExpression(self.expression.d_step(command))
+        return NegationExpression(self.expression.d_step(command, atoms))
 
-    def e_step(self) -> Constants:
+    def e_step(self, atoms) -> Constants:
         """
         E(!P) = !E(P)
 
         negation sign is responsible to invert value
+        :param atoms:
         """
 
-        return -self.expression.e_step()
+        return -self.expression.e_step(atoms)
 
     def simplify(self):
         return NegationExpression(self.expression.simplify())

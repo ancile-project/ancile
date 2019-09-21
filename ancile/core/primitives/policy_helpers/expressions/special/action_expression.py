@@ -22,7 +22,7 @@ class ActionExpression(BaseExpression):
         else:
             return False
 
-    def d_step(self, command):
+    def d_step(self, command, atoms):
         """
         D(C, C) = 1
         D(C', C) = 0
@@ -33,6 +33,7 @@ class ActionExpression(BaseExpression):
 
         As well, we check only parameters that the policy specifies, otherwise
         we accept any value for the parameter.
+        :param atoms:
 
         """
         if self.policy_command == 'ANYF':
@@ -51,9 +52,10 @@ class ActionExpression(BaseExpression):
         else:
             return ConstantExpression(Constants.ZERO)
 
-    def e_step(self):
+    def e_step(self, atoms):
         """
         E(C) = 0
+        :param atoms:
         """
 
         return Constants.ZERO

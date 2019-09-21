@@ -42,7 +42,7 @@ class Policy(object):
         Takes a derivative of the current policy expression using D-step
 
         """
-        new_policy_expr = self._policy_expr.d_step(command).simplify()
+        new_policy_expr = self._policy_expr.d_step(command, atoms).simplify()
         if update:
             self._policy_expr = new_policy_expr
 
@@ -54,7 +54,7 @@ class Policy(object):
         then the policy has succeeded, otherwise the policy check has failed.
         :return:
         """
-        result = self._policy_expr.e_step()
+        result = self._policy_expr.e_step(atoms)
         if result is Constants.ONE:
             return True
         else:

@@ -21,24 +21,26 @@ class UnionExpression(BinaryExpression):
         else:
             return False
 
-    def d_step(self, command):
+    def d_step(self, command, atoms):
         """
         D(P1 + P2, C) = D(P1, C) + D(P2, C)
+        :param atoms:
 
         """
         self.l_expr = self.l_expr.simplify()
         self.r_expr = self.r_expr.simplify()
 
-        return UnionExpression(self.l_expr.d_step(command),
-                               self.r_expr.d_step(command)).simplify()
+        return UnionExpression(self.l_expr.d_step(command, atoms),
+                               self.r_expr.d_step(command, atoms)).simplify()
 
-    def e_step(self):
+    def e_step(self, atoms):
         """
         E(P1 + P2, C) = E(P1) + E(P2)
+        :param atoms:
         :return:
         """
 
-        return self.l_expr.e_step() + self.r_expr.e_step()
+        return self.l_expr.e_step(atoms) + self.r_expr.e_step(atoms)
 
     def simplify(self):
         """
