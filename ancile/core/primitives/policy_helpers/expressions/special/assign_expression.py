@@ -1,7 +1,7 @@
 from ancile.core.primitives.policy_helpers.expressions import *
+from copy import deepcopy
 
-
-class TestExpression(BaseExpression):
+class AssignExpression(BaseExpression):
     command: Constants
 
     def __init__(self, name):
@@ -11,7 +11,7 @@ class TestExpression(BaseExpression):
         self.val = Constants.ZERO
 
     def __repr__(self):
-        return f'?{self.name}'
+        return f'{self.name}!'
 
     def __eq__(self, other):
         if isinstance(other, self.__class__) and self.command == other.command:
@@ -26,7 +26,9 @@ class TestExpression(BaseExpression):
         :param atoms:
 
         """
-        return ConstantExpression(Constants.ZERO)
+        atoms[self.name] = not atoms.get(self.name, False)
+
+        return ConstantExpression(Constants.ONE)
 
     def e_step(self, atoms) -> Constants:
         """
@@ -36,10 +38,8 @@ class TestExpression(BaseExpression):
         :param atoms:
         :return:
         """
-        if atoms and atoms.get(self.name, False):
-            return Constants.ONE
-        else:
-            return Constants.ZERO
+
+        return Constants.ONE
 
     def simplify(self):
 

@@ -61,6 +61,10 @@ class PolicyParser(Parser):
     def policy(self, p):
         return TestExpression(p.test_expr)
 
+    @_('test_expr NEG')
+    def policy(self, p):
+        return AssignExpression(p.test_expr)
+
     # @_('LPAREN testvar UNION test_expr RPAREN')
     # def test_expr(self, p):
     #     return UnionExpression(p.testvar, p.test_expr)
