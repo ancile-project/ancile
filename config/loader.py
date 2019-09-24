@@ -13,3 +13,9 @@ SERVER_NAME = configs["SERVER_NAME"]
 LANGUAGE_CODE = configs["LANGUAGE_CODE"]
 TIME_ZONE = configs["TIME_ZONE"]
 SERVER_DEBUG = configs["SERVER_DEBUG"]
+
+ENDPOINT = configs.get('ENDPOINT', False)
+
+
+if configs.get('DISTRIBUTED', False):
+    print(f'Deploying distributed version. Run endpoint.py separately on {ENDPOINT} host.')
