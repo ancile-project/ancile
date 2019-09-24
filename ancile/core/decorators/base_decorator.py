@@ -44,7 +44,8 @@ class BaseDecorator(ABC):
             command = Command(function=wrapped, scopes=self.scopes, params=kwargs)
             return self.process_call(command)
         else:
-            wrapped(*args, **kwargs)
+            res = wrapped(*args, **kwargs)
+            return res
 
     @abstractmethod
     def process_call(self, command: Command):
@@ -76,14 +77,14 @@ class BaseDecorator(ABC):
         for arg in args:
             if isinstance(arg, DataPolicyPair):
                 return True
-            elif isinstance(arg, list) and \
+            elif isinstance(arg, list) and len(arg) !=0 and\
                     len(arg) == len([True for i in arg if isinstance(i, DataPolicyPair)]):
                 return True
 
         for name, arg in kwargs.items():
             if isinstance(arg, DataPolicyPair):
                 return True
-            elif isinstance(arg, list) and \
+            elif isinstance(arg, list) and len(arg) !=0 and \
                     len(arg) == len([True for i in arg if isinstance(i, DataPolicyPair)]):
                 return True
 
