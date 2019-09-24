@@ -22,8 +22,8 @@ def gen_dummy_fn(name):
 
 
 @UseDecorator()
-def ret(**kwargs):
-    pass
+def ret(data, **kwargs):
+    return data
 
 @TransformDecorator()
 def edit(data, key, value):

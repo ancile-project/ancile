@@ -37,6 +37,13 @@ Note: If python 3.7 is not the default python3 installation on the system, adjus
 `scripts/setup/setup_env.sh` to use `python3.7` instead of `python3` (or the appropriate
 name on the system).
 
+Note2: If you don't have Python3.7 on your machine, use 
+[MiniConda](https://docs.conda.io/en/latest/miniconda.html) (that should give 
+you `base` environment with Python3.7) and activate it `conda activate base`. 
+Then rerun `bash scripts/full_setup.sh` (you might need to do `teardown.sh` 
+first). This is the cheapest way to get dependencies installed and you don't
+need to modify scripts (although you will see an error: `source: not found`)
+
 ### Configuration
 In `config.yaml` change the values for:
 - SECRET_KEY - generate a secure random string

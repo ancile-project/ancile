@@ -2,7 +2,6 @@ from ancile.core.primitives import *
 from ancile.utils.errors import AncileException
 import pickle
 from uuid import uuid4
-from config.loader import REDIS_CONFIG
 from ancile.core.advanced.encryption import encrypt
 import logging
 logger = logging.getLogger(__name__)

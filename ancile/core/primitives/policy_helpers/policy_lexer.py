@@ -12,12 +12,12 @@ class PolicyLexer(Lexer):
     # Tokens
     TEXT = r'[a-zA-Z_][a-zA-Z0-9_]*'
 
-    @_(r'[-\+]?\d+\.\d+')
+    @_(r'[-]?\d+\.\d+')
     def FLOAT(self, t):
         t.value = float(t.value)
         return t
 
-    @_(r'[-\+]?\d+')
+    @_(r'[-]?\d+')
     def NUMBER(self, t):
         t.value = int(t.value)
         return t

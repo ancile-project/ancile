@@ -1,5 +1,4 @@
 from ancile.core.primitives import DataPolicyPair, Collection, Policy
-import wrapt
 import logging
 from ancile.core.decorators import *
 
@@ -17,7 +16,6 @@ class ReductionDecorator(BaseDecorator):
     def process_call(self, command):
 
         logger.debug(f'Calling Reduction "{command.function_name}"')
-
 
         collection = command.params.get('collection', None)
         if not isinstance(collection, Collection):

@@ -2,6 +2,10 @@ from ancile.core.user_secrets import UserSecrets
 from ancile.core.primitives.data_policy_pair import DataPolicyPair
 from ancile.core.primitives.policy_helpers.private_data import PrivateData
 from ancile.core.primitives.collection import Collection
+import pprint
+from config.loader import configs
+from ancile.core.decorators import TransformDecorator
+import types
 
 
 def gen_module_namespace():
@@ -20,11 +24,23 @@ def gen_module_namespace():
         if not is_pac and mod_name not in exclude:
             module_namespace[mod_name] = importlib.import_module(prefix_name + mod_name)
 
+    for library in configs.get('libraries', []):
+        module = importlib.import_module(library)
+        for k, v in vars(module).items():
+            if isinstance(v, types.FunctionType):
+                decorator = TransformDecorator()
+                vars(module)[k] = decorator(v)
+        module_namespace[library] = module
+
     return module_namespace
 
 
+# we only need to do this once per deployment.
+module_namespace = gen_module_namespace()
+
+
 def assemble_locals(storage, result, user_specific, app_id, app_module=None):
-    lcls = gen_module_namespace()
+    lcls = module_namespace
 
     def user(name: str) -> UserSecrets:
         return user_specific[name]
@@ -48,6 +64,11 @@ def assemble_locals(storage, result, user_specific, app_id, app_module=None):
     def load(key):
         return storage._load(f'{app_id}:{key}')
 
+    def sample_dpp(data, policy):
+        dpp = DataPolicyPair(policy=policy, name='test', token=None, username='test', private_data=None)
+        dpp._data = data
+        return dpp
+
     lcls['result'] = result
     lcls['store'] = store
     lcls['load'] = load
@@ -57,5 +78,10 @@ def assemble_locals(storage, result, user_specific, app_id, app_module=None):
     lcls['encrypt'] = encrypt
     lcls['return_to_app'] = result.return_to_app
     lcls['app'] = app_module
+
+    if configs['SERVER_DEBUG']:
+        # allow printing in the debug state
+        lcls['pprint'] = pprint.pprint
+        lcls['sample_dpp'] = sample_dpp
 
     return lcls
