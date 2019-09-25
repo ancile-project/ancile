@@ -35,6 +35,27 @@ class ProviderType(DjangoObjectType):
     def resolve_token(self, info, **args):
         return models.Token.objects.filter(provider=self, user=info.context.user).first()
 
+
+class PolicyType(DjangoObjectType):
+    graph = graphene.String()
+
+    class Meta:
+        model = models.Policy
+        only_fields = ('provider', 'text')
+
+    def resolve_graph(self, info, **args):
+        return parse_policy(self.text)
+
+
+class PermissionGroupType(DjangoObjectType):
+    class Meta:
+        model = models.PermissionGroup
+        only_fields = ("id", "name", "description", "scopes",)
+
+    @classmethod
+    def get_queryset(cls, queryset, info):
+        return queryset.filter(approved=True)
+
 class AppType(DjangoObjectType):
     policies = graphene.List(PolicyType)
     groups = graphene.List(PermissionGroupType)
@@ -59,24 +80,3 @@ class AppType(DjangoObjectType):
     def resolve_token(self, info, **args):
         if info.context.user.is_developer:
             return self.encoded_salt
-
-
-class PolicyType(DjangoObjectType):
-    graph = graphene.String()
-
-    class Meta:
-        model = models.Policy
-        only_fields = ('provider', 'text')
-
-    def resolve_graph(self, info, **args):
-        return parse_policy(self.text)
-
-
-class PermissionGroupType(DjangoObjectType):
-    class Meta:
-        model = models.PermissionGroup
-        only_fields = ("id", "name", "description", "scopes",)
-
-    @classmethod
-    def get_queryset(cls, queryset, info):
-        return queryset.filter(approved=True)

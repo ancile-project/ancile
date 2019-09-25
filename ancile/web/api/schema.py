@@ -14,11 +14,14 @@ class Mutations(graphene.ObjectType):
     # create
     create_permission_group = CreatePermissionGroup.Field()
 
+
 class Query(object):
     all_providers = graphene.List(ProviderType)
     all_scopes = graphene.List(ScopeType)
     all_tokens = graphene.List(TokenType)
     all_apps = graphene.List(AppType)
+    all_policies = graphene.List(PolicyType)
+
     developer_apps = graphene.List(AppType, id=graphene.Int(default_value=-1))
     current_user = graphene.Field(UserType)
 
@@ -42,3 +45,6 @@ class Query(object):
 
     def resolve_current_user(self, info, **args):
         return info.context.user
+
+    def resolve_all_policies(self, info, **args):
+        return models.Policy.objects.all()

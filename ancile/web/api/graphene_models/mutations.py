@@ -1,8 +1,5 @@
 import graphene
 from ancile.web.dashboard import models
-from ancile.web.api.graphene_models.types import *
-
-
 
 class DeleteToken(graphene.Mutation):
     class Arguments:
