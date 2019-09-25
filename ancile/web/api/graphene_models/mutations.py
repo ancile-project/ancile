@@ -107,3 +107,30 @@ class AddApp(graphene.Mutation):
             return AddApp(ok=False, error="App with same name already exists")
         return AddApp(ok=False, error="Insufficient privileges")
 
+
+class AddProvider(graphene.Mutation):
+    class Arguments:
+        provider_type = graphene.String()
+        path_name = graphene.String()
+        display_name = graphene.String()
+        client_id = graphene.String()
+        client_secret = graphene.String()
+        access_token_url = graphene.String()
+        auth_url = graphene.String()
+        extra_params = graphene.String()
+
+    ok = graphene.Boolean()
+    error = graphene.String()
+
+    def mutate(root, info, oauth_type, path_name, display_name, provider_type,
+               client_id=None, client_secret=None, access_token_url=None,
+               auth_url=None):
+        if info.context.user.is_superuser:
+            if not models.DataProvider.objects.filter(display_name=display_name):
+                provider = models.DataProvider(oauth_type, path_name, display_name, provider_type,
+                   client_id, client_secret, access_token_url,auth_url)
+                provider.save()
+                return AddProvider(ok=True)
+            return AddProvider(ok=False, error="DataProvider with same name already exists")
+        return AddProvider(ok=False, error="Insufficient privileges")
+
