@@ -10,6 +10,7 @@ class Mutations(graphene.ObjectType):
     # add
     add_permission_group = AddPermissionGroup.Field()
     add_app = AddApp.Field()
+    add_provider = AddProvider.Field()
 
     # create
     create_permission_group = CreatePermissionGroup.Field()
