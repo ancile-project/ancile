@@ -57,12 +57,13 @@ class App(models.Model):
 
 
 class DataProvider(models.Model):
+    provider_type = models.TextField(default="OAUTH")
     path_name = models.CharField(max_length=128, unique=True)
     display_name = models.TextField(unique=True, blank=True)
-    client_id = models.TextField()
-    client_secret = models.TextField()
-    access_token_url = models.TextField()
-    auth_url = models.TextField()
+    client_id = models.TextField(default=None)
+    client_secret = models.TextField(default=None)
+    access_token_url = models.TextField(default=None)
+    auth_url = models.TextField(default=None)
     extra_params = fields.JSONField(default=dict)
 
     @property
