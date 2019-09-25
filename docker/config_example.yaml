@@ -21,19 +21,3 @@ redis:
     host: redis 
     port: 6379
     db: 1
-
-mail:
-    MAIL_SERVER: "localhost"
-    MAIL_PORT: 8025
-    MAIL_USE_SSL: False
-    MAIL_USERNAME: 
-    MAIL_PASSWORD: 
-    SECURITY_EMAIL_SENDER: "ancile@localhost"
-    SECURITY_EMAIL_SUBJECT_REGISTER: "Welcome to Ancile!"
-    SECURITY_EMAIL_SUBJECT_PASSWORD_RESET: "Ancile password reset instructions"
-    SECURITY_EMAIL_SUBJECT_PASSWORD_NOTICE: "Your Ancile password has been reset"
-    SECURITY_EMAIL_SUBJECT_CONFIRM: "Please confirm your email for Ancile"
-    SECURITY_SEND_REGISTER_EMAIL: False
-    SECURITY_SEND_PASSWORD_CHANGE_EMAIL: False
-    SECURITY_SEND_PASSWORD_RESET_EMAIL: False
-    SECURITY_SEND_PASSWORD_RESET_NOTICE_EMAIL: False
