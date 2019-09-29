@@ -1,7 +1,5 @@
 # Ancile - Use-Based Privacy for applications
 
-Make documentation: `cd docs && make html`
-
 Ancile is a framework that enables control over application's
 data usage with privacy policies. We currently support Python and 
 work with any OAuth service. Essentially, our system is a middleware 
@@ -26,16 +24,19 @@ are permitted. Furthermore, this framework utilizes **reactive** approach meanin
 that after performing transformations on data policy will change. 
 
 ## Use Case
-  
-Let's consider an application that tracks a professor and notifies
-students of professor's location during dedicated office hours.
-The location service collects fine-grained information on 
-user's whereabouts. Unrestricted release of raw data can lead
-to malicious uses where the professors location is accessed after hours 
-or outside of the campus. Ancile can address this problem by defining a policy
-on professor's location data that shares data only at specific hours or 
-at the specific location.
 
+1. **Company's data** -- data collected by the company's internal services such as
+emails, location data, etc. Novel third-party applications propose new services
+such as optimizing workplaces, person/room finders, depression/suicide preventions. 
+However, these services require access to sensitive data, but usually given access
+is too broad for the needs of the applications. For example, a service that
+provides information on nearby available rooms does not need constant access to user
+location data.  Unrestricted 
+release of raw data can lead to malicious uses where the user 
+location is accessed after hours or outside of the office. Ancile can 
+address this problem by defining a policy on user's location data 
+that shares data only at specific hours or at the specific location.
+    
 ## Policy language
 
 Policies define an automata that changes on operations with data. For example, 
