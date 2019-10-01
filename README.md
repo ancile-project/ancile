@@ -1,5 +1,20 @@
 # Ancile - Use-Based Privacy for applications
 
+This project implements the following paper: 
+
+E. Bagdasaryan, G. Berlstein, J. Waterman, E. Birrell, N. Foster, F. Schneider, D. Estrin, 2019
+[Ancile: Enhancing Privacy for Ubiquitous Computing with
+Use-Based Privacy](https://ebagdasa.github.io/assets/files/ancile.pdf), WPES.
+
+### Table of Contents
+1. [Design](#design)
+2. [Use Case](#usecase)
+3. [Policy Language](#policylang)
+4. [Installation](#docs/source/installation.md)
+5. [Contacts]()
+
+## System design <a name="design"></a>
+
 Ancile is a framework that enables control over application's
 data usage with privacy policies. We currently support Python and 
 work with any OAuth service. Essentially, our system is a middleware 
@@ -23,7 +38,7 @@ purposes. Each datapoint in Ancile has a policy that specifies what uses
 are permitted. Furthermore, this framework utilizes **reactive** approach meaning 
 that after performing transformations on data policy will change. 
 
-## Use Case
+## Use Case <a name="usecase"></a>
 
 1. **Company's data** -- data collected by the company's internal services such as
 emails, location data, etc. Novel third-party applications propose new services
@@ -37,7 +52,7 @@ location is accessed after hours or outside of the office. Ancile can
 address this problem by defining a policy on user's location data 
 that shares data only at specific hours or at the specific location.
     
-## Policy language
+## Policy language <a name="policylang"></a>
 
 Policies define an automata that changes on operations with data. For example, 
 applying transformation that fuzzes the location can enable a bigger set of 
@@ -61,4 +76,17 @@ approach that allows to advance the regular expression when calling a command.
 Here are the installation [Instructions](docs/source/installation.md).
 
 We have a development environment running at https://dev.ancile.smalldata.io 
-so please free to explore it. 
+so please free to explore it. There are few tests accounts set up for exploration.
+
+
+## Contacts <a name="contacts"></a>
+
+1. [Eugene Bagdasaryan](https://ebagdasa.github.io/) (eugene at cs.cornell.edu)
+1. [Eleanor Birrell](http://www.cs.cornell.edu/~eleanor/) (ebirrell at pomona.edu)
+
+## Contributors <a name="contributors"></a>
+
+1. Eugene Bagdasaryan
+1. Griffin Berlstein
+1. Mohamad Safadieh
+1. Corin Rose
