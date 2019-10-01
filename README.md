@@ -83,10 +83,10 @@ so please free to explore it. There are few tests accounts set up for exploratio
 
 * [Eugene Bagdasaryan](https://ebagdasa.github.io/) ([eugene@cs.cornell.edu](mailto:eugene@cs.cornell.edu))
 * [Griffin Berlstein](https://github.com/EclecticGriffin)
+* [Mohamad Safadieh](https://moha.md/)
+* [Corin Rose](https://corin.website/)
 * [Jason Waterman](https://www.vassar.edu/faculty/jawaterman/)
 * [Eleanor Birrell](http://www.cs.cornell.edu/~eleanor/)
 * [Nate Foster](https://www.cs.cornell.edu/~jnfoster/)
 * [Fred B. Schneider](https://www.cs.cornell.edu/fbs/)
 * [Deborah Estrin](https://destrin.smalldata.io/)
-* [Mohamad Safadieh](https://moha.md/)
-* [Corin Rose](https://corin.website/)
