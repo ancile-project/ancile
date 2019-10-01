@@ -12,7 +12,7 @@ Use-Based Privacy](https://ebagdasa.github.io/assets/files/ancile.pdf), WPES.
 2. [Use Case](#usecase)
 3. [Policy Language](#policylang)
 4. [Installation](#docs/source/installation.md)
-5. [Contacts]()
+5. [Contributors](#contributors)
 
 ## System design <a name="design"></a>
 
@@ -79,16 +79,14 @@ Here are the installation [Instructions](docs/source/installation.md).
 We have a development environment running at https://dev.ancile.smalldata.io 
 so please free to explore it. There are few tests accounts set up for exploration.
 
-
-## Contacts <a name="contacts"></a>
-
-1. [Eugene Bagdasaryan](https://ebagdasa.github.io/) (eugene at cs.cornell.edu)
-1. [Jason Waterman](https://www.vassar.edu/faculty/jawaterman/)
-1. [Eleanor Birrell](http://www.cs.cornell.edu/~eleanor/)
-
 ## Contributors <a name="contributors"></a>
 
-1. [Eugene Bagdasaryan](https://ebagdasa.github.io/) 
-1. [Griffin Berlstein](https://github.com/EclecticGriffin)
-1. [Mohamad Safadieh](https://moha.md/)
-1. [Corin Rose](https://corin.website/)
+* [Eugene Bagdasaryan](https://ebagdasa.github.io/) ([eugene@cs.cornell.edu](mailto:eugene@cs.cornell.edu))
+* [Griffin Berlstein](https://github.com/EclecticGriffin)
+* [Jason Waterman](https://www.vassar.edu/faculty/jawaterman/)
+* [Eleanor Birrell](http://www.cs.cornell.edu/~eleanor/)
+* [Nate Foster](https://www.cs.cornell.edu/~jnfoster/)
+* [Fred B. Schneider](https://www.cs.cornell.edu/fbs/)
+* [Deborah Estrin](https://destrin.smalldata.io/)
+* [Mohamad Safadieh](https://moha.md/)
+* [Corin Rose](https://corin.website/)
