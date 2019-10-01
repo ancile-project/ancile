@@ -82,11 +82,11 @@ so please free to explore it. There are few tests accounts set up for exploratio
 ## Contacts <a name="contacts"></a>
 
 1. [Eugene Bagdasaryan](https://ebagdasa.github.io/) (eugene at cs.cornell.edu)
-1. [Eleanor Birrell](http://www.cs.cornell.edu/~eleanor/) (ebirrell at pomona.edu)
+1. [Eleanor Birrell](http://www.cs.cornell.edu/~eleanor/)
 
 ## Contributors <a name="contributors"></a>
 
-1. Eugene Bagdasaryan
-1. Griffin Berlstein
-1. Mohamad Safadieh
-1. Corin Rose
+1. [Eugene Bagdasaryan](https://ebagdasa.github.io/) 
+1. [Griffin Berlstein](https://github.com/EclecticGriffin)
+1. [Mohamad Safadieh](https://moha.md/)
+1. [Corin Rose](https://corin.website/)
