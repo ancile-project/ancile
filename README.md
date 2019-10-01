@@ -2,7 +2,8 @@
 
 This project implements the following paper: 
 
-E. Bagdasaryan, G. Berlstein, J. Waterman, E. Birrell, N. Foster, F. Schneider, D. Estrin, 2019
+Eugene Bagdasaryan, Griffin Berlstein, Jason Waterman, Eleanor Birrell, 
+Nate Foster, Fred B. Schneider, Deborah Estrin, 2019
 [Ancile: Enhancing Privacy for Ubiquitous Computing with
 Use-Based Privacy](https://ebagdasa.github.io/assets/files/ancile.pdf), WPES.
 
@@ -82,6 +83,7 @@ so please free to explore it. There are few tests accounts set up for exploratio
 ## Contacts <a name="contacts"></a>
 
 1. [Eugene Bagdasaryan](https://ebagdasa.github.io/) (eugene at cs.cornell.edu)
+1. [Jason Waterman](https://www.vassar.edu/faculty/jawaterman/)
 1. [Eleanor Birrell](http://www.cs.cornell.edu/~eleanor/)
 
 ## Contributors <a name="contributors"></a>
