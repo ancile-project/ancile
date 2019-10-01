@@ -48,12 +48,14 @@ new Vue({
       })
     },
 
-    async getData(query) {
+    async getData(query, args) {
       this.$vs.loading();
 
       let output = {};
 
-      await this.$store.dispatch("query", query)
+      if (args === undefined) args = {};
+
+      await this.$store.dispatch("query", { query, args })
       .then(r => output = r)
       .catch(err => {
         if (err.response.status === 403) {

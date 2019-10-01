@@ -91,7 +91,7 @@ export default {
     getData() {
       const query = `
       {
-        developerApps(id:${this.$route.params.id}) {
+        developerApps(id:$id) {
           name
           description
           token
@@ -109,7 +109,11 @@ export default {
         }
       }
       `
-      this.$root.getData(query)
+
+      const args = {
+        id: this.$route.params.id
+      }
+      this.$root.getData(query, args)
         .then(data => {
           if (data.developerApps.length == 0) {
             this.$root.notify("Application not found");
@@ -129,14 +133,20 @@ export default {
 
       const query = `
         mutation createPermissionGroup {
-          createPermissionGroup(name: "${this.newGroupName}", description: "${this.newGroupDescription}", app: ${this.$route.params.id}) {
+          createPermissionGroup(name: $newGroupName, description: $newGroupDescription, app: $id) {
             ok,
             error
           }
         }
       `
 
-      this.$store.dispatch("query", query)
+      const args = {
+        newGroupName: this.newGroupName,
+        newGroupDescription: this.newGroupDescription,
+        id: this.$route.params.id
+      };
+
+      this.$store.dispatch("query", { query, args })
         .then(resp => {
           if (resp.createPermissionGroup.ok) {
             this.$root.notify("success", "Permission group created successfully");

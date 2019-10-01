@@ -112,12 +112,18 @@ export default {
           callback: (app) => {
             let query = `
               mutation deleteApp {
-                deleteApp(app: ${app.id}) {
+                deleteApp(app: $id) {
                   ok
                 }
               }
               `
-              this.$root.getData(query)
+
+              const args = {
+                id: app.id
+              };
+
+
+              this.$root.getData(query, args)
                 .then(resp => {
                   if (resp.deleteApp.ok) {
                     this.$root.notify("success", "Application deleted.");
@@ -150,13 +156,19 @@ export default {
 
       const query = `
         mutation addPermissionGroup {
-          addPermissionGroup(app: ${this.newApp}, group: ${group}) {
+          addPermissionGroup(app: $app, group: $group) {
             ok
           }
         }
       `
+
+      const args = {
+        app: this.newApp,
+        group
+      };
+
       this.newAppActive = false;
-      this.$root.getData(query)
+      this.$root.getData(query, args)
         .then(resp => {
           if (resp.addPermissionGroup.ok) {
             this.$root.notify("success", "Application added");

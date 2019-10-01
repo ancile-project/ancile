@@ -76,14 +76,19 @@ export default {
 
       const query = `
         mutation addApp {
-          addApp(name: "${this.newAppName}", description: "${this.newAppDescription}") {
+          addApp(name: $name, description: $description) {
             ok,
             error
           }
         }
       `
 
-      this.$store.dispatch("query", query)
+      const args = {
+        name: this.newAppName,
+        description: this.newAppDescription
+      };
+
+      this.$store.dispatch("query", { query, args })
         .then(resp => {
           if (resp.addApp.ok) {
             this.$root.notify("success", "App created successfully.");

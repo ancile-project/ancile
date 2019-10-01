@@ -61,7 +61,7 @@ export default new Vuex.Store({
         });
     },
 
-    async post({}, { endpoint, data }) {
+    async post(_, { endpoint, data }) {
       axios.defaults.headers["X-CSRFToken"] = Vue.cookies.get("csrftoken");
       return await axios.post(endpoint, data);
     },
@@ -80,14 +80,14 @@ export default new Vuex.Store({
       }
     `
 
-      context.dispatch("query", query)
+      context.dispatch("query", {query})
       .then(resp => context.commit('updateUser', resp.currentUser));
     },
 
-    async query(context, query) {
+    async query(context, { query, variables }) {
       const response = await context.dispatch("post", {
         endpoint: '/api/graphene', 
-        data: {query: query}
+        data: {query, variables}
       });
 
       return response.data.data;

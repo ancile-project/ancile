@@ -188,14 +188,18 @@ export default {
           icon: "fa-trash",
           color: "danger",
           callback: (provider) => {
-            let query = `
+            const query = `
             mutation deleteToken {
-              deleteToken(token: ${provider.token.id}) {
+              deleteToken(token: $id {
                 ok
               }
             }
             `
-            this.$root.getData(query)
+
+            const args = {
+              id: provider.token.id
+            };
+            this.$root.getData(query, args)
               .then(resp => {
                 if (resp.deleteToken.ok) {
                   this.$root.notify("success", "Provider removed");
