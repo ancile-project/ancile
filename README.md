@@ -53,6 +53,23 @@ location is accessed after hours or outside of the office. Ancile can
 address this problem by defining a policy on user's location data 
 that shares data only at specific hours or at the specific location.
     
+## Sample workflow
+
+We define three roles: 
+* **Admin** - responsible for configuring Ancile, approving applications, maintaining user policies
+* **Application** -- needs user's sensitive data
+* **User** -- possesses sensitive information available through OAuth endpoints
+
+Once Ancile is installed we assume the following sample workflow: 
+
+1. Admin configures Ancile and connects OAuth-enabled data sources
+1. User registers on Ancile and performs OAuth-authentication with required data sources.
+1. Application developer registers on Ancile 
+1. User picks a policy associated with the application and connected data source
+1. Application sends a Python program that requests user's data 
+1. Ancile executes the program with the associated policy and if successful returns the data
+back to the application otherwise return error.
+    
 ## Policy language <a name="policylang"></a>
 
 Policies define an automata that changes on operations with data. For example, 
@@ -71,6 +88,48 @@ Our policy is defined as a regular expression over an alphabet of operations
 
 We use **[Brzozowski derivatives](https://en.wikipedia.org/wiki/Brzozowski_derivative)**
 approach that allows to advance the regular expression when calling a command.
+Brzozowski defines two key operations: D-step that applies when any command is invoked and 
+E-step that applies only when the application wants to get data back from Ancile.  
+
+### Data Policy Pair
+
+In Ancile data travels with the policy in a special container: *DataPolicyPair*. 
+This object is protected using RestrictedPython framework. To obtain data from the user
+ the developer submits the following program:
+
+```python
+dpp = fetch_data(user=user('user@abcd.com'))
+```
+
+That puts fetched data into the object `dpp`. The developer can only execute 
+functions that are allowed by the policy framework. For example, if the policy specifies:
+`transform.return_to_app` for some commands `transform` and `return_to_app`
+ then the following program will work:
+
+```python
+dpp1 = transform(data=dpp)
+return_to_app(dpp1)
+``` 
+
+Commands `return_to_app` are special commands that have to run only in the end of the policy 
+and if successful Ancile will return data back to the application.  
+
+### Ancile Lib
+
+Ancile supports custom functions as well as normal third-party libraries to be controlled
+by the policies. All custom functions have to be defined under `ancile/lib/`. 
+
+We use three different types of functions:
+
+1. Fetch functions: annotated by `@ExternalDecorator()` functions can get OAuth
+token for the user and perform external calls
+1. Transformation functions: annotated by `@TransformDecorator()` functions take
+`DataPolicyPair` object and return transformed `DataPolicyPair` object
+1. Return functions: annoted by `UseDecorator()` functions take `DataPolicyPair`
+ object and return it back if successful. 
+ 
+ Beyond these functions we as well support conditional and collection operations that we 
+ will introduce later.
 
 ## Installation
 
