@@ -136,7 +136,8 @@ token for the user and perform external calls
 Here are the installation [Instructions](docs/source/installation.md).
 
 We have a development environment running at https://dev.ancile.smalldata.io 
-so please free to explore it. There are few tests accounts set up for exploration.
+so please free to explore it. There are few test accounts set up for exploration.
+`user/user_password` and `app/app_password`.
 
 ## Contributors <a name="contributors"></a>
 
