@@ -89,3 +89,17 @@ def fuzz_location(data, mean, std):
     data['sta_location_x'] += np.random.normal(mean, std)
     data['sta_location_y'] += np.random.normal(mean, std)
     return data
+
+@TransformDecorator()
+def in_gates(data):
+    return {"in_gates": data['location']['building_name'] 
+                        == '2044 - Gates Hall'}
+
+@AggregateDecorator(reduce=True)
+def same_floor(data):
+    floor_name = data[0]['location']['floor_name']
+    building_name = data[0]['location']['building_name']
+
+    return {'same_floor': all((x['location']['floor_name'] == floor_name and
+                               x['location']['building_name'] == building_name
+                               for x in data[1:]))}
