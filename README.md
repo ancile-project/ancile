@@ -135,9 +135,26 @@ token for the user and perform external calls
 
 Here are the installation [Instructions](docs/source/installation.md).
 
+### Development Environment
+
 We have a development environment running at https://dev.ancile.smalldata.io 
 so please free to explore it. There are few test accounts set up for exploration.
 `user/user_password` and `app/app_password`.
+
+1. Login with app credentials
+1. Choose app view on the right-top corner
+1. Click on `Conole` in the left bar
+1. Pick the first app
+1. Specify user as `user` and press Enter
+1. My user has the following policy: `fetch_location.fuzz_location.return`
+1. Put the following program and click `Run`:
+    ```python
+    dpp1 = indoor_location.fetch_location(user=user('user'))
+    dpp2 = indoor_location.fuzz_location(data=dpp1['location'], 
+                                        mean=0, std=0.2)
+    return_to_app(data=dpp2['sta_location_x'])
+    ```
+1. You will get my distorted location.
 
 ## Contributors <a name="contributors"></a>
 
