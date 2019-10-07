@@ -97,9 +97,10 @@ def in_gates(data):
 
 @AggregateDecorator(reduce=True)
 def same_floor(data):
-    floor_name = data[0]['floor_name']
-    building_name = data[0]['building_name']
+    agg = data['aggregated']
+    floor_name = agg[0]['floor_name']
+    building_name = agg[0]['building_name']
 
     return {'same_floor': all((x['floor_name'] == floor_name and
                                x['building_name'] == building_name
-                               for x in data[1:]))}
+                               for x in agg[1:]))}
