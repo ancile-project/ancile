@@ -1,154 +1,169 @@
-# Ancile
+# Ancile - Use-Based Privacy for applications
 
+This project implements the following paper: 
 
-Documentation for Ancile:
+Eugene Bagdasaryan, Griffin Berlstein, Jason Waterman, Eleanor Birrell, 
+Nate Foster, Fred B. Schneider, Deborah Estrin, 2019
+[Ancile: Enhancing Privacy for Ubiquitous Computing with
+Use-Based Privacy](https://ebagdasa.github.io/assets/files/ancile.pdf), WPES.
 
+### Table of Contents
+1. [Design](#design)
+2. [Use Case](#usecase)
+3. [Policy Language](#policylang)
+4. [Installation](#docs/source/installation.md)
+5. [Contributors](#contributors)
 
-# Deployment Process
-There are two ways Ancile can be deployed locally (for development) or on a
-remote deployment for actual use.
+## System design <a name="design"></a>
 
-### Rolling pre-req list:
-- libpq-dev
+Ancile is a framework that enables control over application's
+data usage with privacy policies. We currently support Python and 
+work with any OAuth service. Essentially, our system is a middleware 
+between the data source (e.g. mail server, location data server, etc)
+and some application created by the third-party.  
 
-### Pre-reqs
-0. Tested on: Arch Linux, Ubuntu 18.04, OSX Mojave
-1. Python 3.7+
-    - python3 venv
-    - python devtools
-2. [Docker](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-18-04).
-   Ensure that the `docker run hello-world` command works properly before
-   proceeding
+Our system allows the application to submit an arbitrary Python program that
+requests data from the data source. Ancile upon getting this program fetches
+the policy and access tokens associated with the user and the data source.
+Ancile attempts to execute application's program in a restricted environment
+enforcing the policies. If the program completes without policy violations the 
+result of the program is returned back to the application.
 
-### Remote Pre-reqs
-1. Certbot
-2. NGINX
+![system logo](docs/source/system.png)
 
-### Initial installation
-From the top directory run `bash scripts/full_setup.sh`, this will assemble
-the virtual environment, docker containers, log folder, and configuration
-file templates needed to run ancile. If there are any errors, the process
-can be reversed by running `bash scripts/teardown.sh`. Please note that this
-will delete the configuration files and database. If docker is running
-slowly, the migrations can sometimes fail, if this occurs try running them
-separately with `bash scripts/setup/run_migrations.sh`.
+**Use-based privacy** ([Birrell et al.](https://www.cs.cornell.edu/fbs/publications/UBP.avanance.pdf))
+focuses on preventing harmful uses (**[NYTimes](https://www.nytimes.com/interactive/2018/12/10/business/location-data-privacy-apps.html)**)
+rather than restricting 
+access to data. The application gets to use all necessary data for non-harmful
+purposes. Each datapoint in Ancile has a policy that specifies what uses 
+are permitted. Furthermore, this framework utilizes **reactive** approach meaning 
+that after performing transformations on data policy will change. 
 
-Note: If python 3.7 is not the default python3 installation on the system, adjust the
-`scripts/setup/setup_env.sh` to use `python3.7` instead of `python3` (or the appropriate
-name on the system).
+## Use Case <a name="usecase"></a>
 
-Note2: If you don't have Python3.7 on your machine, use 
-[MiniConda](https://docs.conda.io/en/latest/miniconda.html) (that should give 
-you `base` environment with Python3.7) and activate it `conda activate base`. 
-Then rerun `bash scripts/full_setup.sh` (you might need to do `teardown.sh` 
-first). This is the cheapest way to get dependencies installed and you don't
-need to modify scripts (although you will see an error: `source: not found`)
+1. **Company's data** -- data collected by the company's internal services such as
+emails, location data, etc. Novel third-party applications propose new services
+such as optimizing workplaces, person/room finders, depression/suicide preventions. 
+However, these services require access to sensitive data, but usually given access
+is too broad for the needs of the applications. For example, a service that
+provides information on nearby available rooms does not need constant access to user
+location data.  Unrestricted 
+release of raw data can lead to malicious uses where the user 
+location is accessed after hours or outside of the office. Ancile can 
+address this problem by defining a policy on user's location data 
+that shares data only at specific hours or at the specific location.
+    
+## Sample workflow
 
-### Configuration
-In `config.yaml` change the values for:
-- SECRET_KEY - generate a secure random string
+We define three roles: 
+* **Admin** - responsible for configuring Ancile, approving applications, maintaining user policies
+* **Application** -- needs user's sensitive data
+* **User** -- possesses sensitive information available through OAuth endpoints
 
-#### Local Development
-Nothing needs to be changed from the defaults
+Once Ancile is installed we assume the following sample workflow: 
 
-#### Deployment
-- Change SERVER name to the hostname ex: "ancile.cs.vassar.edu"
-- Change SERVER_DEBUG to false
+1. Admin configures Ancile and connects OAuth-enabled data sources
+1. User registers on Ancile and performs OAuth-authentication with required data sources.
+1. Application developer registers on Ancile 
+1. User picks a policy associated with the application and connected data source
+1. Application sends a Python program that requests user's data 
+1. Ancile executes the program with the associated policy and if successful returns the data
+back to the application otherwise return error.
+    
+## Policy language <a name="policylang"></a>
 
-#### Optional Configs
-- LOGGING (default True): Setting to t/f enables or disables logs
-- CACHE (default False): Setting to t/f enables or disables caching of user info and 
-compiled programs
+Policies define an automata that changes on operations with data. For example, 
+applying transformation that fuzzes the location can enable a bigger set of 
+further operations on this data.
 
-### Create a super user
-From the ancile directory run:
-```
-source .env/bin/activate
-python manage.py createsuperuser
-```
-and follower the prompts.
+Our policy is defined as a regular expression over an alphabet of operations 
+(Python commands) using the following operations:
 
-### Running the server locally
-To run the server locally use `bash scripts/start_dev_server.sh`. This will run the server
-and host the static files, but is not suitable for the deployment. When running this way
-ensure `SERVER_DEBUG` is true. This will also make the \djadmin route available to assist
-in development.
+1. **Sequence** -- `commandA . commandB` declares that the program has two call
+`commandB` only after calling `commandB`. 
+2. **Union** -- `commandA + commandB` either of both commands can be invoked.
+3. **Intersection** -- `commandA & commandB` both commands need to match.
+4. **Iteration** -- `commandA*` command can be repeated multiple times.
+5. **Negation** -- `!commandA` can be any command except `commandA`.
 
-### Setup SSL and NGINX for remote deployment
-For remote setups, Ancile requires the use of a reverse proxy and SSL
-certificates.
+We use **[Brzozowski derivatives](https://en.wikipedia.org/wiki/Brzozowski_derivative)**
+approach that allows to advance the regular expression when calling a command.
+Brzozowski defines two key operations: D-step that applies when any command is invoked and 
+E-step that applies only when the application wants to get data back from Ancile.  
 
-First install
-[NGINX](https://www.nginx.com/resources/wiki/start/topics/tutorials/install/)
-on your system.
-Then install
-[certbot](https://certbot.eff.org/lets-encrypt/ubuntubionic-nginx.html).
+### Data Policy Pair
 
-Once certbot is installed, run `sudo certbot --nginx` to get SSL certificates
-for your domain. This will also add some configuration to NGINX automatically.
+In Ancile data travels with the policy in a special container: *DataPolicyPair*. 
+This object is protected using RestrictedPython framework. To obtain data from the user
+ the developer submits the following program:
 
-Then you need to configure NGINX to redirect traffic to the local server. 
-First ensure that all traffic is redirected to 443 with a block like:
-```
-server {
-	listen 80 default_server;
-	listen [::]:80 default_server;
-
-	server_name YOUR_DOMAIN_GOES_HERE_AND_REPLACES_THIS_TEXT;
-	return 301 https://$server_name$request_uri;
-}
-```
-
-Add the following to your 443 server block which certbot should have created:
-```
-location / {
-		# First attempt to serve request as file, then
-		# as directory, then fall back to displaying a 404.
-                proxy_pass http://localhost:8000;
-                proxy_redirect off;
-                proxy_set_header Host $host;
-                proxy_set_header X-Real-IP $remote_addr;
-                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-                proxy_set_header X-Forwarded-Proto $scheme;
-	}
+```python
+dpp = fetch_data(user=user('user@abcd.com'))
 ```
 
-Finally, we need to serve our static files by directing NGINX to them. Add the following
-to the 443 server block.
-```
-	location /static/ {
-		alias /HOME/ancile/ancile/web/static/;
-	}
-```
+That puts fetched data into the object `dpp`. The developer can only execute 
+functions that are allowed by the policy framework. For example, if the policy specifies:
+`transform.return_to_app` for some commands `transform` and `return_to_app`
+ then the following program will work:
 
-### Collect static files for deployment
-Once NGINX is configured the static files can be collected. This is done by running
-```
-source .env/bin/activate
-python manage.py collectstatic
-```
-from the ancile directory.
+```python
+dpp1 = transform(data=dpp)
+return_to_app(dpp1)
+``` 
 
-### (optional) Setup Supervisor [recommended for remote]
-Setting up a supervisor process to run the server is recommended. First install
-supervisor with `sudo apt-get install supervisor` (on debian based systems),
-for other systems see their [site](http://supervisord.org/installing.html).
+Commands `return_to_app` are special commands that have to run only in the end of the policy 
+and if successful Ancile will return data back to the application.  
 
-Create a new file in `/etc/supervisor/conf.d/` called `ancile`. Edit it such
-that it contains the following:
-```
-[program:ancile]
-command=bash scripts/start_prod_server.sh
-directory=PATH_TO_ANCILE/ancile
-user=YOUR_USER
-autostart=true
-autorestart=true
-stopasgroup=true
-killasgroup=true
-```
+### Ancile Lib
 
-Ancile can now be run with `sudo supervisorctl start ancile` and should reboot
-on system start.
+Ancile supports custom functions as well as normal third-party libraries to be controlled
+by the policies. All custom functions have to be defined under `ancile/lib/`. 
 
-If necessary, the production server can be run in a terminal window with 
-`bash scripts/start_prod_server.sh`
+We use three different types of functions:
+
+1. Fetch functions: annotated by `@ExternalDecorator()` functions can get OAuth
+token for the user and perform external calls
+1. Transformation functions: annotated by `@TransformDecorator()` functions take
+`DataPolicyPair` object and return transformed `DataPolicyPair` object
+1. Return functions: annoted by `UseDecorator()` functions take `DataPolicyPair`
+ object and return it back if successful. 
+ 
+ Beyond these functions we as well support conditional and collection operations that we 
+ will introduce later.
+
+## Installation
+
+Here are the installation [Instructions](docs/source/installation.md).
+
+### Development Environment
+
+We have a development environment running at https://dev.ancile.smalldata.io 
+so please free to explore it. There are few test accounts set up for exploration.
+`user/user_password` and `app/app_password`.
+
+1. Login with app credentials
+1. Choose app view on the right-top corner
+1. Click on `Conole` in the left bar
+1. Pick the first app
+1. Specify user as `user` and press Enter
+1. My user has the following policy: `fetch_location.fuzz_location.return`
+1. Put the following program and click `Run`:
+    ```python
+    dpp1 = indoor_location.fetch_location(user=user('user'))
+    dpp2 = indoor_location.fuzz_location(data=dpp1['location'], 
+                                        mean=0, std=0.2)
+    return_to_app(data=dpp2['sta_location_x'])
+    ```
+1. You will get my distorted location.
+
+## Contributors <a name="contributors"></a>
+
+* [Eugene Bagdasaryan](https://ebagdasa.github.io/) ([eugene@cs.cornell.edu](mailto:eugene@cs.cornell.edu))
+* [Griffin Berlstein](https://github.com/EclecticGriffin)
+* [Mohamad Safadieh](https://moha.md/)
+* [Corin Rose](https://corin.website/)
+* [Jason Waterman](https://www.vassar.edu/faculty/jawaterman/)
+* [Eleanor Birrell](http://www.cs.cornell.edu/~eleanor/)
+* [Nate Foster](https://www.cs.cornell.edu/~jnfoster/)
+* [Fred B. Schneider](https://www.cs.cornell.edu/fbs/)
+* [Deborah Estrin](https://destrin.smalldata.io/)
