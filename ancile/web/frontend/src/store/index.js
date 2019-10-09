@@ -8,8 +8,10 @@ Vue.use(Vuex);
 
 const defaultUser = {
   id: -1,
+  username: "",
   firstName: "",
   lastName: "",
+  email: "",
   isDeveloper: false,
   isSuperuser: false
 }
@@ -80,7 +82,7 @@ export default new Vuex.Store({
       }
     `
 
-      context.dispatch("query", {query})
+      await context.dispatch("query", {query})
       .then(resp => context.commit('updateUser', resp.currentUser));
     },
 

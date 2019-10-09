@@ -7,7 +7,7 @@ class DeleteToken(graphene.Mutation):
 
     ok = graphene.Boolean()
 
-    def mutate(root, info, token):
+    def mutate(self, info, token):
         token = models.Token.objects.get(id=token)
         token.delete()
         return DeleteToken(ok=True)
@@ -18,7 +18,7 @@ class DeleteApp(graphene.Mutation):
 
     ok = graphene.Boolean()
 
-    def mutate(root, info, app):
+    def mutate(self, info, app):
         models.Policy.objects.filter(app__id=app, user=info.context.user).delete()
         return DeleteApp(ok=True)
 
@@ -30,7 +30,7 @@ class AddPermissionGroup(graphene.Mutation):
 
     ok = graphene.Boolean()
 
-    def mutate(root, info, group, app):
+    def mutate(self, info, group, app):
         app = models.App.objects.get(id=app)
         perm_group = models.PermissionGroup.objects.get(id=group, app=app)
 
@@ -97,7 +97,7 @@ class AddApp(graphene.Mutation):
     ok = graphene.Boolean()
     error = graphene.String()
 
-    def mutate(root, info, name, description):
+    def mutate(self, info, name, description):
         if info.context.user.is_developer:
             if not models.App.objects.filter(name=name):
                 app = models.App(name=name, description=description)
@@ -122,7 +122,7 @@ class AddProvider(graphene.Mutation):
     ok = graphene.Boolean()
     error = graphene.String()
 
-    def mutate(root, info, oauth_type, path_name, display_name, provider_type,
+    def mutate(self, info, oauth_type, path_name, display_name, provider_type,
                client_id=None, client_secret=None, access_token_url=None,
                auth_url=None):
         if info.context.user.is_superuser:
@@ -134,3 +134,30 @@ class AddProvider(graphene.Mutation):
             return AddProvider(ok=False, error="DataProvider with same name already exists")
         return AddProvider(ok=False, error="Insufficient privileges")
 
+class UpdateUser(graphene.Mutation):
+    class Arguments:
+        user = graphene.Int()
+        firstName = graphene.String()
+        lastName = graphene.String()
+        email = graphene.String()
+        password = graphene.String()
+    
+    ok = graphene.Boolean()
+    error = graphene.String()
+    
+    def mutate(self, info, user, firstName, lastName, email, password):
+        if info.context.user.id == user:
+            the_user = info.context.user
+            if firstName and lastName and email:
+                the_user.firstName = firstName
+                the_user.lastName = lastName
+                the_user.email = email
+            else:
+                return UpdateUser(ok=False, error="Profile fields cannot be blank")
+            if password:
+                the_user.password = password
+            the_user.save()
+            return UpdateUser(ok=True, error=None)
+        else:
+            return UpdateUser(ok=False, error="You don't have permission to edit this user")
+        

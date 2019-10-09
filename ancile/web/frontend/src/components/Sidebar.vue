@@ -21,11 +21,12 @@
 
       <SidebarItem :inUser="true" :index="2" icon="fa-server" to="/providers" label="Providers" />
       <SidebarItem :inUser="true" :index="3" icon="fa-rocket" to="/apps" label="Apps" />
+      <SidebarItem :inUser="true" :index="4" icon="fa-cog" to="/settings" label="Settings" />
 
       <SidebarItem :inDeveloper="true" :index="1" icon="fa-terminal" to="/dev" label="Console" />
       <SidebarItem :inDeveloper="true" :index="2" icon="fa-rocket" to="/dev/apps" label="Apps" />
 
-      <SidebarItem :index="4" :inUser="true" :inAdmin="true" :inDeveloper="true" :loggedIn="true" icon="fa-sign-out-alt" label="Logout" to="/logout" />
+      <SidebarItem :index="5" :inUser="true" :inAdmin="true" :inDeveloper="true" :loggedIn="true" icon="fa-sign-out-alt" label="Logout" to="/logout" />
 
     </vs-sidebar>
 

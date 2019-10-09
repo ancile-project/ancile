@@ -6,6 +6,7 @@ import Signup from '@/pages/Signup'
 
 import UserApps from '@/pages/user/UserApps'
 import UserProviders from '@/pages/user/UserProviders'
+import UserSettings from '@/pages/user/UserSettings'
 
 import Dev from '@/pages/dev/Dev'
 import DevApps from '@/pages/dev/DevApps'
@@ -13,6 +14,7 @@ import DevAppsTable from '@/pages/dev/DevAppsTable'
 import DevAppView from '@/pages/dev/DevAppView'
 import DevConsole from '@/pages/dev/DevConsole'
 import DevGroupView from '@/pages/dev/DevGroupView'
+
 
 import store from '@/store';
 
@@ -44,6 +46,11 @@ const router = new Router({
       path: '/providers',
       name: 'UserProviders',
       component: UserProviders,
+    },
+    {
+      path: '/settings',
+      name: 'Settings',
+      component: UserSettings,
     },
     {
       path: '/dev',
@@ -88,6 +95,7 @@ const logoutRequired = {
 const loginRequired = {
   '/apps': true,
   '/providers': true,
+  '/settings': true,
   '/logout': true,
   '/dev': true
 };
