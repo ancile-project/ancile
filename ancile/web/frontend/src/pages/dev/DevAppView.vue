@@ -18,6 +18,8 @@
           v-for="(developer, index) in developers"
           :title="developer.username"
           :subtitle="developer.fullName"/>
+        <vs-list-header icon="fa-user-lock" icon-pack="fas" title="Token"/>
+        <vs-list-item class="token" :title="token"/>
       </vs-list>
     </vs-card>
     <Table header="Permission Groups" :data="groups" :fields="fields" :actions="actions" >
@@ -90,7 +92,7 @@ export default {
   methods: {
     getData() {
       const query = `
-      {
+      query($id: Int) {
         developerApps(id:$id) {
           name
           description
@@ -132,7 +134,7 @@ export default {
       this.newGroupButton = false;
 
       const query = `
-        mutation createPermissionGroup {
+        mutation createPermissionGroup($newGroupName: String, $newGroupDescription: String, $id: Int) {
           createPermissionGroup(name: $newGroupName, description: $newGroupDescription, app: $id) {
             ok,
             error
@@ -173,12 +175,20 @@ export default {
 }
 </script>
 
-<style scoped>
+<style lang="scss">
 #app-title {
   padding: 5px;
 }
 
 .data-table, .con-vs-card {
   margin-top: 20px;
+}
+
+.token .list-titles {
+  overflow: hidden;
+
+  .vs-list--title {
+    word-wrap: break-word;
+  }
 }
 </style>

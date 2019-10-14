@@ -86,10 +86,10 @@ export default new Vuex.Store({
       .then(resp => context.commit('updateUser', resp.currentUser));
     },
 
-    async query(context, { query, variables }) {
+    async query(context, { query, args }) {
       const response = await context.dispatch("post", {
         endpoint: '/api/graphene', 
-        data: {query, variables}
+        data: {query, variables: args}
       });
 
       return response.data.data;

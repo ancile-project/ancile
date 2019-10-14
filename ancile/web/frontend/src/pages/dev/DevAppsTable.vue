@@ -75,7 +75,7 @@ export default {
       this.newAppButton = false;
 
       const query = `
-        mutation addApp {
+        mutation addApp($name: String, $description: String) {
           addApp(name: $name, description: $description) {
             ok,
             error
