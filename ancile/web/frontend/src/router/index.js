@@ -8,11 +8,17 @@ import UserApps from '@/pages/user/UserApps'
 import UserProviders from '@/pages/user/UserProviders'
 import UserSettings from '@/pages/user/UserSettings'
 
-import Dev from '@/pages/dev/Dev'
+import SubView from '@/components/SubView'
+
 import DevApps from '@/pages/dev/DevApps'
-import DevAppsTable from '@/pages/dev/DevAppsTable'
+import DevAppsTable from '@/pages/dev/DevAppTable'
 import DevAppView from '@/pages/dev/DevAppView'
 import DevConsole from '@/pages/dev/DevConsole'
+
+import AdminApps from '@/pages/admin/AdminApps'
+import AdminAppsTable from '@/pages/admin/AdminAppTable'
+import AdminAppView from '@/pages/admin/AdminAppView'
+import AdminConsole from '@/pages/admin/AdminConsole'
 
 import store from '@/store';
 
@@ -52,7 +58,7 @@ const router = new Router({
     },
     {
       path: '/dev',
-      component: Dev,
+      component: SubView,
       children: [
         {
           path: "",
@@ -77,6 +83,33 @@ const router = new Router({
         }
       ]
     },
+    {
+      path: '/admin',
+      component: SubView,
+      children: [
+        {
+          path: "",
+          name: 'AdminConsole',
+          component: AdminConsole
+        },
+        {
+          path: "apps",
+          component: AdminApps,
+          children: [
+            {
+              path: "",
+              name: 'AdminAppsTable',
+              component: AdminAppsTable
+            },
+            {
+              path: ":id",
+              name: 'AdminAppView',
+              component: AdminAppView,
+            },
+          ]
+        }
+      ]
+    } 
 
   ]});
 

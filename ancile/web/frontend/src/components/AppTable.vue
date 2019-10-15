@@ -26,6 +26,13 @@ export default {
     Table
   },
 
+  props: {
+    adminMode: {
+      type: Boolean,
+      default: false
+    },
+  },
+
   data() {
     return {
       apps: [],
@@ -43,7 +50,7 @@ export default {
         {
           icon: "fa-angle-right",
           color: "primary",
-          to: (app) => "/dev/apps/" + app.id
+          to: (app) => "apps/" + app.id
         }
       ],
 
@@ -57,9 +64,10 @@ export default {
 
   methods: {
     getData() {
+      const q = this.adminMode ? "allApps" : "developerApps";
       const query = `
         query {
-          developerApps {
+          ${q} {
             id,
             name,
             description
@@ -68,7 +76,7 @@ export default {
       `
 
       this.$root.getData(query)
-        .then(data => this.apps = data.developerApps);
+        .then(data => this.apps = data[q]);
     },
 
     addApp() {

@@ -26,6 +26,9 @@
       <SidebarItem :inDeveloper="true" :index="1" icon="fa-terminal" to="/dev" label="Console" />
       <SidebarItem :inDeveloper="true" :index="2" icon="fa-rocket" to="/dev/apps" label="Apps" />
 
+      <SidebarItem :inAdmin="true" :index="1" icon="fa-terminal" to="/admin" label="Console" />
+      <SidebarItem :inAdmin="true" :index="2" icon="fa-rocket" to="/admin/apps" label="Applications" />
+
       <SidebarItem :index="5" :inUser="true" :inAdmin="true" :inDeveloper="true" :loggedIn="true" icon="fa-sign-out-alt" label="Logout" to="/logout" />
 
     </vs-sidebar>
