@@ -13,8 +13,6 @@ import DevApps from '@/pages/dev/DevApps'
 import DevAppsTable from '@/pages/dev/DevAppsTable'
 import DevAppView from '@/pages/dev/DevAppView'
 import DevConsole from '@/pages/dev/DevConsole'
-import DevGroupView from '@/pages/dev/DevGroupView'
-
 
 import store from '@/store';
 
@@ -75,11 +73,6 @@ const router = new Router({
               name: 'DevAppView',
               component: DevAppView,
             },
-            {
-              path: ":id/group/:groupid",
-              name: 'DevGroupView',
-              component: DevGroupView
-            }
           ]
         }
       ]
