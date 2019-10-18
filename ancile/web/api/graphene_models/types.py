@@ -7,7 +7,8 @@ from ancile.web.api.visualizer import parse_policy
 class UserType(DjangoObjectType):
     class Meta:
         model = models.User
-        only_fields = ('username', 'first_name', 'last_name', 'email', 'is_superuser', 'is_developer',)
+        only_fields = ('username', 'first_name', 'last_name', 'email', 'is_superuser',
+                       'is_developer', 'is_pending_developer')
 
 
 class ScopeType(DjangoObjectType):

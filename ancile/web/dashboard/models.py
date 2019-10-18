@@ -14,8 +14,22 @@ import json
 
 
 class User(AbstractUser):
-    is_developer = models.BooleanField(default=False)
+    developer_status = models.TextField(default="False")
     email = models.EmailField(unique=True)
+
+    @property
+    def is_developer(self):
+        if self.developer_status == "True":
+            return True
+        else:
+            return False
+
+    @property
+    def is_pending_developer(self):
+        if self.developer_status == 'Pending':
+            return True
+        else:
+            return False
 
     @property
     def apps(self):
@@ -272,6 +286,6 @@ class PrivateData(models.Model):
                 fields=["user", "provider"], name="private_data:unique_user_provider"
             )
         ]
-
-class PendingDeveloper(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+#
+# class PendingDeveloper(models.Model):
+#     user = models.OneToOneField(User, on_delete=models.CASCADE)
