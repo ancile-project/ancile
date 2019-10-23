@@ -8,7 +8,12 @@ class UserType(DjangoObjectType):
     class Meta:
         model = models.User
         only_fields = ('username', 'first_name', 'last_name', 'email', 'is_superuser',
-                       'is_developer', 'is_pending_developer')
+                        'is_pending_developer')
+    
+    is_developer = graphene.Boolean()
+    
+    def resolve_is_developer(self, info, **args):
+        return self.is_developer
 
 
 class ScopeType(DjangoObjectType):
