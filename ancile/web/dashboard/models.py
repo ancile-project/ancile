@@ -24,6 +24,10 @@ class User(AbstractUser):
         else:
             return False
 
+    @is_developer.setter
+    def is_developer(self, value):
+        self.developer_status = value
+
     @property
     def is_pending_developer(self):
         if self.developer_status == 'Pending':

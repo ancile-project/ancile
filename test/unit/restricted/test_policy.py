@@ -36,6 +36,8 @@ class FunctionTests(unittest.TestCase):
         self.assertFalse(run_test(program, policy))
 
     def test_intersect_star_fail(self):
+        # @TODO this should pass according to our rules. Need to investigate.
+
         policy = '1&test*'
         program = "dp0=test(data=dp0)"
         self.assertFalse(run_test(program, policy))
