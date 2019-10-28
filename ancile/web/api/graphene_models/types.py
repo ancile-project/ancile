@@ -2,6 +2,7 @@ import graphene
 from graphene_django.types import DjangoObjectType
 from ancile.web.dashboard import models
 from ancile.web.api.visualizer import parse_policy
+from ancile.web.api.graphene_models.wrappers import *
 
 
 class UserType(DjangoObjectType):
@@ -78,11 +79,11 @@ class AppType(DjangoObjectType):
     def resolve_groups(self, info, **args):
         permission_groups = models.PermissionGroup.objects.filter(app=self)
         return permission_groups
-
+   
+    @enforce_either
     def resolve_developers(self, info, **args):
-        if info.context.user.is_developer:
-            return self.developers
+        return self.developers
 
+    @enforce_either
     def resolve_token(self, info, **args):
-        if info.context.user.is_developer:
-            return self.encoded_salt
+        return self.encoded_salt
