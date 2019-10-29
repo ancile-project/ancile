@@ -144,7 +144,7 @@ class PermissionGroup(models.Model):
     name = models.CharField(max_length=128)
     description = models.TextField()
     app = models.ForeignKey(App, on_delete=models.CASCADE)
-    scopes = models.ManyToManyField(Scope)
+    scopes = models.ManyToManyField(Scope, blank=True)
     approved = models.BooleanField(default=False)
 
     class Meta:
