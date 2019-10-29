@@ -14,6 +14,7 @@ class Mutations(graphene.ObjectType):
 
     # create
     create_permission_group = CreatePermissionGroup.Field()
+    create_policy_template = CreatePolicyTemplate.Field()
 
 
 class Query(object):
@@ -22,6 +23,7 @@ class Query(object):
     all_tokens = graphene.List(TokenType)
     all_apps = graphene.List(AppType)
     all_policies = graphene.List(PolicyType)
+    all_permission_groups = graphene.List(PermissionGroupType)
 
     developer_apps = graphene.List(AppType, id=graphene.Int(default_value=-1))
     current_user = graphene.Field(UserType)
@@ -49,3 +51,13 @@ class Query(object):
 
     def resolve_all_policies(self, info, **args):
         return models.Policy.objects.all()
+
+    def resolve_all_permission_groups(self, info):
+        if info.context.user.is_superuser:
+            return models.PolicyTemplate.all()
+        elif info.context.user.is_developer:
+            apps = models.App.objects.filter(developers=info.context.user)
+            permission_groups = list()
+            for app in apps:
+                permission_groups.append(models.PolicyTemplate.filter(app=app))
+            return permission_groups
