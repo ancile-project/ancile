@@ -23,6 +23,37 @@ class DeleteApp(graphene.Mutation):
         return DeleteApp(ok=True)
 
 
+class CreatePolicyTemplate(graphene.Mutation):
+    class Arguments:
+        policy = graphene.String()
+        app = graphene.Int()
+        group = graphene.Int()
+        provider = graphene.Int()
+
+    ok = graphene.Boolean()
+    error = graphene.String()
+
+    def mutate(self, info, policy, app, group, provider):
+        try:
+            app = models.App.objects.get(id=app)
+            group = models.PermissionGroup.objects.get(id=group, app=app)
+            provider = models.DataProvider.objects.get(id=group, app=app)
+        except models.App.DoesNotExist:
+            return CreatePolicyTemplate(ok=False, error="App not found")
+        except models.PermissionGroup.DoesNotExist:
+            return CreatePolicyTemplate(ok=False, error="PermissionGroup not found")
+        except models.DataProvider.DoesNotExist:
+            return CreatePolicyTemplate(ok=False, error="DataProvider not found")
+
+        if info.context.user.is_superuser:
+            policy_template = models.PolicyTemplate(text=policy,
+                                               app=app,
+                                               group=group,
+                                               provider=provider)
+            policy_template.save()
+            return CreatePolicyTemplate(ok=True)
+        return CreatePolicyTemplate(ok=False, error="Insufficient permissions")
+
 class AddPermissionGroup(graphene.Mutation):
     class Arguments:
         app = graphene.Int()
@@ -72,7 +103,7 @@ class CreatePermissionGroup(graphene.Mutation):
     def mutate(self, info, approved, description, name, app):
         try:
             app = models.App.objects.get(id=app)
-        except models.app.DoesNotExist:
+        except models.App.DoesNotExist:
             return CreatePermissionGroup(ok=False, error="App not found")
 
         approved = approved if info.context.user.is_superuser else False
