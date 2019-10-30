@@ -37,6 +37,7 @@ class DataPolicyPair:
         self._created_at = ancile_web_time.get_timestamp()
         self._was_loaded = False
         self._load_key = ''
+        self._execution_log = list()
 
         self._previous_dpp = {}
 
@@ -169,6 +170,7 @@ class DataPolicyPair:
         self._resolve_private_data_keys(command.params)
         self._advance_policy_error(command)
         self._resolve_private_data_values(command.params)
+        self._execution_log.append(str(command))
 
     def _call_transform(self, command: Command, keys='data'):
         """
@@ -203,6 +205,7 @@ class DataPolicyPair:
             raise PolicyError(f'The policy has not finished: {self._policy}. E-step failed.')
         command.params['encryption_keys'] = self._encryption_keys
         command.params['data'] = self._data
+        command.params['execution_log'] = self._execution_log
 
         return command.call()
 

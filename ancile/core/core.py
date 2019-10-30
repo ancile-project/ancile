@@ -43,5 +43,6 @@ def execute(users_secrets, program, app_id=None, app_module=None):
     json_output['stored_items'] = result._stored_keys
     json_output['encrypted_data'] = result._encrypted_data
     json_output['data'] = result._dp_pair_data
+    json_output['execution_log'] = result._execution_logs
     json_output['result'] = 'ok'
     return json_output
