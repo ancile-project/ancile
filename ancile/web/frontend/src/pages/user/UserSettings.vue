@@ -72,7 +72,7 @@ export default {
   computed: {
     allFilled() {
       return this.fieldValues.firstName && this.fieldValues.lastName && this.fieldValues.email;
-    }
+    },
   },
 
   methods: {

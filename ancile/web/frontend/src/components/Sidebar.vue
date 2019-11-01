@@ -28,6 +28,8 @@
 
       <SidebarItem :inAdmin="true" :index="1" icon="fa-terminal" to="/admin" label="Console" />
       <SidebarItem :inAdmin="true" :index="2" icon="fa-rocket" to="/admin/apps" label="Applications" />
+      <SidebarItem :inAdmin="true" :index="3" icon="fa-server" to="/admin/providers" label="Providers" />
+
 
       <SidebarItem :index="5" :inUser="true" :inAdmin="true" :inDeveloper="true" :loggedIn="true" icon="fa-sign-out-alt" label="Logout" to="/logout" />
 
@@ -59,7 +61,7 @@ export default {
   mounted() {
   const el = document.getElementsByClassName("vs-sidebar")[0];
 
-  window.onscroll = (e) => {
+  window.onscroll = () => {
 
     if (window.scrollY > 52) {
         el.classList.add("scrolled");

@@ -19,6 +19,7 @@ import AdminApps from '@/pages/admin/AdminApps'
 import AdminAppsTable from '@/pages/admin/AdminAppTable'
 import AdminAppView from '@/pages/admin/AdminAppView'
 import AdminConsole from '@/pages/admin/AdminConsole'
+import AdminProviders from '@/pages/admin/AdminProviders'
 
 import store from '@/store';
 
@@ -107,6 +108,11 @@ const router = new Router({
               component: AdminAppView,
             },
           ]
+        },
+        {
+          path: "providers",
+          name: "AdminProviders",
+          component: AdminProviders,
         }
       ]
     } 

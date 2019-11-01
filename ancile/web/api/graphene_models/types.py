@@ -53,6 +53,8 @@ class PolicyType(DjangoObjectType):
     def resolve_graph(self, info, **args):
         try:
             return parse_policy(self.text)
+        except:
+            return None
 
 
 class PermissionGroupType(DjangoObjectType):

@@ -30,22 +30,19 @@ export default {
         {
           color: "success",
           icon: "fa-check",
-          callback: u => {
-            this.mutateDev(u.id, true);
-          }
+          callback: u => this.mutateDev(u.id, true)
         },
         {
           color: "danger",
           icon: "fa-times",
-          callback: u => {
-            this.mutateDev(u.id, false);
-          }
+          callback: u => this.mutateDev(u.id, false)
         }
       ],
       data: [],
     }
   },
   methods: {
+
     async getData() {
       const query = `{
         pendingDevelopers {
@@ -61,6 +58,7 @@ export default {
           this.data = resp.pendingDevelopers.map(u => ({...u, fullName: u.firstName + " " + u.lastName}));
         });
     },
+
     async mutateDev(id, approve) {
       const query = `
       mutation mutateDev($id: Int, $approve: Boolean) {
