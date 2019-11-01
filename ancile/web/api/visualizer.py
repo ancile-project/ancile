@@ -2,9 +2,7 @@
     Utilities for visualizing policies using MermaidJS.
 """
 from enum import Enum
-import traceback
 from ancile.core.primitives.policy_helpers.policy_parser import PolicyParser
-from ancile.utils.errors import ParseError
 from ancile.core.primitives.policy_helpers.expressions import *
 from ancile.web.api.colorizer import FuncType, parse_annotated
 
@@ -232,13 +230,7 @@ def parse_policy(policy):
         :param policy: Policy string
         :returns Dictionary with status and parsed_policy (or traceback)
     """
-    try:
-        parsed_policy = parse_annotated(policy)
-    except ParseError:
-        return {
-            "status": "error",
-            "error": traceback.format_exc()
-        }
+    parsed_policy = parse_annotated(policy)
     top_nodes, _ = traverse_tree(parsed_policy)
     mermaid_string = visualize_policies(top_nodes)
 

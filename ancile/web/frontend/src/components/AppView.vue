@@ -32,7 +32,11 @@
       </div>
       <vs-list :key="index" v-for="(group, index) in app.groups">
         <vs-list-header icon="fa-info" color="success" icon-pack="fas" :title="group.name"/>
-        <vs-list-item :title="group-description"/>
+        <vs-list-item teitle="group-description">
+            <vs-button v-if="adminMode" color="primary" icon="fa-plus" icon-pack="fas" @click="newPolicyActive = true">
+            New Policy
+            </vs-button>
+        </vs-list-item>
         <vs-list-item title="Example Policy" subtitle="Example description" >
           <vs-button color="primary" icon="fa-eye" icon-pack="fas">
             View
@@ -47,7 +51,7 @@
       </vs-list>
     </vs-card>
 
-    <vs-popup v-if="adminMode" title="New permission group" :active.sync="newGroupActive">
+    <vs-popup title="New policy group" :active.sync="newGroupActive">
       <div class="popup-form">
         <vs-input v-model="newGroupName" label="Name" />
         <vs-textarea v-model="newGroupDescription" label="Description" />
@@ -56,10 +60,22 @@
         Create
       </vs-button>
     </vs-popup>
+
+    <vs-popup fullscreen title="New policy" :active.sync="newPolicyActive">
+      <div class="popup-form">
+        <vs-textarea v-model="policyValue" label="Value" />
+        <vs-button @click="addPermissionGroup()" :disabled="!policyValue" type="gradient" icon="fa-plus" icon-pack="fas">
+        Create
+        </vs-button>
+        <PolicyVisual :policy="policyValue"/>
+      </div>
+    </vs-popup>
   </div>
 </template>
 
 <script>
+import PolicyVisual from '@/components/PolicyVisual';
+
 export default {
   name: "AppView",
   props: {
@@ -67,6 +83,9 @@ export default {
       type: Boolean,
       default: false
     },
+  },
+  components: {
+    PolicyVisual
   },
   data() {
     return {
@@ -81,7 +100,10 @@ export default {
       newGroupName: "",
       newGroupDescription: "",
       newGroupActive: false,
-      newGroupButton: true
+      newGroupButton: true,
+
+      policyValue: "",
+      newPolicyActive: false
     }
   },
   computed: {

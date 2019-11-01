@@ -1,7 +1,7 @@
 <template>
     <div>
       <Table header="Applications" :data="apps" :fields="fields" :actions="actions">
-        <vs-button radius color="primary" type="filled" icon="fa-plus" icon-pack="fas" @click="newAppActive = true"/>
+        <vs-button v-if="!adminMode" radius color="primary" type="filled" icon="fa-plus" icon-pack="fas" @click="newAppActive = true"/>
       </Table>
 
       <vs-popup title="New application" :active.sync="newAppActive">
