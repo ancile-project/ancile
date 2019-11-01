@@ -40,20 +40,6 @@
 <script>
 import SidebarItem from './SidebarItem.vue';
 
-window.onscroll = (e) => {
-  const el = document.getElementsByClassName("vs-sidebar")[0];
-
-  if (e.pageY > 52) {
-    if (!el.classList.contains("scrolled")) {
-      el.className += " scrolled";
-    }
-  } else {
-    if (el.classList.contains("scrolled")) {
-      el.className = Array.prototype.filter.call(el.classList, c => c !== "scrolled").join(" ");
-    }
-  }
-}
-
 export default {
   data:()=>({
     active:true,
@@ -69,6 +55,18 @@ export default {
         }
       })
     },
+  },
+  mounted() {
+  const el = document.getElementsByClassName("vs-sidebar")[0];
+
+  window.onscroll = (e) => {
+
+    if (window.scrollY > 52) {
+        el.classList.add("scrolled");
+    } else {
+      el.classList.remove("scrolled");
+    }
+  }
   }
 }
 </script>
@@ -77,6 +75,7 @@ export default {
 .vs-sidebar-parent.vs-sidebar {
   top: 52px;
   height: calc(100% - 52px) !important;
+  z-index: 99;
 }
 
 .vs-sidebar-parent.vs-sidebar.scrolled {

@@ -77,4 +77,8 @@ export default {
   width: 20px !important;
   height: 2px !important;
 }
+
+.vs-table--thead, .vs-table--tbody {
+  z-index: 98;
+}
 </style>
