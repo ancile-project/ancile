@@ -15,7 +15,7 @@ class Result:
         return f"<Result obj>"
 
     @UseDecorator()
-    def return_to_app(self, data, encryption_keys,
+    def return_to_app(self, data, encryption_keys=None,
                       execution_log=None,
                       decrypt_field_list=None):
 
@@ -28,5 +28,6 @@ class Result:
         else:
             self._dp_pair_data.append(data)
             self._execution_logs.append(execution_log)
-            encryption_keys.clear()
+            if encryption_keys:
+                encryption_keys.clear()
         return True
