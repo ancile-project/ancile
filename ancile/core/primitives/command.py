@@ -26,7 +26,7 @@ class Command:
         self.scopes = scopes if scopes is not None else list()
         self.params = params if params is not None else dict()
         module = inspect.getmodule(function)
-        if hasattr(module, 'name'):
+        if hasattr(module, 'name') and module.name not in self.scopes:
             self.scopes.append(module.name)
 
     @property
