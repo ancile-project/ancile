@@ -8,26 +8,27 @@ Nate Foster, Fred B. Schneider, Deborah Estrin, 2019
 Use-Based Privacy](https://ebagdasa.github.io/assets/files/ancile.pdf), WPES.
 
 ### Table of Contents
+1. [Introduction](#intro)
 1. [Design](#design)
 2. [Use Case](#usecase)
 3. [Policy Language](#policylang)
 4. [Installation](#docs/source/installation.md)
 5. [Contributors](#contributors)
 
+## Introduction <a name="intro"></a>
+
+Widespread deployment of Intelligent Infrastructure and the Internet of Things (IoT) creates large quantities passively-generated data. This has ushered in the era of data-rich applications, such as location-based services, while posing new privacy threats. This project explores the challenges that arise in applying use-based privacy to such data. We have developed Ancile, a platform that enforces use-based privacy for applications wishing to access users' personal data. We find that Ancile constitutes a functional, performant platform for deploying privacy-enhancing ubiquitous computing applications.
+
 ## System design <a name="design"></a>
 
-Ancile is a framework that enables control over application's
-data usage with privacy policies. We currently support Python and 
-work with any OAuth service. Essentially, our system is a middleware 
-between the data source (e.g. mail server, location data server, etc)
-and some application created by the third-party.  
+Ancile supports the development of privacy-aware applications.  It acts as a trusted computing environment, ensuring users' data is used only in ways that are compliant with a well defined, use-based privacy policy. Anclie enforces this policy as a middleware layer, sitting between personal data sources (e.g., mail server, location data server, etc.) and third-party applications which wish to utilize such data in a privacy compliant manor. We currently support Python and work with any OAuth service.  
 
-Our system allows the application to submit an arbitrary Python program that
-requests data from the data source. Ancile upon getting this program fetches
+Our system allows applications to submit an arbitrary Python program that
+requests data from Ancile registered data sources. Ancile, upon receiving this program, fetches
 the policy and access tokens associated with the user and the data source.
-Ancile attempts to execute application's program in a restricted environment
+Ancile attempts to execute the application's program in a restricted environment,
 enforcing the policies. If the program completes without policy violations the 
-result of the program is returned back to the application.
+result of the program is returned back to the application.  
 
 ![system logo](docs/source/system.png)
 
