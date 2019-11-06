@@ -56,19 +56,23 @@ class PolicyType(DjangoObjectType):
         except:
             return None
 
+class PolicyTemplateType(DjangoObjectType):
+    class Meta:
+        model = models.PolicyTemplate
 
 class PermissionGroupType(DjangoObjectType):
+    policies = graphene.List(PolicyTemplateType)
+    
     class Meta:
         model = models.PermissionGroup
-        only_fields = ("id", "name", "description", "scopes", 'policies')
+        only_fields = ("id", "name", "description", "scopes")
+    
+    def resolve_policies(self, info, **args):
+        return models.PolicyTemplate.filter()
 
     @classmethod
     def get_queryset(cls, queryset, info):
         return queryset.filter(approved=True)
-
-class PolicyTemplateType(DjangoObjectType):
-    class Meta:
-        model = models.PolicyTemplate
 
 class AppType(DjangoObjectType):
     policies = graphene.List(PolicyType)

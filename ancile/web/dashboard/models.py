@@ -92,6 +92,7 @@ class DataProvider(models.Model):
         return {"Authorization": "basic " + basic_header}
 
     def generate_url(self, scopes, base):
+        scopes = [s.value for s in Scope.objects.filter(provider=self)]
         session = OAuth2Session(
             client_id=self.client_id, redirect_uri=self.redirect_url(base), scope=scopes
         )
@@ -144,7 +145,6 @@ class PermissionGroup(models.Model):
     name = models.CharField(max_length=128)
     description = models.TextField()
     app = models.ForeignKey(App, on_delete=models.CASCADE)
-    scopes = models.ManyToManyField(Scope, blank=True)
     approved = models.BooleanField(default=False)
 
     class Meta:
@@ -243,17 +243,11 @@ class Token(models.Model):
         scopes = scopes_raw.split() if scopes_raw else []
 
         for scope in scopes:
-            try:
-                scope_object = Scope.objects.get(
-                    value=scope, provider=self.provider
-                )
-            except Scope.DoesNotExist:
-                scope_object = Scope(
-                    value=scope, provider=self.provider, description=""
-                )
-                scope_object.save()
-            finally:
-                self.scopes.add(scope_object)
+            scope_object = Scope.objects.get(
+                value=scope, provider=self.provider
+            )
+            self.scopes.add(scope_object)
+        
 
     def refresh(self):
         if self.refresh_token:

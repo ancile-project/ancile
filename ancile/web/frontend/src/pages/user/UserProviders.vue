@@ -9,7 +9,7 @@
         <vs-select class="inputx" label="Provider" v-model="newProvider">
           <vs-select-item :key="index" :value="provider" :text="provider.displayName" v-for="(provider, index) in availableProviders" />
         </vs-select>
-        <div>
+        <!-- <div>
           <div class="vs-select--label">
             Available scopes
           </div>
@@ -27,22 +27,22 @@
               {{ scope.simpleName }}
             </vs-chip>
           </vs-chips>
-        </div>
+        </div> -->
 
-        <vs-button :disabled="!addProviderButton || !newProvider.id" @click="authorize()" color="primary" type="gradient" icon="fa-lock" icon-pack="fas">
+        <vs-button :disabled="!newProvider && !addProviderButton" @click="authorize()" color="primary" type="gradient" icon="fa-lock" icon-pack="fas">
           Authorize
         </vs-button>
       </div>
     </vs-popup>
 
-    <vs-popup :title="currentProvider.displayName" :active.sync="viewProviderActive">
+    <!-- <vs-popup :title="currentProvider.displayName" :active.sync="viewProviderActive">
       <h3>
         Scopes
       </h3>   
       <vs-list v-if="currentProvider.id">
         <vs-list-item icon-pack="fas" icon="fa-lock" :key="index" v-for="(scope, index) in currentProvider.token.scopes" :title="scope.simpleName" :subtitle="scope.description"></vs-list-item>
       </vs-list>
-    </vs-popup>
+    </vs-popup> -->
   </div>
 </template>
 
@@ -93,76 +93,32 @@ export default {
           id
           displayName
           pathName
-          scopes {
-            id
-            value
-            simpleName
-            description
-          }
           token {
             id
             expiresAt
-            scopes {
-              id
-              value
-              simpleName
-              description
-            }
           }
         }
       }
     `
     const data = await this.$root.getData(query);
-    this.allProviders = data.allProviders;
+
+    this.authenticatedProviders = data.allProviders
+                                  .filter(provider => provider.token)
+                                  .map(provider => ({...provider, expiry: new Date(provider.token.expiresAt * 1000).toUTCString()}))
+    this.availableProviders = data.allProviders.filter(provider => provider.token);
     },
   },
-  
-  computed: {
-    authenticatedProviders() {
-      return this.allProviders
-        .filter(provider => provider.token)
-        .map(provider => ({...provider, expiry: new Date(provider.token.expiresAt * 1000).toUTCString()}));
-    },
 
-    availableProviders() {
-      return this.allProviders
-        .filter(provider => !provider.token);
-    },
-
-    scopePickerLabel() {
-      if (this.newProvider) {
-        if (this.selectedScopes.length) {
-          return "No scopes left"
-        }
-        return "No scopes available for this provider"
-      }
-      return "Please select a provider"
-    },
-
-    nonSelectedScopes() {
-      return !this.newProvider.id ? [] : this.newProvider.scopes.filter(s => !this.selectedScopes.includes(s));
-    },
-
-    selectedScopes: {
-      get() {
-        return this.allSelectedScopes.filter(scope => this.newProvider.scopes.includes(scope));
-      }
-    }
-
-  },
 
   data() {
     return {
+      authenticatedProviders: {},
+      availableProviders: {},
       addProviderButton: true,
       addProviderActive: false,
-
-      allSelectedScopes: [],
   
       newProvider: {},
-      allProviders: [],
 
-      currentProvider: {},
-      viewProviderActive: false,
 
       fields: [
         {
@@ -176,21 +132,21 @@ export default {
         
       ],
       actions: [
-        {
-          icon: "fa-info",
-          color: "primary",
-          callback: (provider) => {
-            this.currentProvider = provider;
-            this.viewProviderActive = true;
-          }
-        },
+        // {
+        //   icon: "fa-info",
+        //   color: "primary",
+        //   callback: (provider) => {
+        //     this.currentProvider = provider;
+        //     this.viewProviderActive = true;
+        //   }
+        // },
         {
           icon: "fa-trash",
           color: "danger",
           callback: (provider) => {
             const query = `
-            mutation deleteToken {
-              deleteToken(token: $id {
+            mutation deleteToken($id: Int) {
+              deleteToken(token: $id) {
                 ok
               }
             }
@@ -199,7 +155,7 @@ export default {
             const args = {
               id: provider.token.id
             };
-            this.$root.getData(query, args)
+            this.$root.getData(query, {id: provider.token.id})
               .then(resp => {
                 if (resp.deleteToken.ok) {
                   this.$root.notify("success", "Provider removed");
@@ -213,11 +169,11 @@ export default {
       ]
     }
   },
-  mounted() {
-    Array.prototype.forEach.call(document.getElementsByClassName("con-chips--input"), el => {
-      el.disabled = true;
-    });
-  },
+  // mounted() {
+  //   Array.prototype.forEach.call(document.getElementsByClassName("con-chips--input"), el => {
+  //     el.disabled = true;
+  //   });
+  // },
   created() {
     this.getData();
   }
@@ -233,7 +189,7 @@ input[type="text"]:disabled {
   background-color: white;
 }
 
-.no-icon > .con-chips > .con-chips--remove-all {
+/* .no-icon > .con-chips > .con-chips--remove-all {
   display: none !important;
-}
+} */
 </style>
