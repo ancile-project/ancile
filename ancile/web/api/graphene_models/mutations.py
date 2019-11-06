@@ -54,6 +54,42 @@ class CreatePolicyTemplate(graphene.Mutation):
             return CreatePolicyTemplate(ok=True)
         return CreatePolicyTemplate(ok=False, error="Insufficient permissions")
 
+class UpdatePolicyTemplate(graphene.Mutation):
+    class Arguments:
+        policy_template_id = graphene.Int()
+        policy = graphene.String()
+        app = graphene.Int()
+        group = graphene.Int()
+        provider = graphene.Int()
+
+    ok = graphene.Boolean()
+    error = graphene.String()
+
+    def mutate(self, info, policy_template_id, policy=None, app=None, group=None, provider=None):
+        policy_template = models.PolicyTemplate.objects.get(id=policy_template_id)
+        if policy:
+            policy_template.policy = policy
+        if app:
+            try:
+                policy_template.app = models.App.objects.get(id=app)
+            except models.App.DoesNotExist:
+                return UpdatePolicyTemplate(ok=False, error="App not found")
+        if group:
+            try:
+                policy_template.group = models.PermissionGroup.objects.get(id=group, app=app)
+            except models.PermissionGroup.DoesNotExist:
+                return CreatePolicyTemplate(ok=False, error="PermissionGroup not found")
+        if provider:
+            try:
+                policy_template.provider = models.DataProvider.objects.get(id=group, app=app)
+            except models.DataProvider.DoesNotExist:
+                return CreatePolicyTemplate(ok=False, error="DataProvider not found")
+
+        policy_template.save()
+        return CreatePolicyTemplate(ok=True)
+
+
+
 class AddPermissionGroup(graphene.Mutation):
     class Arguments:
         app = graphene.Int()

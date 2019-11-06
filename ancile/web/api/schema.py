@@ -16,6 +16,9 @@ class Mutations(graphene.ObjectType):
     create_permission_group = CreatePermissionGroup.Field()
     create_policy_template = CreatePolicyTemplate.Field()
 
+    update_policy_template = UpdatePolicyTemplate.Field()
+    update_user = UpdateUser.Field()
+
 
 class Query(object):
     all_providers = graphene.List(ProviderType)
