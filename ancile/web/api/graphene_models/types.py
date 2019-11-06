@@ -68,7 +68,7 @@ class PermissionGroupType(DjangoObjectType):
         only_fields = ("id", "name", "description", "scopes")
     
     def resolve_policies(self, info, **args):
-        return models.PolicyTemplate.filter()
+        return models.PolicyTemplate.objects.filter(group=self)
 
     @classmethod
     def get_queryset(cls, queryset, info):

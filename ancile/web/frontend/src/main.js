@@ -12,8 +12,8 @@ new Vue({
 
   methods: {
 
-    async oauth(provider, scopes) {
-      const url = "/oauth/" + provider.pathName + "?scopes=" + scopes.join("|")
+    async oauth(provider) {
+      const url = "/oauth/" + provider.pathName;
       const w = window.open(url);
 
       return new Promise((resolve) => {

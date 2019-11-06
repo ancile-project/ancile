@@ -63,8 +63,11 @@
 
     <vs-popup fullscreen title="New policy" :active.sync="newPolicyActive">
       <div class="popup-form">
+        <vs-select class="inputx" label="Provider" v-model="policyProvider">
+          <vs-select-item :key="provider.id" :value="provider" :text="provider.displayName" v-for="provider in providers" />
+        </vs-select>
         <vs-textarea v-model="policyValue" label="Value" />
-        <vs-button @click="addPermissionGroup()" :disabled="!policyValue" type="gradient" icon="fa-plus" icon-pack="fas">
+        <vs-button @click="addPolicy()" :disabled="!policyValue" type="gradient" icon="fa-plus" icon-pack="fas">
         Create
         </vs-button>
         <PolicyVisual :policy="policyValue"/>
@@ -96,13 +99,16 @@ export default {
         developers: [],
         groups: [],
       },
+      providers: [],
 
       newGroupName: "",
       newGroupDescription: "",
       newGroupActive: false,
       newGroupButton: true,
 
+      currentGroup: {},
       policyValue: "",
+      policyProvider: "",
       newPolicyActive: false
     }
   },
@@ -138,6 +144,10 @@ export default {
             description
           }
         }
+        allProviders {
+          id
+          displayName
+        }
       }
       `
 
@@ -151,6 +161,7 @@ export default {
             this.$router.push("/dev/apps");
           } else {
             this.app = data.developerApps[0];
+            this.providers = data.allProviders;
           }
         })
     },
@@ -189,6 +200,44 @@ export default {
         .then(() => {
           this.getData();
           this.newGroupButton = true;
+        });
+    },
+    addPolicy() {
+      this.newPolicyButton = false;
+
+      const query = `
+        mutation createPolicy($policy: String, $provider: Int, $group: Int, $app: Int) {
+          createPolicy(policy: $policy, provider: $provider, group: $group, app: $app) {
+            ok,
+            error
+          }
+        }
+      `
+
+      const args = {
+        policy: this.policyValue,
+        group: this.currentGroup.id,
+        provider: this.currentProvider.id,
+        app: this.$route.params.id
+      };
+
+      this.$store.dispatch("query", { query, args })
+        .then(resp => {
+          if (resp.createPermissionGroup.ok) {
+            this.$root.notify("success", "Policy created successfully");
+            this.newPolicyActive = false;
+            this.policyValue = "";
+            this.provider = {};
+          } else {
+            this.$root.notify("fail", resp.createPolicy.error);
+          }
+        })
+        .catch(() => {
+          this.$root.notify("fail", "Connection error");
+        })
+        .then(() => {
+          this.getData();
+          this.newPolicyButton = true;
         });
     }
   },

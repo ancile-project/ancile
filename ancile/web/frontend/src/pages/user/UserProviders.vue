@@ -67,7 +67,7 @@ export default {
     authorize() {
       const { id } = this.newProvider;
       this.addProviderButton = false;
-      this.$root.oauth(this.newProvider, this.selectedScopes.map(scope => scope.value))
+      this.$root.oauth(this.newProvider)
         .then(() => {
           this.addProviderButton = true;
           this.addProviderActive = false;
@@ -105,14 +105,14 @@ export default {
     this.authenticatedProviders = data.allProviders
                                   .filter(provider => provider.token)
                                   .map(provider => ({...provider, expiry: new Date(provider.token.expiresAt * 1000).toUTCString()}))
-    this.availableProviders = data.allProviders.filter(provider => provider.token);
+    this.availableProviders = data.allProviders.filter(provider => !provider.token);
     },
   },
 
 
   data() {
     return {
-      authenticatedProviders: {},
+      authenticatedProviders: [],
       availableProviders: {},
       addProviderButton: true,
       addProviderActive: false,
@@ -151,10 +151,6 @@ export default {
               }
             }
             `
-
-            const args = {
-              id: provider.token.id
-            };
             this.$root.getData(query, {id: provider.token.id})
               .then(resp => {
                 if (resp.deleteToken.ok) {

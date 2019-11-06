@@ -4,10 +4,10 @@
       <vs-button radius color="primary" type="filled" icon="fa-plus" icon-pack="fas" @click="newAppActive = true"/>
     </Table>
 
-    <vs-popup :title="currentApp.name" :active.sync="viewAppActive">
+    <vs-popup :title="viewApp.name" :active.sync="viewAppActive">
       <vs-row vs-justify="center">
         <vs-col type="flex" vs-justify="center" vs-align="center" vs-w="12">
-          <vs-card :key="provider.id" v-for="provider in currentApp.providers">
+          <vs-card :key="provider.id" v-for="provider in viewApp.providers">
             <div slot="header">
               <h3>
                 {{ provider.displayName }}
@@ -51,7 +51,6 @@
 <script>
 import PolicyVisual from '@/components/PolicyVisual.vue'; 
 import Table from '@/components/Table.vue';
-import mermaid from 'mermaid';
 
 export default {
   name: 'UserApps',
@@ -66,8 +65,8 @@ export default {
 
       authorizedProviders: {},
 
-      newApp: {},
-      newGroup: {},
+      newApp: null,
+      newGroup: null,
       newAppActive: false,
       addAppButton: false,
       authButtons: false,
@@ -120,7 +119,7 @@ export default {
       if (!this.newApp || !this.newGroup || this.addAppButton) return true;
 
       for (let provider in this.newGroup.providers) {
-        if (authorizedProvder[provider.id]) return true;
+        if (this.authorizedProvder[provider.id]) return true;
       }
       return false;
     }
@@ -158,15 +157,9 @@ export default {
     },
 
     authorize(provider) {
-      let url = "/oauth/"
-
       this.authButtons = true;
-
-      url += provider.pathName;
-      let w = window.open(url);
-      
-      let refreshId =  setInterval(() => {
-        if (w.closed) {
+      this.$root.oauth(provider)
+        .then(() => {
           this.authButtons = false;
           this.getData().then(() => {
               if (this.authorizedProviders[provider.id]) {
@@ -175,18 +168,15 @@ export default {
 
               this.$root.notify("fail", "Provider authentication failed");
           });
-
-          clearInterval(refreshId);
-        }
-      }, 1000);
+        });
     },
 
     async getData() {
-      this.addedApps = {};
-      this.availableApps = {};
-      this.currentApp = "";
-      this.newApp = "";
-      this.newGroup = -1;
+      this.addedApps = [];
+      this.availableApps = [];
+      this.viewApp = {};
+      this.newApp = null;
+      this.newGroup = null;
 
       let query = `
       {
@@ -195,7 +185,7 @@ export default {
           name
           description
           policies {
-            value
+            text
             provider {
               id
               displayName
@@ -207,7 +197,7 @@ export default {
             name
             description
             policies {
-              value
+              text
               provider {
                 id
                 displayName
@@ -247,10 +237,10 @@ export default {
     },
 
     authButtonColor(provider) {
-      return authorizedProviders[provider.id] ? "success" : "primary";
+      return this.authorizedProviders[provider.id] ? "success" : "primary";
     },
     authButtonMessage(provider) {
-      return authorizedProviders[provider.id] ? "Auhtorized" : "Not authorized";
+      return this.authorizedProviders[provider.id] ? "Auhtorized" : "Not authorized";
     },
   },
   created() {

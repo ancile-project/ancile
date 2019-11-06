@@ -91,7 +91,7 @@ class DataProvider(models.Model):
         )
         return {"Authorization": "basic " + basic_header}
 
-    def generate_url(self, scopes, base):
+    def generate_url(self, base):
         scopes = [s.value for s in Scope.objects.filter(provider=self)]
         session = OAuth2Session(
             client_id=self.client_id, redirect_uri=self.redirect_url(base), scope=scopes
