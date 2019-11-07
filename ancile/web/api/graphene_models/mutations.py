@@ -78,15 +78,15 @@ class UpdatePolicyTemplate(graphene.Mutation):
             try:
                 policy_template.group = models.PermissionGroup.objects.get(id=group, app=app)
             except models.PermissionGroup.DoesNotExist:
-                return CreatePolicyTemplate(ok=False, error="PermissionGroup not found")
+                return UpdatePolicyTemplate(ok=False, error="PermissionGroup not found")
         if provider:
             try:
                 policy_template.provider = models.DataProvider.objects.get(id=group, app=app)
             except models.DataProvider.DoesNotExist:
-                return CreatePolicyTemplate(ok=False, error="DataProvider not found")
+                return UpdatePolicyTemplate(ok=False, error="DataProvider not found")
 
         policy_template.save()
-        return CreatePolicyTemplate(ok=True)
+        return UpdatePolicyTemplate(ok=True)
 
 
 

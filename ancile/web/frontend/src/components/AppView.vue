@@ -37,7 +37,7 @@
             New Policy
             </vs-button>
         </vs-list-item>
-        <vs-list-item title="Example Policy" subtitle="Example description" >
+        <vs-list-item v-for="policy in group.policies" :key="policy.id" :title="policy.text" :subtitle="policy.provider.displayName">
           <vs-button color="primary" icon="fa-eye" icon-pack="fas">
             View
           </vs-button>
@@ -142,6 +142,13 @@ export default {
             id
             name
             description
+            policies {
+              text
+              id
+              provider {
+                displayName
+              }
+            }
           }
         }
         allProviders {
@@ -206,8 +213,8 @@ export default {
       this.newPolicyButton = false;
 
       const query = `
-        mutation createPolicy($policy: String, $provider: Int, $group: Int, $app: Int) {
-          createPolicy(policy: $policy, provider: $provider, group: $group, app: $app) {
+        mutation createPolicyTemplate($policy: String, $provider: Int, $group: Int, $app: Int) {
+          createPolicyTemplate(policy: $policy, provider: $provider, group: $group, app: $app) {
             ok,
             error
           }
@@ -217,7 +224,7 @@ export default {
       const args = {
         policy: this.policyValue,
         group: this.currentGroup.id,
-        provider: this.currentProvider.id,
+        provider: this.policyProvider.id,
         app: this.$route.params.id
       };
 
