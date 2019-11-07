@@ -32,10 +32,10 @@
       </div>
       <vs-list :key="index" v-for="(group, index) in app.groups">
         <vs-list-header icon="fa-info" color="success" icon-pack="fas" :title="group.name"/>
-        <vs-list-item teitle="group-description">
-            <vs-button v-if="adminMode" color="primary" icon="fa-plus" icon-pack="fas" @click="newPolicyActive = true">
-            New Policy
-            </vs-button>
+        <vs-list-item :title="group.description">
+          <vs-button v-if="adminMode" color="primary" icon="fa-plus" icon-pack="fas" @click="newPolicyActive = true; currentGroup = group;">
+          New Policy
+          </vs-button>
         </vs-list-item>
         <vs-list-item v-for="policy in group.policies" :key="policy.id" :title="policy.text" :subtitle="policy.provider.displayName">
           <vs-button color="primary" icon="fa-eye" icon-pack="fas">
@@ -230,13 +230,13 @@ export default {
 
       this.$store.dispatch("query", { query, args })
         .then(resp => {
-          if (resp.createPermissionGroup.ok) {
+          if (resp.createPolicyTemplate.ok) {
             this.$root.notify("success", "Policy created successfully");
             this.newPolicyActive = false;
             this.policyValue = "";
             this.provider = {};
           } else {
-            this.$root.notify("fail", resp.createPolicy.error);
+            this.$root.notify("fail", resp.createPolicyTemplate.error);
           }
         })
         .catch(() => {

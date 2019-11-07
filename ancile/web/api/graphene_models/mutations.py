@@ -38,7 +38,7 @@ class CreatePolicyTemplate(graphene.Mutation):
         try:
             app = models.App.objects.get(id=app)
             group = models.PermissionGroup.objects.get(id=group, app=app)
-            provider = models.DataProvider.objects.get(id=group, app=app)
+            provider = models.DataProvider.objects.get(id=provider)
         except models.App.DoesNotExist:
             return CreatePolicyTemplate(ok=False, error="App not found")
         except models.PermissionGroup.DoesNotExist:
