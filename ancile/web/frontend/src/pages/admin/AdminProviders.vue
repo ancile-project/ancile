@@ -8,10 +8,12 @@
       <div class="popup-form">
         <vs-input v-model="currentProvider.displayName" label="Name" />
         <vs-input v-model="currentProvider.pathName" label="Path" />
-        <vs-input label="Client ID" />
-        <vs-input label="Client Secret" />
-        <vs-button :disabled="addProviderButton" @click="updateProvider()" color="primary" type="gradient" icon="fa-lock" icon-pack="fas">
-          Authorize
+        <vs-input v-model="currentProvider.clientId" label="Client ID" />
+        <vs-input v-model="currentProvider.clientSecret" label="Client Secret" />
+        <vs-input v-model="currentProvider.accessTokenUrl" label="Token URL" />
+        <vs-input v-model="currentProvider.authUrl" label="Authorization URL" />
+        <vs-button :disabled="!addProviderButton && !addProviderButtonActive" @click="addProvider()" color="primary" type="gradient" icon="fa-plus" icon-pack="fas">
+          Add
         </vs-button>
       </div>
     </vs-popup>
@@ -31,16 +33,55 @@ export default {
 
   methods: {
 
-    updateProvider() {
+    addProvider() {
+      this.addProviderButtonActive = false;
+      const query = `
+        mutation addProvider($displayName: String,
+                    $pathName: String,
+                    $authUrl: String,
+                    $accessTokenUrl: String,
+                    $clientId: String,
+                    $clientSecret: String,
+                    $providerType: String)
+          {
+            addProvider(displayName: $displayName,
+                        pathName: $pathName,
+                        authUrl: $authUrl,
+                        accessTokenUrl: $accessTokenUrl,
+                        clientId: $clientId,
+                        clientSecret: $clientSecret,
+                        providerType: $providerType)
+              {
+                ok,
+                error
+              }
+          }
+      `
 
+      const args = {...this.currentProvider, providerType: 'OAUTH'}
+    
+
+      this.$store.dispatch("query", { query, args })
+        .then(resp => {
+          if (resp.addProvider.ok) {
+            this.$root.notify("success", "Provider created successfully.");
+            this.addProviderActive = false;
+            this.currentProvider = {};
+          } else {
+            this.$root.notify("fail", resp.addProvider.error);
+          }
+        })
+        .catch(() => {
+          this.$root.notify("fail", "Connection error.");
+        })
+        .then(() => {
+          this.getData();
+          this.addProviderButtonActive = true;
+        });
     },
 
     addProviderPopup() {
-      this.currentProvider = {
-        id: -1,
-        displayName: "",
-        pathName: ""
-      }
+      this.currentProvider = {}
 
       this.addProviderActive = true;
     },
@@ -51,15 +92,12 @@ export default {
     },
 
     deleteProvider(provider) {
-      const query = ``
-
-      const args = {
-        id: provider.id
-      };
+      const query = ``;
+      const args = {id: provider.id};
 
       this.$root.getData(query, args)
         .then(resp => {
-          if (resp.deleteToken.ok) {
+          if (resp.deleteProvider.ok) {
             this.$root.notify("success", "Provider removed");
           } else {
             this.$root.notify("fail", "An error has occurred");
@@ -85,6 +123,10 @@ export default {
           id
           displayName
           pathName
+          authUrl
+          accessTokenUrl
+          clientId
+          clientSecret
           scopes {
             id
             value
@@ -121,6 +163,7 @@ export default {
       providers: [],
       currentProvider: {},
       addProviderActive: false,
+      addProviderButtonActive: true,
 
       fields: [
         {
@@ -129,11 +172,11 @@ export default {
         }
       ],
       actions: [
-        {
-          icon: "fa-edit",
-          color: "primary",
-          callback: this.editProviderPopup
-        },
+        // {
+        //   icon: "fa-edit",
+        //   color: "primary",
+        //   callback: this.editProviderPopup
+        // },
         {
           icon: "fa-trash",
           color: "danger",

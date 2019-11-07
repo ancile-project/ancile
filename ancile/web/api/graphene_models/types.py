@@ -36,6 +36,22 @@ class ProviderType(DjangoObjectType):
         model = models.DataProvider
         exclude_fields = ('clientId', 'clientSecret', 'accessTokenUrl', 'authUrl')
 
+    @enforce_admin
+    def resolve_client_id(self, info, **args):
+        return self.client_id
+
+    @enforce_admin
+    def resolve_client_secret(self, info, **args):
+        return self.client_secret
+
+    @enforce_admin
+    def access_token_url(self, info, **args):
+        return self.access_token_url
+
+    @enforce_admin
+    def auth_url(self, info, **args):
+        return self.auth_url
+
     def resolve_scopes(self, info, **args):
         return models.Scope.objects.filter(provider=self)
 

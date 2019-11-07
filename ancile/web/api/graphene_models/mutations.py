@@ -189,13 +189,19 @@ class AddProvider(graphene.Mutation):
     ok = graphene.Boolean()
     error = graphene.String()
 
-    def mutate(self, info, oauth_type, path_name, display_name, provider_type,
+    def mutate(self, info, path_name, display_name, provider_type,
                client_id=None, client_secret=None, access_token_url=None,
                auth_url=None):
         if info.context.user.is_superuser:
             if not models.DataProvider.objects.filter(display_name=display_name):
-                provider = models.DataProvider(oauth_type, path_name, display_name, provider_type,
-                   client_id, client_secret, access_token_url,auth_url)
+                provider = models.DataProvider(
+                    provider_type=provider_type,
+                    path_name=path_name,
+                    display_name=display_name,
+                    client_id=client_id,
+                    client_secret=client_secret,
+                    access_token_url=access_token_url,
+                    auth_url=auth_url)
                 provider.save()
                 return AddProvider(ok=True)
             return AddProvider(ok=False, error="DataProvider with same name already exists")
