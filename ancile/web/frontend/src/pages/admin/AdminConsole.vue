@@ -62,8 +62,10 @@ export default {
     async mutateDev(id, approve) {
       const query = `
       mutation mutateDev($id: Int, $approve: Boolean) {
-        mutateDev(user: $id, approve: $approve) {
-          ok        }
+        updateUser(user: $id, isDeveloper: $approve) {
+          ok
+          error
+        }
       }
       `
 
@@ -76,15 +78,21 @@ export default {
 
       this.$root.getData(query, args)
         .then(resp => {
-          if (resp.mutateDev.ok) {
+          if (resp.updateUser.ok) {
             this.$root.notify("success", "Developer application " + msg);
+          } else {
+            this.$root.notify("error", this.resp.updateUser.error);
           }
         })
         .catch(() => {
             this.$root.notify("fail", "An error has occurred.");
           }
-        );
-    }
+        )
+        .then(this.getData);
+    },
+  },
+  created() {
+    this.getData();
   }
 }
 </script>

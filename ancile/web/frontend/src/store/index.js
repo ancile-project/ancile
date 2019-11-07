@@ -72,12 +72,14 @@ export default new Vuex.Store({
       const query = `
       {
         currentUser {
+          id
           username
           firstName
           lastName
           email
           isSuperuser
           isDeveloper
+          isPendingDeveloper
         }
       }
     `

@@ -1,5 +1,6 @@
 import graphene
 from ancile.web.dashboard import models
+from django.contrib.auth.hashers import check_password
 
 class DeleteToken(graphene.Mutation):
     class Arguments:
@@ -210,27 +211,40 @@ class AddProvider(graphene.Mutation):
 class UpdateUser(graphene.Mutation):
     class Arguments:
         user = graphene.Int()
-        firstName = graphene.String()
-        lastName = graphene.String()
+        first_name = graphene.String()
+        last_name = graphene.String()
         email = graphene.String()
-        password = graphene.String()
-    
+        old_password = graphene.String()
+        new_password = graphene.String()
+        pending_developer = graphene.Boolean()
+        is_developer = graphene.Boolean()
+
     ok = graphene.Boolean()
     error = graphene.String()
     
-    def mutate(self, info, user, firstName, lastName, email, password):
-        if info.context.user.id == user:
-            the_user = info.context.user
-            if firstName and lastName and email:
-                the_user.firstName = firstName
-                the_user.lastName = lastName
+    def mutate(self, info, user, first_name=None, last_name=None, email=None, old_password=None, new_password=None, pending_developer=None, is_developer=None):
+        if info.context.user.is_superuser or info.context.user.id == user:
+            users = models.User.objects.filter(id=user)
+            if not users:
+                return UpdateUser(ok=False, error="User not found")
+            the_user = users[0]
+            if first_name and last_name and email:
+                the_user.first_name = first_name
+                the_user.last_name = last_name
                 the_user.email = email
-            else:
+            elif pending_developer is None and is_developer is None:
                 return UpdateUser(ok=False, error="Profile fields cannot be blank")
-            if password:
-                the_user.password = password
+
+            if is_developer != None and info.context.user.is_superuser:
+                the_user.is_developer = str(is_developer)
+            if pending_developer and not the_user.is_developer:
+                the_user.is_developer = "Pending"
+
+            if new_password:
+                if check_password(old_password, info.context.user.password):
+                    the_user.password = new_password
+                return UpdateUser(ok=False, error="Incorrect old password")
             the_user.save()
             return UpdateUser(ok=True, error=None)
         else:
             return UpdateUser(ok=False, error="You don't have permission to edit this user")
-        

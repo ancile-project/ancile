@@ -8,13 +8,17 @@ from ancile.web.api.graphene_models.wrappers import *
 class UserType(DjangoObjectType):
     class Meta:
         model = models.User
-        only_fields = ('username', 'first_name', 'last_name', 'email', 'is_superuser',
-                        'is_pending_developer')
+        only_fields = ('id', 'username', 'first_name', 'last_name', 'email', 'is_superuser',
+                        )
     
     is_developer = graphene.Boolean()
+    is_pending_developer = graphene.Boolean()
     
     def resolve_is_developer(self, info, **args):
         return self.is_developer
+    
+    def resolve_is_pending_developer(self, info, **args):
+        return self.is_pending_developer
 
 
 class ScopeType(DjangoObjectType):

@@ -29,10 +29,13 @@
           <div class="dev-status" v-if="$store.state.user.isDeveloper"> 
             You are a developer.
           </div>
+          <div class="dev-status" v-else-if="$store.state.user.isPendingDeveloper"> 
+            Your developer application is pending.
+          </div>
           <div class="dev-status" v-else> 
             You are not a developer.
           </div>
-          <vs-button @click="sendForm()" :disabled='$store.state.user.isDeveloper' type="gradient">Apply</vs-button>
+          <vs-button @click="becomeDeveloper()" :disabled='$store.state.user.isDeveloper || $store.state.user.isPendingDeveloper' type="gradient">Apply</vs-button>
         </vs-card>
       </vs-col>
     </vs-row>
@@ -76,16 +79,55 @@ export default {
   },
 
   methods: {
+    query(query, variables) {
+      const args = {...variables, user: this.$store.state.user.id}
+      this.$store.dispatch("query", { query, args })
+        .then(resp => {
+          if (resp.updateUser.ok) {
+            this.$root.notify("success", "Profile updated successfully");
+          } else {
+            this.$root.notify("fail", resp.updateUser.error);
+          }
+        })
+        .catch(() => {
+          this.$root.notify("fail", "Connection error");
+        })
+        .then(() => {
+          this.updateUserData();
+          this.buttonOff = false;
+        });
+    },
+    becomeDeveloper() {
+      const query = `
+      mutation becomeDeveloper($user: Int) {
+        updateUser(user: $user, pendingDeveloper: true) {
+          ok
+          error
+        }
+      }`
+      this.query(query, {});
+    },
+
+
+
     sendForm() {
       const { firstName, email, lastName, oldPassword, newPassword1, newPassword2 } = this.fieldValues;
-
       this.errors = {};
+      this.buttonOff = true;
 
-      const payload = {
+      const query = `mutation updateUser($user: Int, $firstName: String, $lastName: String, $email: String, $oldPassword: String, $newPassword: String) {
+        updateUser(user: $user, firstName: $firstName, lastName: $lastName, email: $email, oldPassword: $oldPassword, newPassword: $newPassword) {
+          ok
+          error
+        }
+      }`
+
+      const args = {
         firstName,
         lastName,
         email
       };
+
 
       if (newPassword1 || newPassword2) {
         let error = false;
@@ -101,23 +143,29 @@ export default {
 
         if (error) return;
 
-        payload.oldPassword = oldPassword;
-        payload.newPassword = newPassword1;
+        args.oldPassword = oldPassword;
+        args.newPassword = newPassword1;
+        
       }
 
+      this.query(query, args);
+
+    },
+    updateUserData() {
+      this.$store.dispatch("updateUserData")
+        .then(() => {
+          const {firstName, lastName, email} = this.$store.state.user;
+          this.fieldValues = {
+            ...this.fieldValues,
+            firstName,
+            lastName,
+            email
+          }
+      })
     }
   },
   mounted() {
-    if (!this.$store.state.user.username) this.$store.dispatch("updateUserData")
-    .then(() => {
-      const {username, firstName, lastName, email} = this.$store.state.user;
-      this.fieldValues = {
-        ...this.fieldValues,
-        firstName,
-        lastName,
-        email
-      }
-    })
+    if (!this.$store.state.user.username) this.updateUserData();
   }
 
 }

@@ -30,6 +30,7 @@ class Query(object):
 
     developer_apps = graphene.List(AppType, id=graphene.Int(default_value=-1))
     current_user = graphene.Field(UserType)
+    pending_developers = graphene.List(UserType)
 
     def resolve_all_providers(self, info, **args):
         return models.DataProvider.objects.all()
@@ -64,3 +65,6 @@ class Query(object):
             for app in apps:
                 permission_groups.append(models.PolicyTemplate.filter(app=app))
             return permission_groups
+    
+    def resolve_pending_developers(self, info):
+        return models.User.objects.filter(developer_status="Pending")
