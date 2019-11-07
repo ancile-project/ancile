@@ -18,6 +18,8 @@ class Mutations(graphene.ObjectType):
 
     update_policy_template = UpdatePolicyTemplate.Field()
     update_user = UpdateUser.Field()
+    
+    update_scope = UpdateScope.Field()
 
 
 class Query(object):

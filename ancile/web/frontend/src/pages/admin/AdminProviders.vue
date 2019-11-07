@@ -18,6 +18,21 @@
       </div>
     </vs-popup>
 
+    <vs-popup title="Manage scopes" :active.sync="editScopePopupActive">
+      <div class="popup-form">
+        <vs-input v-model="newScope.simpleName" label="Name" />
+        <vs-input v-model="newScope.value" label="Value" />
+        <vs-button :disabled="!addScopeButton && !addScopeButtonActive" @click="updateScope(newScope, currentProvider, 'ADD')" color="primary" type="gradient" icon="fa-plus" icon-pack="fas">
+          Add
+        </vs-button>
+        <vs-list-item v-for="scope in currentProvider.scopes" :key="scope.id" :title="scope.simpleName" :subtitle="scope.value">
+          <vs-button @click="updateScope(scope, currentProvider, 'DELETE')" color="red" icon="fa-eye" icon-pack="fas">
+            Delete
+          </vs-button>
+        </vs-list-item>
+      </div>
+    </vs-popup>
+
   </div>
 </template>
 
@@ -139,11 +154,56 @@ export default {
     const data = await this.$root.getData(query);
     this.providers = data.allProviders;
     },
+
+    updateScope(scope, provider, mode) {
+      this.addScopeButtonActive = false;
+      const query = `
+      mutation updateScope($scope: Int, $provider: Int, $mode: String, $value: String, $simpleName: String) {
+        updateScope(scope: $scope, provider: $provider, value: $value, simpleName: $simpleName, mode: $mode) {
+          ok
+          error
+        }
+      }
+      `
+      const args = {
+        scope: scope.id,
+        simpleName: scope.simpleName,
+        value: scope.value,
+        provider: provider.id,
+        mode
+      }
+
+      this.$store.dispatch("query", {query, args})
+        .then(resp => {
+          if (resp.updateScope.ok) {
+            this.$root.notify("success", "Successfully added");
+          } else {
+            this.$root.notify("fail", resp.updateScope.error);
+          }
+        })
+        .catch(() => {
+          this.$root.notify("fail", "Connection error")
+        })
+        .then(() => {
+          this.addScopeButtonActive = false;
+          this.getData().then(() => {
+            this.providers.forEach(prov => {
+              if (prov.id == provider.id) {
+                this.currentProvider = prov;
+              }
+            })
+          })
+        })
+    },
+
   },
   
   computed: {
     addProviderButton() {
       return this.currentProvider.pathName && this.currentProvider.displayName;
+    },
+    addScopeButton() {
+      return this.newScope.simpleName && this.newScope.value;
     },
 
     scopePickerLabel() {
@@ -164,6 +224,9 @@ export default {
       currentProvider: {},
       addProviderActive: false,
       addProviderButtonActive: true,
+      addScopeButtonActive: true,
+      editScopePopupActive: false,
+      newScope: {},
 
       fields: [
         {
@@ -177,6 +240,14 @@ export default {
         //   color: "primary",
         //   callback: this.editProviderPopup
         // },
+        {
+          icon: "fa-lock",
+          color: "primary",
+          callback: (provider) => {
+            this.currentProvider = provider;
+            this.editScopePopupActive = true;
+          }
+        },
         {
           icon: "fa-trash",
           color: "danger",

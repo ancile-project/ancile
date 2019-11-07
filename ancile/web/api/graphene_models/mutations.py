@@ -1,6 +1,59 @@
 import graphene
 from ancile.web.dashboard import models
 from django.contrib.auth.hashers import check_password
+from ancile.web.api.graphene_models.wrappers import enforce_admin
+
+class UpdateScope(graphene.Mutation):
+    class Arguments:
+        scope = graphene.Int()
+        simple_name = graphene.String()
+        value = graphene.String()
+        provider = graphene.Int()
+        mode = graphene.String()
+    
+    ok = graphene.Boolean()
+    error = graphene.String()
+    
+    @enforce_admin
+    def mutate(self, info, mode, simple_name=None, scope=None, value=None, provider=None):
+        if mode not in ('ADD', 'EDIT','DELETE'):
+            return UpdateScope(ok=False, error='Unknown mode')
+        if mode in ('EDIT', 'ADD',):
+            if not value:
+                return UpdateScope(ok=False, error="Invalid scope value")
+            if not simple_name:
+                return UpdateScope(ok=False, error="Invalid name")
+
+            if not provider:
+                return UpdateScope(ok=False, error="Invalid provider")
+
+            providers = models.DataProvider.objects.filter(id=provider)
+            if not providers:
+                return UpdateScope(ok=False, error="Invalid provider")
+            
+            provider = providers[0]
+        
+        if mode == 'ADD':
+            the_scope = models.Scope(value=value, simple_name=simple_name, provider=provider)
+            the_scope.save()
+        
+        else:
+            scopes = models.Scope.objects.filter(id=scope, provider=provider)
+            if not scopes:
+                return UpdateScope(ok=False, error="Scope not found")
+        
+            the_scope = scopes[0]
+            
+            if mode == 'EDIT':
+                the_scope.value = value
+                the_scope.simple_name = simple_name
+                the_scope.save()
+            else:
+                the_scope.delete()
+            
+        return UpdateScope(ok=True)
+
+
 
 class DeleteToken(graphene.Mutation):
     class Arguments:
