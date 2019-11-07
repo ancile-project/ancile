@@ -28,7 +28,7 @@
           <vs-select-item :key="index" :value="group" :text="group.name" v-for="(group, index) in newApp.groups" />
         </vs-select>
         <vs-list v-if="newGroup">
-          <div :key="id" v-for="(provider, id) in newGroup.providers">
+          <div :key="provider.id" v-for="provider in Object.values(newGroup.providers)">
             <vs-list-header icon-pack="fas" icon="fa-server" :title="provider.displayName"/>
             <vs-list-item title="Status" :subtitle="authButtonMessage(provider)" icon="fa-question" icon-pack="fas">
               <vs-button @click="authorize(provider)" :disabled="authorizedProviders[provider.id]" :color="authButtonColor(provider)" type="gradient" icon="fa-lock" icon-pack="fas">
@@ -39,7 +39,7 @@
           </div>
         </vs-list>
         <div>
-        <vs-button @click="addGroup()" :disabled="disabledaddAppButton" type="gradient" icon="fa-plus" icon-pack="fas">
+        <vs-button @click="addGroup(newGroup)" :disabled="disabledaddAppButton" type="gradient" icon="fa-plus" icon-pack="fas">
           Add
         </vs-button>
         </div>
@@ -118,15 +118,12 @@ export default {
     disabledaddAppButton() {
       if (!this.newApp || !this.newGroup || this.addAppButton) return true;
 
-      for (let provider in this.newGroup.providers) {
-        if (this.authorizedProvder[provider.id]) return true;
-      }
-      return false;
+      return Object.values(this.newGroup.providers)
+        .reduce((prev, provider) => prev || !this.authorizedProviders[provider.id], false);
     }
   },
   methods: {
-    addGroup() {
-      const group = this.apps[this.newApp].groups[this.newGroup].id;
+    addGroup(group) {
       this.addAppButton = true;
 
       const query = `
@@ -226,6 +223,17 @@ export default {
       resp.allApps = resp.allApps ? resp.allApps : [];
 
       resp.allApps.forEach(app => {
+        app.groups.forEach(group => {
+          group.providers = {};
+
+          group.policies.forEach(policy => {
+            const {provider} = policy;
+            if (!group.providers[provider.id]) {
+              group.providers[provider.id] = {...provider, policies: []}
+            }
+            group.providers[provider.id].policies.push(policy);
+          })
+        })
         if (app.policies && app.policies.length > 0) {
           this.addedApps.push(app);
         } else {
