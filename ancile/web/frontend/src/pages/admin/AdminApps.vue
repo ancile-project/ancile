@@ -6,7 +6,7 @@
 
 <script>
 export default {
-  name: "Dev"
+  name: "AdminApps"
 }
 </script>
 

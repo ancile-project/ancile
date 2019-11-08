@@ -21,7 +21,9 @@ class ExternalDecorator(BaseDecorator):
         sample_policy = command.params.pop('sample_policy', '(ANYF*).return')
 
         if not isinstance(user_specific, UserSecrets):
-            raise ValueError("You have to provide a UserSpecific object to fetch new data.")
+            logger.error('No user secrets provided, generating sample one')
+            user_specific = UserSecrets({data_source: 'ANYF*'}, {data_source: None}, None)
+            # raise ValueError("You have to provide a UserSpecific object to fetch new data.")
 
         dp_pair = user_specific.get_empty_data_pair(data_source, name=name, sample_policy=sample_policy)
         dp_pair._data = dp_pair._call_external(command)

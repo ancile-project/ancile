@@ -6,13 +6,20 @@ import Signup from '@/pages/Signup'
 
 import UserApps from '@/pages/user/UserApps'
 import UserProviders from '@/pages/user/UserProviders'
+import UserSettings from '@/pages/user/UserSettings'
 
-import Dev from '@/pages/dev/Dev'
+import SubView from '@/components/SubView'
+
 import DevApps from '@/pages/dev/DevApps'
-import DevAppsTable from '@/pages/dev/DevAppsTable'
+import DevAppsTable from '@/pages/dev/DevAppTable'
 import DevAppView from '@/pages/dev/DevAppView'
 import DevConsole from '@/pages/dev/DevConsole'
-import DevGroupView from '@/pages/dev/DevGroupView'
+
+import AdminApps from '@/pages/admin/AdminApps'
+import AdminAppsTable from '@/pages/admin/AdminAppTable'
+import AdminAppView from '@/pages/admin/AdminAppView'
+import AdminConsole from '@/pages/admin/AdminConsole'
+import AdminProviders from '@/pages/admin/AdminProviders'
 
 import store from '@/store';
 
@@ -46,8 +53,13 @@ const router = new Router({
       component: UserProviders,
     },
     {
+      path: '/settings',
+      name: 'Settings',
+      component: UserSettings,
+    },
+    {
       path: '/dev',
-      component: Dev,
+      component: SubView,
       children: [
         {
           path: "",
@@ -68,15 +80,42 @@ const router = new Router({
               name: 'DevAppView',
               component: DevAppView,
             },
-            {
-              path: ":id/group/:groupid",
-              name: 'DevGroupView',
-              component: DevGroupView
-            }
           ]
         }
       ]
     },
+    {
+      path: '/admin',
+      component: SubView,
+      children: [
+        {
+          path: "",
+          name: 'AdminConsole',
+          component: AdminConsole
+        },
+        {
+          path: "apps",
+          component: AdminApps,
+          children: [
+            {
+              path: "",
+              name: 'AdminAppsTable',
+              component: AdminAppsTable
+            },
+            {
+              path: ":id",
+              name: 'AdminAppView',
+              component: AdminAppView,
+            },
+          ]
+        },
+        {
+          path: "providers",
+          name: "AdminProviders",
+          component: AdminProviders,
+        }
+      ]
+    } 
 
   ]});
 
@@ -88,6 +127,7 @@ const logoutRequired = {
 const loginRequired = {
   '/apps': true,
   '/providers': true,
+  '/settings': true,
   '/logout': true,
   '/dev': true
 };

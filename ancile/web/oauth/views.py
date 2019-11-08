@@ -62,11 +62,8 @@ def trigger_auth(request, provider):
 
     provider_object = get_provider(provider)
 
-    scopes = request.GET.get("scopes")
-    close = request.GET.get("close")
-
     auth_url, state = provider_object.generate_url(
-        scopes, request.scheme + "://" + request.get_host()
+        request.scheme + "://" + request.get_host()
     )
     request.session["provider_state"] = state
     return redirect(auth_url)

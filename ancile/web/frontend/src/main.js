@@ -12,8 +12,8 @@ new Vue({
 
   methods: {
 
-    async oauth(provider, scopes) {
-      const url = "/oauth/" + provider.pathName + "?scopes=" + scopes.join("|")
+    async oauth(provider) {
+      const url = "/oauth/" + provider.pathName;
       const w = window.open(url);
 
       return new Promise((resolve) => {
@@ -48,12 +48,14 @@ new Vue({
       })
     },
 
-    async getData(query) {
+    async getData(query, args) {
       this.$vs.loading();
 
       let output = {};
 
-      await this.$store.dispatch("query", query)
+      if (args === undefined) args = {};
+
+      await this.$store.dispatch("query", { query, args })
       .then(r => output = r)
       .catch(err => {
         if (err.response.status === 403) {

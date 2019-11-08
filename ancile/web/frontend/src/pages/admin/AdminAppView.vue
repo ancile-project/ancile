@@ -1,12 +1,12 @@
 <template>
-  <AppView />
+  <AppView :adminMode="true" />
 </template>
 
 <script>
 import AppView from "@/components/AppView"
 
 export default {
-  name: "DevAppView",
+  name: "AdminAppView",
   components: {
     AppView
   }

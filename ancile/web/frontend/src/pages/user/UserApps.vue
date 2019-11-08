@@ -1,48 +1,45 @@
 <template>
   <div>
-    <Table header="Applications" :data="userApps" :fields="fields" :actions="actions">
+    <Table header="Applications" :data="addedApps" :fields="fields" :actions="actions">
       <vs-button radius color="primary" type="filled" icon="fa-plus" icon-pack="fas" @click="newAppActive = true"/>
     </Table>
 
-    <vs-popup v-if="currentApp" :title="currentApp.name" :active.sync="viewAppActive">
+    <vs-popup :title="viewApp.name" :active.sync="viewAppActive">
       <vs-row vs-justify="center">
         <vs-col type="flex" vs-justify="center" vs-align="center" vs-w="12">
-          <vs-card :key="providerId" v-for="providerId in Object.keys(currentApp.policies)">
+          <vs-card :key="provider.id" v-for="provider in viewApp.providers">
             <div slot="header">
               <h3>
-                {{ providers[providerId].displayName }}
+                {{ provider.displayName }}
               </h3>
             </div>
-            <div v-if="viewAppActive">
-              <div class="mermaid" v-html="policyGraph" :id='"mermaid" + providerId + "s" + index' :key="policyGraph" v-for="(policyGraph, index) in graphs[providerId]">
-              </div>
-            </div>
+            <PolicyVisual v-for="policy in provider.policies" :key="policy.id" :policy="policy.value"/>
           </vs-card>
         </vs-col>
       </vs-row>
     </vs-popup>
-    
+
     <vs-popup title="New application" :active.sync="newAppActive">
       <div class="popup-form">
         <vs-select class="inputx" label="Application" v-model="newApp">
-          <vs-select-item :key="index" :value="app.id" :text="app.name" v-for="(app, index) in availableApps" />
+          <vs-select-item :key="index" :value="app" :text="app.name" v-for="(app, index) in availableApps" />
         </vs-select>
         <vs-select v-if="newApp" class="inputx" label="Permission Group" v-model="newGroup">
-          <vs-select-item :key="index" :value="index" :text="group.name" v-for="(group, index) in apps[newApp].groups" />
+          <vs-select-item :key="index" :value="group" :text="group.name" v-for="(group, index) in newApp.groups" />
         </vs-select>
-        <vs-list v-if="newGroup >= 0">
-          <div :key="id" v-for="(scopes, id) in apps[newApp].groups[newGroup].scopes">
-            <vs-list-header icon-pack="fas" icon="fa-server" :title="providers[id].displayName"/>
-            <vs-list-item :key="index" v-for="(scope, index) in scopes" icon-pack="fas" icon="fa-lock" :title="scope.simpleName" :subtitle="scope.description"></vs-list-item>
-            <vs-list-item title="Status" :subtitle="authButtonMessage(providers[id],scopes)" icon="fa-question" icon-pack="fas">
-              <vs-button @click="authorize(providers[id], scopes)" :disabled="authButtons || providers[id].authorized" :color="authButtonColor(providers[id], scopes)" type="gradient" icon="fa-lock" icon-pack="fas">
+        <vs-list v-if="newGroup">
+          <div :key="provider.id" v-for="provider in Object.values(newGroup.providers)">
+            <vs-list-header icon-pack="fas" icon="fa-server" :title="provider.displayName"/>
+            <vs-list-item title="Status" :subtitle="authButtonMessage(provider)" icon="fa-question" icon-pack="fas">
+              <vs-button @click="authorize(provider)" :disabled="authorizedProviders[provider.id]" :color="authButtonColor(provider)" type="gradient" icon="fa-lock" icon-pack="fas">
                   Authorize
               </vs-button>
             </vs-list-item>
+            <PolicyVisual v-for="policy in provider.policies" :key="policy.id" :policy="policy.value"/>
           </div>
         </vs-list>
         <div>
-        <vs-button @click="addGroup()" :disabled="disabledAddGroupButton" type="gradient" icon="fa-plus" icon-pack="fas">
+        <vs-button @click="addGroup(newGroup)" :disabled="disabledaddAppButton" type="gradient" icon="fa-plus" icon-pack="fas">
           Add
         </vs-button>
         </div>
@@ -52,58 +49,43 @@
 </template>
 
 <script>
-import Table from '../../components/Table.vue';
-import mermaid from 'mermaid';
+import PolicyVisual from '@/components/PolicyVisual.vue'; 
+import Table from '@/components/Table.vue';
 
 export default {
   name: 'UserApps',
   components: {
+    PolicyVisual,
     Table
   },
   data() {
     return {
-      appKey: 0,
-      apps: {},
-      userApps: [],
-      availableApps: [],
-      currentApp: "",
+      viewApp: {},
       viewAppActive: false,
+
+      authorizedProviders: {},
+
+      newApp: null,
+      newGroup: null,
+      newAppActive: false,
+      addAppButton: false,
       authButtons: false,
 
-      addGroupButton: false,
-      newApp: "",
-      newGroup: -1,
-      newAppActive: false,
+      addedApps: [],
+      availableApps: [],
 
-      graphs: {},
-
-      providers: {},
       fields: [{
         title: "Name",
         value: "name"
       }],
+  
       actions: [
         {
           color: "primary",
           icon: "fa-info",
           callback: (app) => {
-
-            this.graphs = {};
-            for (let i in app.policies) {
-              this.graphs[i] = app.policies[i].map(e => e);
-            }
-
-            this.currentApp = app;
+            this.viewApp = app;
             this.viewAppActive = true;
-
-
-            for (let i in app.policies) {
-              app.policies[i].forEach((graph, index) => {
-                const id = "mermaid" + i + "s" + index;
-                mermaid.render(id, graph, svg => this.graphs[i][index] = svg)
-              })
-            }
-
           }
         },
         {
@@ -111,13 +93,14 @@ export default {
           icon: "fa-trash",
           callback: (app) => {
             let query = `
-              mutation deleteApp {
-                deleteApp(app: ${app.id}) {
+              mutation deleteApp($id: Int) {
+                deleteApp(app: $id) {
                   ok
                 }
               }
               `
-              this.$root.getData(query)
+
+              this.$root.getData(query, {id: app.id})
                 .then(resp => {
                   if (resp.deleteApp.ok) {
                     this.$root.notify("success", "Application deleted.");
@@ -132,72 +115,65 @@ export default {
     }
   },
   computed: {
-    disabledAddGroupButton() {
-      if (!this.newApp || this.newGroup) return true;
-      const group = this.apps[this.newApp].groups[this.newGroup];
+    disabledaddAppButton() {
+      if (!this.newApp || !this.newGroup || this.addAppButton) return true;
 
-      for (let providerId in group.scopes) {
-        const provider = this.providers[providerId];
-        if (!provider.authorized || !this.satifiesScopes(provider, group.scopes[providerId])) return true;
-      }
-      return false || this.addGroupButton;
+      return Object.values(this.newGroup.providers)
+        .reduce((prev, provider) => prev || !this.authorizedProviders[provider.id], false);
     }
   },
   methods: {
-    addGroup() {
-      const group = this.apps[this.newApp].groups[this.newGroup].id;
-      this.addGroupButton = true;
+    addGroup(group) {
+      this.addAppButton = true;
 
       const query = `
         mutation addPermissionGroup {
-          addPermissionGroup(app: ${this.newApp}, group: ${group}) {
+          addPermissionGroup(app: $app, group: $group) {
             ok
           }
         }
       `
+
+      const args = {
+        app: this.newApp,
+        group
+      };
+
       this.newAppActive = false;
-      this.$root.getData(query)
+      this.$root.getData(query, args)
         .then(resp => {
           if (resp.addPermissionGroup.ok) {
             this.$root.notify("success", "Application added");
           } else {
             this.$root.notify("fail", "An error has occurred");
           }
-          this.getData(() => {
-            this.addGroupButton = false;
+          this.getData().then(() => {
+            this.addAppButton = false;
           });
         });
     },
-    authorize(provider, scopes) {
-      let url = "/oauth/"
 
+    authorize(provider) {
       this.authButtons = true;
-
-      url += provider.pathName;
-      url += "?scopes=" + scopes.map(scope => scope.value).join(" ");
-      let w = window.open(url);
-      
-      let refreshId =  setInterval(() => {
-        if (w.closed) {
+      this.$root.oauth(provider)
+        .then(() => {
           this.authButtons = false;
-          this.getData(() => {
-              if (this.providers[provider.id].scopes.length > 0) {
+          this.getData().then(() => {
+              if (this.authorizedProviders[provider.id]) {
                 return this.$root.notify("success", "Provider successfully added")
               }
 
-              this.$root.notify("fail", "Provider authentication failed")
+              this.$root.notify("fail", "Provider authentication failed");
           });
-
-          clearInterval(refreshId);
-        }
-      }, 1000);
+        });
     },
-    getData(callback) {
-      this.providers = {};
-      this.apps = {};
-      this.currentApp = "";
-      this.newApp = "";
-      this.newGroup = -1;
+
+    async getData() {
+      this.addedApps = [];
+      this.availableApps = [];
+      this.viewApp = {};
+      this.newApp = null;
+      this.newGroup = null;
 
       let query = `
       {
@@ -206,36 +182,30 @@ export default {
           name
           description
           policies {
-            graph
+            text
             provider {
               id
+              displayName
+              pathName
             }
           }
           groups {
             id
             name
             description
-            scopes {
-              id
-              simpleName
-              value
+            policies {
+              text
               provider {
                 id
+                displayName
+                pathName
               }
             }
           }
 
         }
-        allProviders {
-          id
-          displayName
-          pathName
-        },
         allTokens {
           id,
-          scopes {
-            id
-          }
           provider {
             id
           }
@@ -245,62 +215,41 @@ export default {
     
     this.$root.getData(query)
       .then(resp => {
-        resp.allProviders.forEach(provider => {
-          this.providers[provider.id] = provider;
-        })
 
       resp.allTokens.forEach(token => {
-        this.providers[token.provider.id].authorized = true;
-        this.providers[token.provider.id].scopes = token.scopes.map(scope => scope.id);
+        this.authorizedProviders[token.provider.id] = true;
       })
 
       resp.allApps = resp.allApps ? resp.allApps : [];
 
       resp.allApps.forEach(app => {
-        this.apps[app.id] = app;
-        if (app.policies) {
-          let newPolicies = {}
-          app.policies.forEach(policy => {
-            if (!newPolicies[policy.provider.id]) newPolicies[policy.provider.id] = [];
-              newPolicies[policy.provider.id].push(policy.graph);
-          })
-          app.policies = newPolicies;
-        }
-        if (app.groups) app.groups.forEach(group => {
-          let newScopes = {};
-          group.scopes.forEach(scope => {
-            if (!newScopes[scope.provider.id]) newScopes[scope.provider.id] = [];
+        app.groups.forEach(group => {
+          group.providers = {};
 
-            newScopes[scope.provider.id].push(scope);
+          group.policies.forEach(policy => {
+            const {provider} = policy;
+            if (!group.providers[provider.id]) {
+              group.providers[provider.id] = {...provider, policies: []}
+            }
+            group.providers[provider.id].policies.push(policy);
           })
-          group.scopes = newScopes;
         })
-      })
-
-      this.userApps = [];
-      this.availableApps = [];
-      for (let id in this.apps) {
-        if (Object.keys(this.apps[id].policies).length > 0) {
-          this.userApps.push(this.apps[id]);
+        if (app.policies && app.policies.length > 0) {
+          this.addedApps.push(app);
         } else {
-          this.availableApps.push(this.apps[id]);
+          this.availableApps.push(app);
         }
-      }
+      });
 
-      callback ? callback() : null;
     })
     },
-    authButtonColor(provider, scopes) {
-      if (!provider.authorized) return "primary";
-      return this.satifiesScopes(provider, scopes) ? "success" : "warning";
+
+    authButtonColor(provider) {
+      return this.authorizedProviders[provider.id] ? "success" : "primary";
     },
-    authButtonMessage(provider, scopes) {
-      if (!provider.authorized) return "Not authorized";
-      return this.satifiesScopes(provider, scopes) ? "Authorized with correct scopes" : "Authorized with insufficient scopes";
+    authButtonMessage(provider) {
+      return this.authorizedProviders[provider.id] ? "Auhtorized" : "Not authorized";
     },
-    satifiesScopes(provider, scopes) {
-      return scopes.reduce((prev, scope) => prev && provider.scopes.includes(scope.id), true);
-    }
   },
   created() {
     this.getData()

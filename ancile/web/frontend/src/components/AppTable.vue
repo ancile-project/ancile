@@ -1,7 +1,7 @@
 <template>
     <div>
       <Table header="Applications" :data="apps" :fields="fields" :actions="actions">
-        <vs-button radius color="primary" type="filled" icon="fa-plus" icon-pack="fas" @click="newAppActive = true"/>
+        <vs-button v-if="adminMode" radius color="primary" type="filled" icon="fa-plus" icon-pack="fas" @click="newAppActive = true"/>
       </Table>
 
       <vs-popup title="New application" :active.sync="newAppActive">
@@ -20,10 +20,17 @@
 import Table from '@/components/Table.vue';
 
 export default {
-  name: "DevAppsTable",
+  name: "AppTable",
 
   components: {
     Table
+  },
+
+  props: {
+    adminMode: {
+      type: Boolean,
+      default: false
+    },
   },
 
   data() {
@@ -43,7 +50,7 @@ export default {
         {
           icon: "fa-angle-right",
           color: "primary",
-          to: (app) => "/dev/apps/" + app.id
+          to: (app) => "apps/" + app.id
         }
       ],
 
@@ -57,9 +64,10 @@ export default {
 
   methods: {
     getData() {
+      const q = this.adminMode ? "allApps" : "developerApps";
       const query = `
-        {
-          developerApps {
+        query {
+          ${q} {
             id,
             name,
             description
@@ -68,22 +76,27 @@ export default {
       `
 
       this.$root.getData(query)
-        .then(data => this.apps = data.developerApps);
+        .then(data => this.apps = data[q]);
     },
 
     addApp() {
       this.newAppButton = false;
 
       const query = `
-        mutation addApp {
-          addApp(name: "${this.newAppName}", description: "${this.newAppDescription}") {
+        mutation addApp($name: String, $description: String) {
+          addApp(name: $name, description: $description) {
             ok,
             error
           }
         }
       `
 
-      this.$store.dispatch("query", query)
+      const args = {
+        name: this.newAppName,
+        description: this.newAppDescription
+      };
+
+      this.$store.dispatch("query", { query, args })
         .then(resp => {
           if (resp.addApp.ok) {
             this.$root.notify("success", "App created successfully.");

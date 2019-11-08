@@ -12,6 +12,10 @@ import pika
 import dill
 from ancile.utils.messaging import RpcClient
 from config.loader import configs
+from ancile.utils.errors import ParseError
+from ancile.web.api.visualizer import parse_policy
+import traceback
+
 
 logger = logging.getLogger(__name__)
 
@@ -107,3 +111,17 @@ def prepare_user_specific(user_info, app_id):
     return users_specific
 
 
+@csrf_exempt
+@require_http_methods(["POST"])
+def parse_policy_view(request):
+    body = json.loads(request.body)
+    policy = body.get("policy", "")
+    try:
+        return JsonResponse({
+            "status": "ok",
+            "graph": parse_policy(policy)
+        })
+    except ParseError:
+        return JsonResponse({
+            "status": "error",
+        })
