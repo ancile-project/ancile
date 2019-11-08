@@ -7,7 +7,7 @@ Nate Foster, Fred B. Schneider, Deborah Estrin, 2019
 [Ancile: Enhancing Privacy for Ubiquitous Computing with
 Use-Based Privacy](https://ebagdasa.github.io/assets/files/ancile.pdf), WPES.
 
-Ask questions through [GH Issues](https://github.com/ebagdasa/ancile/issues), our [Slack](https://join.slack.com/t/ancile-dev/shared_invite/enQtODIwNTM0MDk0NDUyLTU0Yzc1MWViNTIxZjNmY2FjNGFhNTAyZWQ4MzUwZDk0MWU3NzRiM2NjODlkNTNkZDViNDBiMWFjZjAyYTBiMmU), or just email (eugene@cs.cornell.edu).
+Ask questions through [GH Issues](https://github.com/ancile-project/ancile/issues), our [Slack](https://join.slack.com/t/ancile-dev/shared_invite/enQtODIwNTM0MDk0NDUyLTU0Yzc1MWViNTIxZjNmY2FjNGFhNTAyZWQ4MzUwZDk0MWU3NzRiM2NjODlkNTNkZDViNDBiMWFjZjAyYTBiMmU), or just email (eugene@cs.cornell.edu).
 
 ### Table of Contents
 1. [Introduction](#intro)
