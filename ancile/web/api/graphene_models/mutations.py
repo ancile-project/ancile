@@ -110,8 +110,8 @@ class CreatePolicyTemplate(graphene.Mutation):
 
 class UpdatePolicyTemplate(graphene.Mutation):
     class Arguments:
-        policy_template_id = graphene.Int()
-        policy = graphene.String()
+        policy = graphene.Int()
+        text = graphene.String()
         app = graphene.Int()
         group = graphene.Int()
         provider = graphene.Int()
@@ -119,10 +119,10 @@ class UpdatePolicyTemplate(graphene.Mutation):
     ok = graphene.Boolean()
     error = graphene.String()
 
-    def mutate(self, info, policy_template_id, policy=None, app=None, group=None, provider=None):
-        policy_template = models.PolicyTemplate.objects.get(id=policy_template_id)
+    def mutate(self, info, policy, text=None, app=None, group=None, provider=None):
+        policy_template = models.PolicyTemplate.objects.get(id=policy)
         if policy:
-            policy_template.policy = policy
+            policy_template.text = text
         if app:
             try:
                 policy_template.app = models.App.objects.get(id=app)

@@ -33,18 +33,18 @@
       <vs-list :key="index" v-for="(group, index) in app.groups">
         <vs-list-header icon="fa-info" color="success" icon-pack="fas" :title="group.name"/>
         <vs-list-item :title="group.description">
-          <vs-button v-if="adminMode" color="primary" icon="fa-plus" icon-pack="fas" @click="newPolicyActive = true; currentGroup = group;">
+          <vs-button v-if="adminMode" color="primary" icon="fa-plus" icon-pack="fas" @click="newPolicyPopup('ADD', {})">
           New Policy
           </vs-button>
         </vs-list-item>
         <vs-list-item v-for="policy in group.policies" :key="policy.id" :title="policy.text" :subtitle="policy.provider.displayName">
-          <vs-button color="primary" icon="fa-eye" icon-pack="fas">
+          <vs-button @click="newPolicyPopup('VIEW', policy)" color="primary" icon="fa-eye" icon-pack="fas">
             View
           </vs-button>
-          <vs-button v-if="adminMode" color="primary" icon="fa-eye" icon-pack="fas">
+          <vs-button  @click="newPolicyPopup('EDIT', policy)" v-if="adminMode" color="primary" icon="fa-eye" icon-pack="fas">
             Edit
           </vs-button>
-          <vs-button v-if="adminMode" color="red" icon="fa-eye" icon-pack="fas">
+          <vs-button @click="updatePolicy(policy, 'DELETE')" v-if="adminMode" color="red" icon="fa-eye" icon-pack="fas">
             Delete
           </vs-button>
         </vs-list-item>
@@ -67,7 +67,7 @@
           <vs-select-item :key="provider.id" :value="provider" :text="provider.displayName" v-for="provider in providers" />
         </vs-select>
         <vs-textarea v-model="policyValue" label="Value" />
-        <vs-button @click="addPolicy()" :disabled="!policyValue" type="gradient" icon="fa-plus" icon-pack="fas">
+        <vs-button @click="updatePolicy('ADD')" :disabled="!policyValue" type="gradient" icon="fa-plus" icon-pack="fas">
         Create
         </vs-button>
         <PolicyVisual :policy="policyValue"/>
@@ -209,12 +209,12 @@ export default {
           this.newGroupButton = true;
         });
     },
-    addPolicy() {
+    updatePolicy(mode) {
       this.newPolicyButton = false;
 
       const query = `
-        mutation createPolicyTemplate($policy: String, $provider: Int, $group: Int, $app: Int) {
-          createPolicyTemplate(policy: $policy, provider: $provider, group: $group, app: $app) {
+        mutation updatePolicyTemplate($policyId: Int, $mode: String, $policy: String, $provider: Int, $group: Int, $app: Int) {
+          updatePolicyTemplate(policyId: $policyId, mode: $mode, policy: $policy, provider: $provider, group: $group, app: $app) {
             ok,
             error
           }
@@ -222,21 +222,23 @@ export default {
       `
 
       const args = {
+        policyId: this.policyId,
         policy: this.policyValue,
         group: this.currentGroup.id,
         provider: this.policyProvider.id,
-        app: this.$route.params.id
+        app: this.$route.params.id,
+        mode
       };
 
       this.$store.dispatch("query", { query, args })
         .then(resp => {
-          if (resp.createPolicyTemplate.ok) {
-            this.$root.notify("success", "Policy created successfully");
+          if (resp.updatePolicyTemplate.ok) {
+            this.$root.notify("success", "Policy " + mode.toLowerCase() + "ed successfully");
             this.newPolicyActive = false;
             this.policyValue = "";
             this.provider = {};
           } else {
-            this.$root.notify("fail", resp.createPolicyTemplate.error);
+            this.$root.notify("fail", resp.updatePolicyTemplate.error);
           }
         })
         .catch(() => {
