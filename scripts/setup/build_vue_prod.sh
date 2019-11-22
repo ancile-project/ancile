@@ -6,4 +6,4 @@ cd ../../../
 
 source .env/bin/activate
 
-python manage.py collectstatic
+python manage.py collectstatic --noinput
