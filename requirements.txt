@@ -6,7 +6,7 @@ cffi==1.12.3
 chardet==3.0.4
 cryptography==2.7
 dill==0.3.0
-Django==2.2.4
+Django==2.2.8
 django-webpack-loader==0.6.0
 geographiclib==1.49
 geopy==1.20.0
