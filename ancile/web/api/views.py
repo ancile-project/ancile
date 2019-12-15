@@ -4,7 +4,6 @@ from ancile.core.core import execute
 from django.http import HttpResponse, Http404, JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth.decorators import login_required
-
 from ancile.core.user_secrets import UserSecrets
 from ancile.web.api.queries import get_app_id, get_user_bundle, get_app_module
 from ancile.web.dashboard.models import User, Token, PermissionGroup, DataProvider, App, PolicyTemplate, Policy, Scope
@@ -16,6 +15,9 @@ import pika
 import dill
 from ancile.utils.messaging import RpcClient
 from config.loader import configs
+from ancile.utils.errors import ParseError
+from ancile.web.api.visualizer import parse_policy
+import traceback
 
 logger = logging.getLogger(__name__)
 
@@ -45,14 +47,32 @@ def execute_api(request):
         return JsonResponse({"result": "error",
                              "error": "Problem in retreiving user information"})
 
-    users_secrets = UserSecrets.prepare_users_secrets(user_info, app_id)
-    if configs.get('DISTRIBUTED', False):
-        user_pickled = dill.dumps((users_secrets, program,
-                                   app_id, None))
-        rabbit = RpcClient()
-        res_dill = rabbit.call(user_pickled)
-        res = dill.loads(res_dill)
+    if body.get('remote', False):
+        try:
+            remote_program = body["remote_program"]
+        except KeyError:
+            return JsonResponse({"result": "error",
+                             "error": "Remote execution program missing"})
+        res = {}
+        client = RpcClient(data=res, app_id=app_id)
+        for user in users:
+            policy = "ANYF*"
+            host = "localhost:5432"
+            client.queue(user, policy, host, remote_program)
+        client.loop()
+        
+        if client.error:
+            return JsonResponse({"result": "error",
+                                 "error": client.error})
+        else:
+            res = execute(users_secrets=[],
+                            program=program,
+                            app_id=app_id,
+                            app_module=get_app_module(app_id),
+                            data_points=list(client.responses.values()))
+
     else:
+        users_secrets = UserSecrets.prepare_users_secrets(user_info, app_id)
         res = execute(users_secrets=users_secrets,
                       program=program,
                       app_id=app_id,

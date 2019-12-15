@@ -16,7 +16,7 @@ UserInfoBundle = namedtuple("UserInfoBundle", ['username', 'policies',
                                                'tokens', 'private_data'])
 
 
-def execute(users_secrets, program, app_id=None, app_module=None):
+def execute(users_secrets, program, app_id=None, app_module=None, data_points=None):
     r = redis.Redis(**REDIS_CONFIG)
     storage = Storage(redis_conneciton=r)
     json_output = dict()
@@ -27,7 +27,8 @@ def execute(users_secrets, program, app_id=None, app_module=None):
     lcls = assemble_locals(storage=storage, result=result,
                            users_secrets=users_secrets,
                            app_id=app_id,
-                           app_module=app_module)
+                           app_module=app_module,
+                           data_points=data_points or list())
     try:
         c_program = retrieve_compiled(program, r)
         exec(c_program, glbls, lcls)
