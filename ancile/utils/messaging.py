@@ -18,6 +18,7 @@ class RpcClient(object):
     def on_response(self, ch, method, props, body):
         if not self.error and props.correlation_id in self.cor_id_con_map:
             connection = self.cor_id_con_map.pop(props.correlation_id)
+            print(body)
             response = dill.loads(body)
 
             if "error" in response:
@@ -32,7 +33,9 @@ class RpcClient(object):
         data_policy_pair = DataPolicyPair(policy=policy,
                         username=user,
                         private_data=self.data,
-                        app_id=self.app_id)
+                        app_id=self.app_id,
+                        token=None,
+                        name=user)
         
         body = {"program": program, "data_policy_pair": data_policy_pair}
         pickled_body = dill.dumps(body)
@@ -40,7 +43,7 @@ class RpcClient(object):
         connection = pika.BlockingConnection(
             pika.ConnectionParameters(host=host))
         channel = connection.channel()
-        result = channel.queue_declare(queue='', exclusive=True)
+        result = channel.queue_declare(queue='ancile_reply')
         callback_queue = result.method.queue
         channel.basic_consume(
             queue=callback_queue,
@@ -52,7 +55,7 @@ class RpcClient(object):
         self.cor_id_con_map[corr_id] = connection
         channel.basic_publish(
             exchange='',
-            routing_key='rpc_queue',
+            routing_key='ancile',
             properties=pika.BasicProperties(
                 reply_to=callback_queue,
                 correlation_id=corr_id,

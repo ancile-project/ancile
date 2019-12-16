@@ -57,7 +57,7 @@ def execute_api(request):
         client = RpcClient(data=res, app_id=app_id)
         for user in users:
             policy = "ANYF*"
-            host = "localhost:5432"
+            host = "localhost"
             client.queue(user, policy, host, remote_program)
         client.loop()
         

@@ -39,7 +39,7 @@ def gen_module_namespace():
 module_namespace = gen_module_namespace()
 
 
-def assemble_locals(storage, result, users_secrets, app_id, app_module=None):
+def assemble_locals(storage, result, users_secrets, app_id, app_module=None, data_points=None):
     lcls = module_namespace
 
     def user(name: str) -> UserSecrets:
@@ -78,6 +78,7 @@ def assemble_locals(storage, result, users_secrets, app_id, app_module=None):
     lcls['encrypt'] = encrypt
     lcls['return_to_app'] = result.return_to_app
     lcls['app'] = app_module
+    lcls['data_points'] = data_points
 
     if configs['SERVER_DEBUG']:
         # allow printing in the debug state
