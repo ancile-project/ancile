@@ -16,7 +16,8 @@ class RpcClient(object):
         self.error = None
 
     def on_response(self, ch, method, props, body):
-        if not self.error and props.correlation_id in self.cor_id_con_map:
+        print("received message: ", body)
+        if (not self.error) and props.correlation_id in self.cor_id_con_map:
             connection = self.cor_id_con_map.pop(props.correlation_id)
             print(body)
             response = dill.loads(body)
@@ -25,7 +26,7 @@ class RpcClient(object):
                 self.error = response["error"]
                 return
 
-            dp = response["data"]
+            dp = response["data_policy_pair"]
             user = self.cor_id_user_map.pop(props.correlation_id)
             self.responses[user] = dp
 
@@ -51,7 +52,7 @@ class RpcClient(object):
             auto_ack=True)
         
         corr_id = str(uuid.uuid4())
-        self.cor_id_user_map[user] = corr_id
+        self.cor_id_user_map[corr_id] = user
         self.cor_id_con_map[corr_id] = connection
         channel.basic_publish(
             exchange='',
@@ -64,7 +65,7 @@ class RpcClient(object):
     
     def loop(self, time=30):
         for _ in range(time):
-            for connection in self.cor_id_con_map.values():
+            for connection in tuple(self.cor_id_con_map.values()):
                 connection.process_data_events()
             if self.error or not self.cor_id_con_map:
                 break

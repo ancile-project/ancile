@@ -53,7 +53,7 @@ def execute_api(request):
         except KeyError:
             return JsonResponse({"result": "error",
                              "error": "Remote execution program missing"})
-        res = {}
+        res = {"output": []}
         client = RpcClient(data=res, app_id=app_id)
         for user in users:
             policy = "ANYF*"
@@ -62,14 +62,14 @@ def execute_api(request):
         client.loop()
         
         if client.error:
-            return JsonResponse({"result": "error",
+            return JsonResponse({"result": "remote_error",
                                  "error": client.error})
         else:
             res = execute(users_secrets=[],
                             program=program,
                             app_id=app_id,
                             app_module=get_app_module(app_id),
-                            data_points=list(client.responses.values()))
+                            data_policy_pairs=list(client.responses.values()))
 
     else:
         users_secrets = UserSecrets.prepare_users_secrets(user_info, app_id)

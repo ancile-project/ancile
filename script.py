@@ -1,7 +1,7 @@
 import pika
 import dill
 import ancile
-from ancile.core import execute
+from ancile.core.core import execute
 
 connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
 channel = connection.channel()
@@ -12,10 +12,33 @@ def callback(ch, method, properties, body):
     print(" [x] Received %r" % body)
     request = dill.loads(body)
 
-    error = None
     dpp = request.get("data_policy_pair")
     program = request.get("program")
-    
+
+    if not dpp:
+        message = {"error": "data_policy_pair missing"}
+    elif not program:
+        message = {"error": "program missing"}
+    else:
+        res = execute(users_secrets=[],
+                        program=program,
+                        app_id=None,
+                        app_module=None,
+                        data_policy_pairs=[dpp])
+        if res["result"] == "error":
+            message = {"error": res["traceback"]}
+        else:
+            message = {"data_policy_pair": dpp}
+
+    pickled_body = dill.dumps(message)
+    print("returning response: ", str(message))
+    channel.basic_publish(
+            exchange='',
+            routing_key='ancile_reply',
+            properties=pika.BasicProperties(
+                correlation_id=properties.correlation_id,
+            ),
+            body=pickled_body)
 
 channel.basic_consume(queue='ancile', on_message_callback=callback, auto_ack=True)
 print(' [*] Waiting for messages. To exit press CTRL+C')
