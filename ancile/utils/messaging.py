@@ -11,8 +11,7 @@ class RpcClient(object):
         self.data = data
         self.app_id = app_id
         self.cor_id_con_map = dict()
-        self.cor_id_user_map = dict()
-        self.responses = dict()
+        self.responses = list()
         self.error = None
 
     def on_response(self, ch, method, props, body):
@@ -27,8 +26,7 @@ class RpcClient(object):
                 return
 
             dp = response["data_policy_pair"]
-            user = self.cor_id_user_map.pop(props.correlation_id)
-            self.responses[user] = dp
+            self.responses.append(dp)
 
     def queue(self, user, policy, host, program):
         data_policy_pair = DataPolicyPair(policy=policy,
@@ -52,7 +50,6 @@ class RpcClient(object):
             auto_ack=True)
         
         corr_id = str(uuid.uuid4())
-        self.cor_id_user_map[corr_id] = user
         self.cor_id_con_map[corr_id] = connection
         channel.basic_publish(
             exchange='',
@@ -70,3 +67,5 @@ class RpcClient(object):
             if self.error or not self.cor_id_con_map:
                 break
             sleep(1)
+        if self.cor_id_con_map:
+            self.error = "One or more nodes timed out"

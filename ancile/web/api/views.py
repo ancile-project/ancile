@@ -69,7 +69,7 @@ def execute_api(request):
                             program=program,
                             app_id=app_id,
                             app_module=get_app_module(app_id),
-                            data_policy_pairs=list(client.responses.values()))
+                            data_policy_pairs=client.responses)
 
     else:
         users_secrets = UserSecrets.prepare_users_secrets(user_info, app_id)

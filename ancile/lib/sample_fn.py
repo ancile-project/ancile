@@ -20,7 +20,7 @@ from ancile.core.decorators import *
 @TransformDecorator()
 def test_transform(data):
     import time
-    data['output'].append('Test Transform.')
+    #data['output'].append('Test Transform.')
     if data.get('test_transform', False):
         data['test_transform'].append(str(time.time()))
     else:

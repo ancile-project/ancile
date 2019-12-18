@@ -27,8 +27,10 @@ def callback(ch, method, properties, body):
                         data_policy_pairs=[dpp])
         if res["result"] == "error":
             message = {"error": res["traceback"]}
+        elif not res["data"]:
+            message = {"error": "no dpp found"}
         else:
-            message = {"data_policy_pair": dpp}
+            message = {"data_policy_pair": res["data"][0]}
 
     pickled_body = dill.dumps(message)
     print("returning response: ", str(message))
