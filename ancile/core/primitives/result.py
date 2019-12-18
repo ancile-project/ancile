@@ -26,3 +26,8 @@ class Result:
             self._dp_pair_data.append(data)
             encryption_keys.clear()
         return True
+
+
+    def return_to_web(self, dpp):
+        self._dp_pair_data.append(dpp)
+        return True
