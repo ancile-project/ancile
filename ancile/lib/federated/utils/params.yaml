@@ -1,0 +1,30 @@
+batch_size: 32
+test_batch_size: 100
+lr: 0.1
+momentum: 0.9
+decay: 0.0005
+epochs: 350
+save_on_epochs: []
+optimizer: SGD
+log_interval: 20
+
+save_model: True
+scheduler: False
+
+#resumed_model: None
+
+
+data_type: image
+
+# import for Federated Learning
+number_of_total_participants: 100
+no_models: 10
+retrain_no_times: 2
+eta: 10
+
+log: True
+tb: True
+
+report_train_loss: True
+
+random: False
