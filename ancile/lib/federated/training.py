@@ -12,10 +12,10 @@ import math
 from tqdm import tqdm
 from torchvision import transforms
 from torch.utils.tensorboard import SummaryWriter
-from utils.image_helper import ImageHelper
-from utils.text_helper import TextHelper
+from ancile.lib.federated.utils.image_helper import ImageHelper
+from ancile.lib.federated.utils.text_helper import TextHelper
 
-from utils.utils import dict_html
+from ancile.lib.federated.utils.utils import dict_html
 
 logger = logging.getLogger("logger")
 # logger.setLevel("ERROR")
@@ -24,8 +24,8 @@ import time
 import numpy as np
 
 import random
-from utils.utils import *
-from utils.text_load import *
+from ancile.lib.federated.utils.utils import *
+from ancile.lib.federated.utils.text_load import *
 
 criterion = torch.nn.CrossEntropyLoss()
 

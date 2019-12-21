@@ -2,13 +2,13 @@ import torch
 from torch.autograd import Variable
 from torch.nn.functional import log_softmax
 
-from utils.helper import Helper
+from ancile.lib.federated.utils.helper import Helper
 import random
 import logging
 
-from models.word_model import RNNModel
+from ancile.lib.federated.models.word_model import RNNModel
 # from utils.nlp_dataset import NLPDataset
-from utils.text_load import *
+from ancile.lib.federated.utils.text_load import *
 
 logger = logging.getLogger("logger")
 POISONED_PARTICIPANT_POS = 0
