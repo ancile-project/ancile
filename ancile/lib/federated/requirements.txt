@@ -1,0 +1,8 @@
+torch
+torchvision
+tqdm
+matplotlib
+sklearn
+colorlog
+numpy
+scipy
