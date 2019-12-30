@@ -11,6 +11,7 @@ from torch.autograd import Variable
 import math
 from tqdm import tqdm
 from torchvision import transforms
+import pickle
 
 from ancile.lib.federated.models.word_model import RNNModel
 from ancile.lib.federated.utils.text_helper import TextHelper
@@ -41,13 +42,13 @@ def get_weight_accumulator(model, helper):
     return weight_accumulator
 
 
-def train_web(helper, model, train_data):
 
+def train_local(helper, params):
+    params = pickle.loads(params)
+    global_model = params['global_model']
+    model_id = params['model_id']
+    train_data = params['train_data']
 
-
-    return model
-
-def train_local(helper, global_model, train_data, model_id):
     model = helper.create_one_model()
     model.copy_params(global_model)
     optimizer = torch.optim.SGD(model.parameters(), lr=helper.lr,
@@ -95,7 +96,7 @@ def train_local(helper, global_model, train_data, model_id):
                 total_loss = 0
                 start_time = time.time()
 
-    return model.state_dict()
+    return pickle.dumps(model.state_dict())
 
 
 def train(helper, epoch, train_data_sets, local_model, target_model, last_weight_accumulator):

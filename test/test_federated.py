@@ -11,6 +11,7 @@ from ancile.lib.federated.utils.text_helper import TextHelper
 from utils.text_load import *
 import random
 name='test_module_name'
+import pickle
 
 
 
@@ -52,8 +53,9 @@ class FederatedTests(unittest.TestCase):
 
             for participant in participants:
                 train_data = self.helper.train_data[participant]
-                model_state_dict = train_local(helper=self.helper, global_model=self.model.state_dict(),
-                            model_id=participant, train_data=train_data)
+                params = pickle.dumps({'global_model': self.model.state_dict(),
+                            'model_id': participant, 'train_data': train_data})
+                model_state_dict = pickle.loads(train_local(helper=self.helper, params=params))
                 for name, data in model_state_dict.items():
                     #### don't scale tied weights:
                     if self.helper.params.get('tied', False) and name == 'decoder.weight' or '__' in name:
