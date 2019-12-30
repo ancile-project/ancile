@@ -11,8 +11,8 @@ from torch.autograd import Variable
 import math
 from tqdm import tqdm
 from torchvision import transforms
-from torch.utils.tensorboard import SummaryWriter
-from ancile.lib.federated.utils.image_helper import ImageHelper
+
+from ancile.lib.federated.models.word_model import RNNModel
 from ancile.lib.federated.utils.text_helper import TextHelper
 
 from ancile.lib.federated.utils.utils import dict_html
@@ -25,9 +25,72 @@ import numpy as np
 
 import random
 from ancile.lib.federated.utils.utils import *
-from ancile.lib.federated.utils.text_load import *
+from utils.text_load import *
 
 criterion = torch.nn.CrossEntropyLoss()
+
+
+def get_weight_accumulator(model, helper):
+    weight_accumulator = dict()
+
+    for name, data in model.state_dict().items():
+        #### don't scale tied weights:
+        if helper.params.get('tied', False) and name == 'decoder.weight' or '__' in name:
+            continue
+        weight_accumulator[name] = torch.zeros_like(data)
+    return weight_accumulator
+
+
+def train_local(helper, global_model, train_data, model_id):
+    model = helper.create_one_model()
+    model.copy_params(global_model)
+    optimizer = torch.optim.SGD(model.parameters(), lr=helper.lr,
+                                momentum=helper.momentum,
+                                weight_decay=helper.decay)
+    model.train()
+
+    ntokens = helper.n_tokens
+    hidden = model.init_hidden(helper.batch_size)
+
+    for internal_epoch in range(1, helper.retrain_no_times + 1):
+        total_loss = 0.
+        data_iterator = range(0, train_data.size(0) - 1, helper.bptt)
+
+        for batch_id, batch in enumerate(data_iterator):
+            optimizer.zero_grad()
+            data, targets = helper.get_batch(train_data, batch,
+                                             evaluation=False)
+            hidden = helper.repackage_hidden(hidden)
+            output, hidden = model(data, hidden)
+            loss = criterion(output.view(-1, ntokens), targets)
+
+            loss.backward()
+
+            # `clip_grad_norm` helps prevent the exploding gradient
+            # problem in RNNs / LSTMs.
+            torch.nn.utils.clip_grad_norm_(model.parameters(), helper.params['clip'])
+            optimizer.step()
+
+            total_loss += loss.item()
+
+            if helper.report_train_loss and batch_id % helper.params[
+                'log_interval'] == 0 and batch_id > 0:
+                cur_loss = total_loss.item() / helper.log_interval
+                elapsed = time.time() - start_time
+                logger.info('model {} | epoch {:3d} | internal_epoch {:3d} '
+                            '| {:5d}/{:5d} batches | lr {:02.2f} | ms/batch {:5.2f} | '
+                            'loss {:5.2f} | ppl {:8.2f}'
+                            .format(model_id, epoch, internal_epoch,
+                                    batch_id, train_data.size(0) // helper.bptt,
+                                    helper.params['lr'],
+                                    elapsed * 1000 / helper.log_interval,
+                                    cur_loss,
+                                    math.exp(cur_loss) if cur_loss < 30 else -1.))
+                total_loss = 0
+                start_time = time.time()
+
+    return model.state_dict()
+
 
 def train(helper, epoch, train_data_sets, local_model, target_model, last_weight_accumulator):
 
@@ -215,12 +278,12 @@ if __name__ == '__main__':
         params_loaded = yaml.load(f)
 
     current_time = datetime.now().strftime('%b.%d_%H.%M.%S')
-    if params_loaded['data_type'] == "image":
-        helper = ImageHelper(current_time=current_time, params=params_loaded,
-                             name=params_loaded.get('name', 'image'))
-    else:
-        helper = TextHelper(current_time=current_time, params=params_loaded,
-                            name=params_loaded.get('name', 'text'))
+    # if params_loaded['data_type'] == "image":
+    #     helper = ImageHelper(current_time=current_time, params=params_loaded,
+    #                          name=params_loaded.get('name', 'image'))
+    # else:
+    helper = TextHelper(current_time=current_time, params=params_loaded,
+                        name=params_loaded.get('name', 'text'))
 
     helper.load_data()
     helper.create_model()
@@ -244,7 +307,7 @@ if __name__ == '__main__':
         logger = create_logger()
 
     if helper.tb:
-        wr = SummaryWriter(log_dir=f'runs/{args.name}')
+        wr = None
         helper.writer = wr
         table = create_table(helper.params)
         helper.writer.add_text('Model Params', table)

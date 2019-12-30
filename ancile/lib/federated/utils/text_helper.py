@@ -8,7 +8,7 @@ import logging
 
 from ancile.lib.federated.models.word_model import RNNModel
 # from utils.nlp_dataset import NLPDataset
-from ancile.lib.federated.utils.text_load import *
+from utils.text_load import *
 
 logger = logging.getLogger("logger")
 POISONED_PARTICIPANT_POS = 0
@@ -25,7 +25,7 @@ class TextHelper(Helper):
         data = data.narrow(0, 0, nbatch * bsz)
         # Evenly divide the data across the bsz batches.
         data = data.view(bsz, -1).t().contiguous()
-        return data.cuda()
+        return data
 
 
     def get_sentence(self, tensor):
@@ -51,30 +51,42 @@ class TextHelper(Helper):
         return data, target
 
 
-    def load_data(self):
+    def load_data(self, corpus):
         ### DATA PART
 
         logger.info('Loading data')
         #### check the consistency of # of batches and size of dataset for poisoning
-
-        dictionary = torch.load(self.params['word_dictionary_path'])
-        corpus_file_name = f"{self.params['data_folder']}/" \
-            f"corpus_{self.params['number_of_total_participants']}.pt.tar"
-        if self.recreate_dataset:
-
-            self.corpus = Corpus(self.params, dictionary=dictionary,
-                                 is_poison=False)
-            torch.save(self.corpus, corpus_file_name)
+        if corpus:
+            self.corpus = corpus
         else:
-            self.corpus = torch.load(corpus_file_name)
+            dictionary = torch.load(self.params['word_dictionary_path'])
+            corpus_file_name = f"{self.params['data_folder']}/" \
+                f"corpus_{self.params['number_of_total_participants']}.pt.tar"
+            if self.recreate_dataset:
+
+                self.corpus = Corpus(self.params, dictionary=dictionary,
+                                     is_poison=False)
+                torch.save(self.corpus, corpus_file_name)
+            else:
+                self.corpus = torch.load(corpus_file_name)
         logger.info('Loading data. Completed.')
         ### PARSE DATA
         eval_batch_size = self.test_batch_size
         self.train_data = [self.batchify(data_chunk, self.batch_size) for data_chunk in
                            self.corpus.train]
-        self.test_data = self.batchify(self.corpus.test, eval_batch_size)
+        # self.test_data = self.batchify(self.corpus.test, eval_batch_size)
 
         self.n_tokens = len(self.corpus.dictionary)
+
+
+
+    def create_one_model(self):
+        model = RNNModel(name='Local_Model', created_time=self.params['current_time'],
+                 rnn_type='LSTM', ntoken=self.n_tokens,
+                 ninp=self.params['emsize'], nhid=self.params['nhid'],
+                 nlayers=self.params['nlayers'],
+                 dropout=self.params['dropout'], tie_weights=self.params['tied'])
+        return model
 
     def create_model(self):
 

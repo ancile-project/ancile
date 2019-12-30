@@ -44,3 +44,6 @@ bptt: 64
 clip: 0.25
 seed: 1
 data_folder: data/reddit/
+
+log: False
+tb: False

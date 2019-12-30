@@ -17,7 +17,7 @@ from torch import autograd
 
 
 class Helper:
-    def __init__(self, current_time, params, name):
+    def __init__(self, current_time, params, name, n_tokens=None):
         self.current_time = current_time
         self.target_model = None
         self.local_model = None
@@ -29,6 +29,7 @@ class Helper:
         self.writer = None
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
+        self.n_tokens = n_tokens
         self.params = params
         self.name = name
         self.best_loss = math.inf

@@ -115,3 +115,9 @@ class Corpus(object):
         ids = torch.LongTensor(word_list)
 
         return ids
+
+
+def load_data(path):
+    corpus = torch.load(path)
+
+    return corpus
