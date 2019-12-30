@@ -63,6 +63,33 @@ class FederatedTests(unittest.TestCase):
             helper.average_shrink_models(weight_accumulator, self.model, epoch)
 
 
+    def test_run_non_federated(self):
+        self.test_load_data()
+        self.init_model()
+        self.helper.load_data(self.corpus)
+
+        optimizer = torch.optim.SGD(self.model.parameters(), lr=self.helper.lr,
+                                    momentum=self.helper.momentum,
+                                    weight_decay=self.helper.decay)
+        self.model.train()
+        hidden = self.model.init_hidden(self.helper.batch_size)
+        for epoch in range(1, 10):
+            participants = random.sample(range(0, 79999), 10)
+            for participant in participants:
+                train_data = self.helper.train_data[participant]
+                data_iterator = range(0, train_data.size(0) - 1, self.helper.bptt)
+                for batch_id, batch in enumerate(data_iterator):
+                    optimizer.zero_grad()
+                    data, targets = self.helper.get_batch(train_data, batch,
+                                                     evaluation=False)
+                    hidden = self.helper.repackage_hidden(hidden)
+                    output, hidden = self.model(data, hidden)
+                    loss = criterion(output.view(-1, self.helper.n_tokens), targets)
+
+                    loss.backward()
+                    print(f'batch_id: {batch_id}')
+
+
 
 
 

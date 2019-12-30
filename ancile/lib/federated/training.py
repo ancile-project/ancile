@@ -41,6 +41,12 @@ def get_weight_accumulator(model, helper):
     return weight_accumulator
 
 
+def train_web(helper, model, train_data):
+
+
+
+    return model
+
 def train_local(helper, global_model, train_data, model_id):
     model = helper.create_one_model()
     model.copy_params(global_model)
