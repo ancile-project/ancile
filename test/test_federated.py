@@ -131,18 +131,35 @@ class FederatedTests(unittest.TestCase):
 
                 # this should come from Ancile Core:
                 train_data = self.helper.train_data[participant]
+                if participant > 50000:
+                    data_iterator = range(0, train_data.size(0) - 1, self.helper.bptt)
+                    for batch_id, batch in enumerate(data_iterator):
+                        optimizer.zero_grad()
+                        data, targets = self.helper.get_batch(train_data, batch,
+                                                              evaluation=False)
+                        hidden = self.helper.repackage_hidden(hidden)
+                        output, hidden = self.model(data, hidden)
+                        loss = criterion(output.view(-1, self.helper.n_tokens), targets)
 
-                data_iterator = range(0, train_data.size(0) - 1, self.helper.bptt)
-                for batch_id, batch in enumerate(data_iterator):
-                    optimizer.zero_grad()
-                    data, targets = self.helper.get_batch(train_data, batch,
-                                                          evaluation=False)
-                    hidden = self.helper.repackage_hidden(hidden)
-                    output, hidden = self.model(data, hidden)
-                    loss = criterion(output.view(-1, self.helper.n_tokens), targets)
+                        loss.backward()
+                        print(f'batch_id: {batch_id}')
+                else:
+                    train_data = self.helper.train_data[participant]
 
-                    loss.backward()
-                    print(f'batch_id: {batch_id}')
+                    # pickle data so we can send it over
+                    params = pickle.dumps({'global_model': self.model.state_dict(),
+                                           'model_id': participant, 'train_data': train_data})
+                    updated_weights = train_local(helper=self.helper, params=params)
+                    model_state_dict = pickle.loads(updated_weights)
+
+                    # averaging part
+                    for name, data in model_state_dict.items():
+                        #### don't scale tied weights:
+                        if self.helper.params.get('tied', False) and name == 'decoder.weight' or '__' in name:
+                            continue
+                        weight_accumulator[name].add_(data - self.model.state_dict()[name])
+                    print(f'participant: {participant}')
+
 
 
 
