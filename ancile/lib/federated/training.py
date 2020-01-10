@@ -41,14 +41,9 @@ def get_weight_accumulator(model, helper):
         weight_accumulator[name] = torch.zeros_like(data)
     return weight_accumulator
 
-@TransformDecorator()
-def train_local(data):
-    unpickled = dill.loads(data)
-    data = _train_local(**unpickled)
-    return data
 
 
-def _train_local(helper, params):
+def train_local(helper, params):
     params = pickle.loads(params)
     global_model = params['global_model']
     model_id = params['model_id']

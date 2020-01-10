@@ -19,11 +19,6 @@ from ancile.utils.errors import ParseError
 from ancile.web.api.visualizer import parse_policy
 import traceback
 
-# ML stuff
-import yaml
-from utils.text_load import TextHelper, load_data
-import pickle
-
 logger = logging.getLogger(__name__)
 
 
@@ -58,40 +53,12 @@ def execute_api(request):
         except KeyError:
             return JsonResponse({"result": "error",
                              "error": "Remote execution program missing"})
-
-        corpus = load_data('~/Downloads/corpus_80000.pt.tar')
-        with open('ancile/lib/federated/utils/words.yaml') as f:
-            params = yaml.load(f)
-        helper = TextHelper(params=params, current_time='None',
-                            name='databox', n_tokens=corpus.no_tokens)
-        model = helper.create_one_model()
-
-        client = RpcClient(app_id=app_id)
-
-        for index, user in enumerate(users):
-            train_data = helper.train_data[index]
-            params = {'global_model': model.state_dict(),
-                      'model_id': index,
-                      'train_data': train_data}
-
-
-            # backup dataset
-            temp_train_data = helper.train_data
-            temp_corpus = helper.corpus
-            helper.train_data = None
-            helper.corpus = None
-
-            data = pickle.dumps({"helper": helper, "params": params})
-
-            helper.train_data = temp_train_data
-            helper.corpus = temp_corpus
-
-            # need to fetch user policy and hostnames
+        res = {"output": []}
+        client = RpcClient(data=res, app_id=app_id)
+        for user in users:
             policy = "ANYF*"
             host = "localhost"
-
-            client.queue(user, policy, data, host, remote_program)
-
+            client.queue(user, policy, host, remote_program)
         client.loop()
         
         if client.error:

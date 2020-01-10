@@ -7,7 +7,8 @@ import json
 
 class RpcClient(object):
 
-    def __init__(self, app_id=None):
+    def __init__(self, data=None, app_id=None):
+        self.data = data
         self.app_id = app_id
         self.cor_id_con_map = dict()
         self.responses = list()
@@ -27,10 +28,10 @@ class RpcClient(object):
             dp = response["data_policy_pair"]
             self.responses.append(dp)
 
-    def queue(self, user, policy, data, host, program):
+    def queue(self, user, policy, host, program):
         data_policy_pair = DataPolicyPair(policy=policy,
                         username=user,
-                        private_data=data,
+                        private_data=self.data,
                         app_id=self.app_id,
                         token=None,
                         name=user)
