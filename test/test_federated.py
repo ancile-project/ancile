@@ -55,7 +55,7 @@ class FederatedTests(unittest.TestCase):
         self.load_data()
 
         self.init_model()
-        self.helper.load_data(self.corpus) # parses data
+        self.helper.load_data(self.corpus)  # parses data
 
         # this is the main cycle
         for epoch in range(1, 10):
@@ -73,14 +73,14 @@ class FederatedTests(unittest.TestCase):
 
                 # averaging part
                 for name, data in model_state_dict.items():
-                    #### don't scale tied weights:
+                    # don't scale tied weights:
                     if self.helper.params.get('tied', False) and name == 'decoder.weight' or '__' in name:
                         continue
                     weight_accumulator[name].add_(data - self.model.state_dict()[name])
                 print(f'participant: {participant}')
 
             # apply averaging to the main model
-            helper.average_shrink_models(weight_accumulator, self.model, epoch)
+            self.helper.average_shrink_models(weight_accumulator, self.model, epoch)
 
     def test_run_non_federated(self):
 
@@ -156,7 +156,7 @@ class FederatedTests(unittest.TestCase):
 
                     # averaging part
                     for name, data in model_state_dict.items():
-                        #### don't scale tied weights:
+                        # don't scale tied weights:
                         if self.helper.params.get('tied', False) and name == 'decoder.weight' or '__' in name:
                             continue
                         weight_accumulator[name].add_(data - self.model.state_dict()[name])
