@@ -10,13 +10,13 @@ from ancile.lib.federated.training import *
 from ancile.lib.federated.utils.text_helper import TextHelper
 from utils.text_load import *
 import random
-name='test_module_name'
+name = 'test_module_name'
 import pickle
 
 import time
 from datetime import datetime, timedelta
 
-@TransformDecorator(scopes=None)
+
 def sample(data):
     data['a'] = 0
     return data
@@ -67,7 +67,7 @@ class FederatedTests(unittest.TestCase):
 
                 # pickle data so we can send it over
                 params = pickle.dumps({'global_model': self.model.state_dict(),
-                            'model_id': participant, 'train_data': train_data})
+                                      'model_id': participant, 'train_data': train_data})
                 updated_weights = train_local(helper=self.helper, params=params)
                 model_state_dict = pickle.loads(updated_weights)
 
@@ -81,7 +81,6 @@ class FederatedTests(unittest.TestCase):
 
             # apply averaging to the main model
             helper.average_shrink_models(weight_accumulator, self.model, epoch)
-
 
     def test_run_non_federated(self):
 
@@ -108,7 +107,7 @@ class FederatedTests(unittest.TestCase):
 
                     optimizer.zero_grad()
                     data, targets = self.helper.get_batch(train_data, batch,
-                                                     evaluation=False)
+                                                          evaluation=False)
                     hidden = self.helper.repackage_hidden(hidden)
                     output, hidden = self.model(data, hidden)
                     print('output')
@@ -116,7 +115,6 @@ class FederatedTests(unittest.TestCase):
                     print('loss')
                     loss.backward()
                     print(f'batch_id: {batch_id}')
-
 
     def mixed_learning(self):
         # Everything except data fetching should run on the AncileWeb
@@ -165,20 +163,12 @@ class FederatedTests(unittest.TestCase):
                     print(f'participant: {participant}')
 
 
-
-
 if __name__ == "__main__":
     print("Started at: %s" % (datetime.now()))
     start_time = time.time()
 
-    FederatedTests().test_run_non_federated()
+    FederatedTests().test_run_federated()
 
     # save and report elapsed time
     elapsed_time = time.time() - start_time
     print("\nSuccess! Duration: %s" % str(timedelta(seconds=int(elapsed_time))))
-
-
-
-
-
-
