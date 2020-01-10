@@ -13,7 +13,8 @@ import random
 name='test_module_name'
 import pickle
 
-
+import time
+from datetime import datetime, timedelta
 
 @TransformDecorator(scopes=None)
 def sample(data):
@@ -37,7 +38,7 @@ class FederatedTests(unittest.TestCase):
         # we can assume for now that the data is preprocessed
 
         # download from here: https://drive.google.com/file/d/1qTfiZP4g2ZPS5zlxU51G-GDCGGr23nvt/view
-        self.corpus = load_data('/Users/ebagdasaryan/Downloads/corpus_80000.pt.tar')
+        self.corpus = load_data('/home/databox/corpus_80000.pt.tar')
 
     def init_model(self):
         with open('ancile/lib/federated/utils/words.yaml') as f:
@@ -103,13 +104,16 @@ class FederatedTests(unittest.TestCase):
 
                 data_iterator = range(0, train_data.size(0) - 1, self.helper.bptt)
                 for batch_id, batch in enumerate(data_iterator):
+                    print(f'batch {batch_id}')
+
                     optimizer.zero_grad()
                     data, targets = self.helper.get_batch(train_data, batch,
                                                      evaluation=False)
                     hidden = self.helper.repackage_hidden(hidden)
                     output, hidden = self.model(data, hidden)
+                    print('output')
                     loss = criterion(output.view(-1, self.helper.n_tokens), targets)
-
+                    print('loss')
                     loss.backward()
                     print(f'batch_id: {batch_id}')
 
@@ -163,9 +167,15 @@ class FederatedTests(unittest.TestCase):
 
 
 
+if __name__ == "__main__":
+    print("Started at: %s" % (datetime.now()))
+    start_time = time.time()
 
+    FederatedTests().test_run_non_federated()
 
-
+    # save and report elapsed time
+    elapsed_time = time.time() - start_time
+    print("\nSuccess! Duration: %s" % str(timedelta(seconds=int(elapsed_time))))
 
 
 
