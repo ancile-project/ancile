@@ -68,7 +68,7 @@ class FederatedTests(unittest.TestCase):
                 # pickle data so we can send it over
                 params = pickle.dumps({'global_model': self.model.state_dict(),
                                       'model_id': participant, 'train_data': train_data})
-                updated_weights = train_local(helper=self.helper, params=params)
+                updated_weights = _train_local(helper=self.helper, params=params)
                 model_state_dict = pickle.loads(updated_weights)
 
                 # averaging part
@@ -151,7 +151,7 @@ class FederatedTests(unittest.TestCase):
                     # pickle data so we can send it over
                     params = pickle.dumps({'global_model': self.model.state_dict(),
                                            'model_id': participant, 'train_data': train_data})
-                    updated_weights = train_local(helper=self.helper, params=params)
+                    updated_weights = _train_local(helper=self.helper, params=params)
                     model_state_dict = pickle.loads(updated_weights)
 
                     # averaging part
