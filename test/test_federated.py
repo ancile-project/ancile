@@ -16,6 +16,9 @@ import pickle
 import time
 from datetime import datetime, timedelta
 
+import pandas as pd
+
+SLEEP_TIME = 5
 
 def sample(data):
     data['a'] = 0
@@ -47,14 +50,20 @@ class FederatedTests(unittest.TestCase):
                                  name='databox', n_tokens=self.corpus.no_tokens)
         self.model = self.helper.create_one_model()
 
-    def test_run_federated(self):
+    def test_run_federated(self, output_csv=None):
         # AncileWeb part:
 
+        # init df
+        columns = ['Start Time', 'End Time', 'Duration']
+        df = pd.DataFrame(columns=columns)
+
+        print("Loading data...")
         # this is artificial code to preload all the data
         # in real we would load data on each device:
         self.load_data()
 
         self.init_model()
+        print("Parsing data...")
         self.helper.load_data(self.corpus)  # parses data
 
         # this is the main cycle
@@ -68,7 +77,17 @@ class FederatedTests(unittest.TestCase):
                 # pickle data so we can send it over
                 params = pickle.dumps({'global_model': self.model.state_dict(),
                                       'model_id': participant, 'train_data': train_data})
+
+                # << Evaluation Start >>
+                time.sleep(SLEEP_TIME)
+                start_time = time.time()
+
                 updated_weights = train_local(helper=self.helper, params=params)
+
+                end_time = time.time()
+                time.sleep(SLEEP_TIME)
+                # << Evaluation End >>
+
                 model_state_dict = pickle.loads(updated_weights)
 
                 # averaging part
@@ -77,10 +96,22 @@ class FederatedTests(unittest.TestCase):
                     if self.helper.params.get('tied', False) and name == 'decoder.weight' or '__' in name:
                         continue
                     weight_accumulator[name].add_(data - self.model.state_dict()[name])
-                print(f'participant: {participant}')
+
+                timedelta = int(end_time - start_time)
+                print(f'Participant: {participant} - Training Duration (sec): {timedelta}')
+
+                # Add to df
+                data = {columns[0]: start_time,
+                        columns[1]: end_time,
+                        columns[2]: timedelta}
+                df = df.append(pd.Series(data=data, name=participant))
 
             # apply averaging to the main model
             self.helper.average_shrink_models(weight_accumulator, self.model, epoch)
+
+            # save to csv
+            if output_csv is not None:
+                df.to_csv(output_csv)
 
     def test_run_non_federated(self):
 
@@ -160,14 +191,14 @@ class FederatedTests(unittest.TestCase):
                         if self.helper.params.get('tied', False) and name == 'decoder.weight' or '__' in name:
                             continue
                         weight_accumulator[name].add_(data - self.model.state_dict()[name])
-                    print(f'participant: {participant}')
+                    print(f'Participant: {participant}')
 
 
 if __name__ == "__main__":
     print("Started at: %s" % (datetime.now()))
     start_time = time.time()
 
-    FederatedTests().test_run_federated()
+    FederatedTests().test_run_federated(output_csv='evaluation_federated.csv')
 
     # save and report elapsed time
     elapsed_time = time.time() - start_time
