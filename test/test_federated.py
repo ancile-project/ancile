@@ -100,8 +100,8 @@ class FederatedTests(unittest.TestCase):
                         continue
                     weight_accumulator[name].add_(data - self.model.state_dict()[name])
 
-                timedelta = int(end_time - start_time)
-                print(f'Participant: {participant} - Training Duration (sec): {timedelta}')
+                timedelta = float(end_time - start_time)
+                print('Participant: %s - Training Duration (sec): %.4f' % (participant, timedelta))
 
                 # Add to df
                 data = {columns[0]: start_time,
