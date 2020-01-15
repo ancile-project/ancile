@@ -16,6 +16,7 @@ import pickle
 import time
 from datetime import datetime, timedelta
 
+import os
 import pandas as pd
 
 SLEEP_TIME = 5
@@ -65,6 +66,8 @@ class FederatedTests(unittest.TestCase):
         self.init_model()
         print("Parsing data...")
         self.helper.load_data(self.corpus)  # parses data
+
+        print("Training...")
 
         # this is the main cycle
         for epoch in range(1, 10):
@@ -195,6 +198,12 @@ class FederatedTests(unittest.TestCase):
 
 
 if __name__ == "__main__":
+
+    print("Process ID: %d" % os.getpid())
+
+    print("Starting in 10 seconds...\n")
+    time.sleep(10)
+
     print("Started at: %s" % (datetime.now()))
     start_time = time.time()
 
