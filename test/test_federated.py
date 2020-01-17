@@ -55,7 +55,7 @@ class FederatedTests(unittest.TestCase):
         # AncileWeb part:
 
         # init df
-        columns = ['Start Time', 'End Time', 'Duration']
+        columns = ['Start Time', 'End Time', 'Duration', 'Data Size']
         df = pd.DataFrame(columns=columns)
 
         print("Loading data...")
@@ -69,52 +69,50 @@ class FederatedTests(unittest.TestCase):
 
         print("Training...")
 
-        # this is the main cycle
-        for epoch in range(1, 10):
-            participants = random.sample(range(0, 79999), 10)
-            weight_accumulator = get_weight_accumulator(self.model, self.helper)
+        # weight_accumulator = get_weight_accumulator(self.model, self.helper)
 
-            for participant in participants:
-                train_data = self.helper.train_data[participant]
+        for participant in random.sample(range(len(self.helper.train_data)), 2):
+            train_data = self.helper.train_data[participant]
 
-                # pickle data so we can send it over
-                params = pickle.dumps({'global_model': self.model.state_dict(),
-                                      'model_id': participant, 'train_data': train_data})
+            # pickle data so we can send it over
+            params = pickle.dumps({'global_model': self.model.state_dict(),
+                                  'model_id': participant, 'train_data': train_data})
 
-                # << Evaluation Start >>
-                time.sleep(SLEEP_TIME)
-                start_time = time.time()
+            # << Evaluation Start >>
+            time.sleep(SLEEP_TIME)
+            start_time = time.time()
 
-                updated_weights = train_local(helper=self.helper, params=params)
+            updated_weights = train_local(helper=self.helper, params=params)
 
-                end_time = time.time()
-                time.sleep(SLEEP_TIME)
-                # << Evaluation End >>
+            end_time = time.time()
+            time.sleep(SLEEP_TIME)
+            # << Evaluation End >>
 
-                model_state_dict = pickle.loads(updated_weights)
+            model_state_dict = pickle.loads(updated_weights)
 
-                # averaging part
-                for name, data in model_state_dict.items():
-                    # don't scale tied weights:
-                    if self.helper.params.get('tied', False) and name == 'decoder.weight' or '__' in name:
-                        continue
-                    weight_accumulator[name].add_(data - self.model.state_dict()[name])
+            # # averaging part
+            # for name, data in model_state_dict.items():
+            #     # don't scale tied weights:
+            #     if self.helper.params.get('tied', False) and name == 'decoder.weight' or '__' in name:
+            #         continue
+            #     weight_accumulator[name].add_(data - self.model.state_dict()[name])
 
-                timedelta = float(end_time - start_time)
-                print('Participant: %s - Training Duration (sec): %.4f' % (participant, timedelta))
+            timedelta = float(end_time - start_time)
+            print('Participant: %s - Training Duration (sec): %.4f - Data Size: %d' % (participant, timedelta, len(train_data)))
 
-                # Add to df
-                data = {columns[0]: start_time,
-                        columns[1]: end_time,
-                        columns[2]: timedelta}
-                df = df.append(pd.Series(data=data, name=participant))
+            # Add to df
+            data = {columns[0]: start_time,
+                    columns[1]: end_time,
+                    columns[2]: timedelta,
+                    columns[3]: len(train_data)}
+            df = df.append(pd.Series(data=data, name=participant))
 
-            # apply averaging to the main model
-            self.helper.average_shrink_models(weight_accumulator, self.model, epoch)
+        # apply averaging to the main model
+        # self.helper.average_shrink_models(weight_accumulator, self.model, epoch)
 
-            # save to csv
-            if output_csv is not None:
-                df.to_csv(output_csv)
+        # save to csv
+        if output_csv is not None:
+            df.to_csv(output_csv)
 
     def test_run_non_federated(self):
 
