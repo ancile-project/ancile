@@ -71,7 +71,7 @@ class FederatedTests(unittest.TestCase):
 
         # weight_accumulator = get_weight_accumulator(self.model, self.helper)
 
-        for participant in random.sample(range(len(self.helper.train_data)), 2):
+        for participant in random.sample(range(len(self.helper.train_data)), 100):
             train_data = self.helper.train_data[participant]
 
             # pickle data so we can send it over
