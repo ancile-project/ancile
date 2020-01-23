@@ -7,6 +7,7 @@ class Result:
 
     def __init__(self):
         self._dp_pair_data = list()
+        self._execution_logs = list()
         self._stored_keys = dict()
         self._encrypted_data = dict()
 
@@ -14,7 +15,9 @@ class Result:
         return f"<Result obj>"
 
     @UseDecorator()
-    def return_to_app(self, data, encryption_keys, decrypt_field_list=None):
+    def return_to_app(self, data, encryption_keys=None,
+                      execution_log=None,
+                      decrypt_field_list=None):
 
         if decrypt_field_list and isinstance(decrypt_field_list, list):
             dropped = set(encryption_keys.keys()) - set(decrypt_field_list)
@@ -24,7 +27,9 @@ class Result:
             self._dp_pair_data.append(data)
         else:
             self._dp_pair_data.append(data)
-            encryption_keys.clear()
+            self._execution_logs.append(execution_log)
+            if encryption_keys:
+                encryption_keys.clear()
         return True
 
 

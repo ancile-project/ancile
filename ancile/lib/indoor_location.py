@@ -86,6 +86,6 @@ def test_transform(data):
 def fuzz_location(data, mean, std):
     import numpy as np
 
-    data['sta_location_x'] = np.random.normal(mean, std)
-    data['sta_location_y'] = np.random.normal(mean, std)
+    data['sta_location_x'] += np.random.normal(mean, std)
+    data['sta_location_y'] += np.random.normal(mean, std)
     return data

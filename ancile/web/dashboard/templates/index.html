@@ -1,0 +1,21 @@
+{% load render_bundle from webpack_loader %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    {% render_bundle 'app' 'css' %}
+    <title>Ancile</title>
+  </head>
+  <body>
+    <noscript>
+      <strong>We're sorry but Ancile doesn't work without JavaScript. Please enable it to continue.</strong>
+    </noscript>
+    {% if user.is_authenticated %}
+    <div id="loggedin" style="display:none"></div>
+    {% endif %}
+    <div id="app"></div>
+  {% render_bundle 'app' 'js' %}
+  </body>
+</html>

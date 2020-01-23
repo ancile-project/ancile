@@ -14,8 +14,26 @@ import json
 
 
 class User(AbstractUser):
-    is_developer = models.BooleanField(default=False)
+    developer_status = models.TextField(default="False")
     email = models.EmailField(unique=True)
+
+    @property
+    def is_developer(self):
+        if self.developer_status == "True":
+            return True
+        else:
+            return False
+
+    @is_developer.setter
+    def is_developer(self, value):
+        self.developer_status = value
+
+    @property
+    def is_pending_developer(self):
+        if self.developer_status == 'Pending':
+            return True
+        else:
+            return False
 
     @property
     def apps(self):
@@ -57,12 +75,13 @@ class App(models.Model):
 
 
 class DataProvider(models.Model):
+    provider_type = models.TextField(default="OAUTH")
     path_name = models.CharField(max_length=128, unique=True)
     display_name = models.TextField(unique=True, blank=True)
-    client_id = models.TextField()
-    client_secret = models.TextField()
-    access_token_url = models.TextField()
-    auth_url = models.TextField()
+    client_id = models.TextField(default=None)
+    client_secret = models.TextField(default=None)
+    access_token_url = models.TextField(default=None)
+    auth_url = models.TextField(default=None)
     extra_params = fields.JSONField(default=dict)
 
     @property
@@ -72,7 +91,8 @@ class DataProvider(models.Model):
         )
         return {"Authorization": "basic " + basic_header}
 
-    def generate_url(self, scopes, base):
+    def generate_url(self, base):
+        scopes = [s.value for s in Scope.objects.filter(provider=self)]
         session = OAuth2Session(
             client_id=self.client_id, redirect_uri=self.redirect_url(base), scope=scopes
         )
@@ -125,7 +145,6 @@ class PermissionGroup(models.Model):
     name = models.CharField(max_length=128)
     description = models.TextField()
     app = models.ForeignKey(App, on_delete=models.CASCADE)
-    scopes = models.ManyToManyField(Scope)
     approved = models.BooleanField(default=False)
 
     class Meta:
@@ -224,17 +243,11 @@ class Token(models.Model):
         scopes = scopes_raw.split() if scopes_raw else []
 
         for scope in scopes:
-            try:
-                scope_object = Scope.objects.get(
-                    value=scope, provider=self.provider
-                )
-            except Scope.DoesNotExist:
-                scope_object = Scope(
-                    value=scope, provider=self.provider, description=""
-                )
-                scope_object.save()
-            finally:
-                self.scopes.add(scope_object)
+            scope_object = Scope.objects.get(
+                value=scope, provider=self.provider
+            )
+            self.scopes.add(scope_object)
+        
 
     def refresh(self):
         if self.refresh_token:
@@ -271,6 +284,6 @@ class PrivateData(models.Model):
                 fields=["user", "provider"], name="private_data:unique_user_provider"
             )
         ]
-
-class PendingDeveloper(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+#
+# class PendingDeveloper(models.Model):
+#     user = models.OneToOneField(User, on_delete=models.CASCADE)

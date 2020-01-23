@@ -13,6 +13,7 @@ from tqdm import tqdm
 from torchvision import transforms
 import pickle
 
+from ancile.core.decorators import TransformDecorator
 from ancile.lib.federated.models.word_model import RNNModel
 from ancile.lib.federated.utils.text_helper import TextHelper
 

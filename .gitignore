@@ -1,6 +1,6 @@
 # storage for certificates
 /priv/cert/
-
+static/
 #Pyenv config
 .python-version
 
@@ -17,6 +17,5 @@ env
 config/*.yaml
 .pidfile
 ancile/web/static/
-
-
 .DS_Store
+docs/build/

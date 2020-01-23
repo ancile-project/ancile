@@ -61,13 +61,13 @@ class Policy(object):
             return False
 
     def concat(self, p: Policy) -> Policy:
-        policy_expr = ConcatExpression(self._policy_expr, p._policy_expr)
+        policy_expr = ConcatExpression(self._policy_expr, p._policy_expr).simplify()
         return Policy(policy_expr)
 
     def intersect(self, p: Policy) -> Policy:
-        policy_expr = IntersectExpression(self._policy_expr, p._policy_expr)
+        policy_expr = IntersectExpression(self._policy_expr, p._policy_expr).simplify()
         return Policy(policy_expr)
 
     def union(self, p: Policy) -> Policy:
-        policy_expr = UnionExpression(self._policy_expr, p._policy_expr)
+        policy_expr = UnionExpression(self._policy_expr, p._policy_expr).simplify()
         return Policy(policy_expr)
