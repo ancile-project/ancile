@@ -2,11 +2,11 @@ import torch
 from torch.autograd import Variable
 from torch.nn.functional import log_softmax
 
-from ancile.lib.federated.utils.helper import Helper
+from ancile.lib.federated_helpers.utils.helper import Helper
 import random
 import logging
 
-from ancile.lib.federated.models.word_model import RNNModel
+from ancile.lib.federated_helpers.models.word_model import RNNModel
 # from utils.nlp_dataset import NLPDataset
 from utils.text_load import *
 

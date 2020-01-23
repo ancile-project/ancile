@@ -218,7 +218,7 @@ class Helper:
         return optimizer
 
     def check_resume_training(self, model, lr=False):
-        from ancile.lib.federated.models.resnet import ResNet18
+        from ancile.lib.federated_helpers.models.resnet import ResNet18
 
         if self.resumed_model:
             logger.info('Resuming training...')

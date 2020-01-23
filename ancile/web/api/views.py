@@ -19,7 +19,7 @@ import traceback
 # ML stuff
 import yaml
 from utils.text_load import load_data
-from ancile.lib.federated.utils.text_helper import TextHelper
+from ancile.lib.federated_helpers.utils.text_helper import TextHelper
 import pickle
 from ancile.utils.errors import ParseError
 from ancile.web.api.visualizer import parse_policy

@@ -1,7 +1,7 @@
 import torch.nn as nn
 from torch.autograd import Variable
 
-from ancile.lib.federated.models.simple import SimpleNet
+from ancile.lib.federated_helpers.models.simple import SimpleNet
 
 
 class RNNModel(SimpleNet):

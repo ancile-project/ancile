@@ -14,10 +14,10 @@ from torchvision import transforms
 import pickle
 
 from ancile.core.decorators import TransformDecorator
-from ancile.lib.federated.models.word_model import RNNModel
-from ancile.lib.federated.utils.text_helper import TextHelper
+from ancile.lib.federated_helpers.models.word_model import RNNModel
+from ancile.lib.federated_helpers.utils.text_helper import TextHelper
 
-from ancile.lib.federated.utils.utils import dict_html
+from ancile.lib.federated_helpers.utils.utils import dict_html
 
 logger = logging.getLogger("logger")
 # logger.setLevel("ERROR")
@@ -26,7 +26,7 @@ import time
 import numpy as np
 
 import random
-from ancile.lib.federated.utils.utils import *
+from ancile.lib.federated_helpers.utils.utils import *
 from utils.text_load import *
 
 criterion = torch.nn.CrossEntropyLoss()
@@ -42,11 +42,6 @@ def get_weight_accumulator(model, helper):
         weight_accumulator[name] = torch.zeros_like(data)
     return weight_accumulator
 
-@TransformDecorator()
-def train_local(data):
-    unpickled = dill.loads(data)
-    data = _train_local(**unpickled)
-    return data
 
 
 def _train_local(helper, params):

@@ -8,7 +8,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from models.simple import SimpleNet
+from ancile.lib.federated_helpers.models.simple import SimpleNet
 
 
 class BasicBlock(nn.Module):
