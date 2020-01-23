@@ -21,7 +21,8 @@ import traceback
 
 # ML stuff
 import yaml
-from utils.text_load import TextHelper, load_data
+from utils.text_load import load_data
+from ancile.lib.federated.utils.text_helper import TextHelper
 import pickle
 
 logger = logging.getLogger(__name__)
@@ -59,12 +60,13 @@ def execute_api(request):
             return JsonResponse({"result": "error",
                              "error": "Remote execution program missing"})
 
-        corpus = load_data('~/Downloads/corpus_80000.pt.tar')
+        corpus = load_data('./corpus_80000.pt.tar')
         with open('ancile/lib/federated/utils/words.yaml') as f:
             params = yaml.load(f)
         helper = TextHelper(params=params, current_time='None',
                             name='databox', n_tokens=corpus.no_tokens)
         model = helper.create_one_model()
+        helper.load_data(corpus=corpus)
 
         client = RpcClient(app_id=app_id)
 
