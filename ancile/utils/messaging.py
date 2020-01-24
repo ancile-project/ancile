@@ -30,10 +30,10 @@ class RpcClient(object):
     def queue(self, user, policy, data, host, program):
         data_policy_pair = DataPolicyPair(policy=policy,
                         username=user,
-                        private_data=data,
                         app_id=self.app_id,
                         token=None,
                         name=user)
+        data_policy_pair._data = data
         
         body = {"program": program, "data_policy_pair": data_policy_pair}
         pickled_body = dill.dumps(body)

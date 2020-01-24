@@ -62,7 +62,7 @@ def execute_api(request):
                              "error": "Remote execution program missing"})
 
         corpus = load_data('./corpus_80000.pt.tar')
-        with open('ancile/lib/federated/utils/words.yaml') as f:
+        with open('ancile/lib/federated_helpers/utils/words.yaml') as f:
             params = yaml.load(f)
         helper = TextHelper(params=params, current_time='None',
                             name='databox', n_tokens=corpus.no_tokens)

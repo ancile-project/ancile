@@ -45,7 +45,6 @@ def get_weight_accumulator(model, helper):
 
 
 def _train_local(helper, params):
-    params = pickle.loads(params)
     global_model = params['global_model']
     model_id = params['model_id']
     train_data = params['train_data']
