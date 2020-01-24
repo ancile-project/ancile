@@ -11,11 +11,17 @@ class RpcClient(object):
         self.app_id = app_id
         self.cor_id_con_map = dict()
         self.responses = list()
+        self.resp_parts = dict()
         self.error = None
 
     def on_response(self, ch, method, props, body):
         print("received message: ", body)
         if (not self.error) and props.correlation_id in self.cor_id_con_map:
+            if props.correlation_id not in self.resp_parts:
+                self.resp_parts[props.correlation_id] = body
+                return
+            
+            body = self.resp_parts.pop(props.correlation_id) + body
             connection = self.cor_id_con_map.pop(props.correlation_id)
             print(body)
             response = dill.loads(body)
