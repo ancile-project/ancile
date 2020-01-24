@@ -9,7 +9,7 @@ channel.queue_declare(queue='ancile')
 
 
 def callback(ch, method, properties, body):
-    print(" [x] Received %r" % body)
+    print(" [x] Received message of length {}".format(len(body)))
     request = dill.loads(body)
 
     dpp = request.get("data_policy_pair")
