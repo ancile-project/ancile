@@ -11,7 +11,7 @@ class UseDecorator(BaseDecorator):
         self.scopes.append('return')
 
     def process_call(self, command):
-        logger.debug(f'Calling Use "{command.function_name}" with arguments {command.print_params}')
+        #logger.debug(f'Calling Use "{command.function_name}" with arguments {command.print_params}')
 
         dp_pair = UseDecorator.decorator_preamble(command.params)
         new_dp_pair = copy.copy(dp_pair)

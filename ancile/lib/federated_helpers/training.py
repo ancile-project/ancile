@@ -96,7 +96,7 @@ def _train_local(helper, params):
                 total_loss = 0
                 start_time = time.time()
 
-    return pickle.dumps(model.state_dict())
+    return model.state_dict()
 
 
 def train(helper, epoch, train_data_sets, local_model, target_model, last_weight_accumulator):

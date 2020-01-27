@@ -15,18 +15,18 @@ class TransformDecorator(BaseDecorator):
         self.scopes.append('transform')
 
     def process_call(self, command):
-        logger.debug(f'Calling Transformation "{command.function_name}" with arguments {command.print_params}')
+        #logger.debug(f'Calling Transformation "{command.function_name}" with arguments {command.print_params}')
 
         dp_pairs = TransformDecorator.decorator_preamble(command.params)
         if len(dp_pairs) == 1:
             key, dp_pair = dp_pairs.popitem()
             new_dp_pair = copy.copy(dp_pair)
             new_dp_pair._data = new_dp_pair._call_transform(command=command, keys=key)
-            logger.error(new_dp_pair._data)
+            #logger.error(new_dp_pair._data)
         else:
             new_dp_pair = DataPolicyPair.combine_dpps_dict(dp_pairs)
             new_dp_pair._data = new_dp_pair._call_transform(command=command, keys=list(dp_pairs.keys()))
-            logger.error(new_dp_pair._data)
+            #logger.error(new_dp_pair._data)
         return new_dp_pair
 
     @staticmethod
@@ -35,7 +35,7 @@ class TransformDecorator(BaseDecorator):
 
         for name, param in params.items():
             if isinstance(param, DataPolicyPair):
-                logger.info(f'Found DataPolicyPair for param: {name}')
+                #logger.info(f'Found DataPolicyPair for param: {name}')
                 dp_pairs[name] = param
             elif isinstance(param, list):
                 # check all items in list are DPPs

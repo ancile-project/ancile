@@ -2,6 +2,7 @@ import pika
 import dill
 import ancile
 from ancile.core.core import execute
+from time import sleep
 
 connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
 channel = connection.channel()
@@ -33,21 +34,31 @@ def callback(ch, method, properties, body):
             message = {"data_policy_pair": res["data"][0]}
 
     pickled_body = dill.dumps(message)
-    print("returning response: ", str(message))
+    print("length of response:", str(len(pickled_body)))
+    print("returning response:", str(message))
+
+    index = 0
+    part_num = 0
+    while index < len(pickled_body):
+        part_num += 1
+        new_index = min(index+5000000, len(pickled_body))
+        channel.basic_publish(
+                exchange='',
+                routing_key='ancile_reply',
+                properties=pika.BasicProperties(
+                    correlation_id=properties.correlation_id,
+                ),
+                body=pickled_body[index:new_index])
+        print("sent part", str(part_num))
+        index = new_index
     channel.basic_publish(
             exchange='',
             routing_key='ancile_reply',
             properties=pika.BasicProperties(
                 correlation_id=properties.correlation_id,
             ),
-            body=pickled_body[:len(pickled_body) // 2])
-    channel.basic_publish(
-            exchange='',
-            routing_key='ancile_reply',
-            properties=pika.BasicProperties(
-                correlation_id=properties.correlation_id,
-            ),
-            body=pickled_body[len(pickled_body) // 2:])
+            body="")
+    print("sent final blank message")
 
 channel.basic_consume(queue='ancile', on_message_callback=callback, auto_ack=True)
 print(' [*] Waiting for messages. To exit press CTRL+C')

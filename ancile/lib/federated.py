@@ -9,5 +9,10 @@ name = 'federated'
 @TransformDecorator()
 def train_local(data):
     unpickled = dill.loads(data)
-    data = _train_local(**unpickled)
+    data = dill.dumps(_train_local(**unpickled))
     return data
+
+ 
+@TransformDecorator()
+def average(data_policy_pairs):
+    return data_policy_pairs[0]

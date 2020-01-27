@@ -15,16 +15,18 @@ class RpcClient(object):
         self.error = None
 
     def on_response(self, ch, method, props, body):
-        print("received message: ", body)
+        print("received message")
         if (not self.error) and props.correlation_id in self.cor_id_con_map:
-            if props.correlation_id not in self.resp_parts:
-                self.resp_parts[props.correlation_id] = body
+            if body:
+                self.resp_parts[props.correlation_id] = self.resp_parts.get(props.correlation_id, b"") + body
+                print("part processed")
                 return
-            
-            body = self.resp_parts.pop(props.correlation_id) + body
+
+            body = self.resp_parts.pop(props.correlation_id)
             connection = self.cor_id_con_map.pop(props.correlation_id)
-            print(body)
+            print("starting loading")
             response = dill.loads(body)
+            print("loading done")
 
             if "error" in response:
                 self.error = response["error"]
@@ -33,7 +35,10 @@ class RpcClient(object):
             dp = response["data_policy_pair"]
             self.responses.append(dp)
 
+            print("message processed")
+
     def queue(self, user, policy, data, host, program):
+        print(f"Queuing {user}")
         data_policy_pair = DataPolicyPair(policy=policy,
                         username=user,
                         app_id=self.app_id,
@@ -45,8 +50,9 @@ class RpcClient(object):
         pickled_body = dill.dumps(body)
 
         connection = pika.BlockingConnection(
-            pika.ConnectionParameters(host=host))
+            pika.ConnectionParameters(host=host, heartbeat=600, blocked_connection_timeout=600))
         channel = connection.channel()
+        channel.basic_qos(prefetch_count=1, global_qos=True)
         result = channel.queue_declare(queue='ancile_reply')
         callback_queue = result.method.queue
         channel.basic_consume(
@@ -65,12 +71,11 @@ class RpcClient(object):
             ),
             body=pickled_body)
     
-    def loop(self, time=30):
-        for _ in range(time):
+    def loop(self):
+        while True:
             for connection in tuple(self.cor_id_con_map.values()):
                 connection.process_data_events()
             if self.error or not self.cor_id_con_map:
                 break
-            sleep(1)
         if self.cor_id_con_map:
             self.error = "One or more nodes timed out"

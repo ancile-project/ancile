@@ -61,7 +61,7 @@ def execute_api(request):
             return JsonResponse({"result": "error",
                              "error": "Remote execution program missing"})
 
-        corpus = load_data('./corpus_80000.pt.tar')
+        corpus = load_data('./corpus_small.pt.tar')
         with open('ancile/lib/federated_helpers/utils/words.yaml') as f:
             params = yaml.load(f)
         helper = TextHelper(params=params, current_time='None',
@@ -114,7 +114,7 @@ def execute_api(request):
                       app_id=app_id,
                       app_module=get_app_module(app_id))
 
-    logger.info(f"Returning response: {res}")
+    #logger.info(f"Returning response: {res}")
     return JsonResponse(res)
 
 @require_http_methods(["POST"])
