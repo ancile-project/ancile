@@ -5,10 +5,12 @@ import yaml
 from ancile.core.primitives.data_policy_pair import DataPolicyPair
 from ancile.core.user_secrets import UserSecrets
 from ancile.core.decorators import *
-from ancile.lib.federated.models.word_model import RNNModel
-from ancile.lib.federated.training import *
-from ancile.lib.federated.utils.text_helper import TextHelper
+from ancile.lib.federated_helpers.models.word_model import RNNModel
+from ancile.lib.federated_helpers.training import *
+from ancile.lib.federated_helpers.utils.text_helper import TextHelper
+from ancile.lib.federated import *
 from utils.text_load import *
+import sys
 import random
 name='test_module_name'
 import pickle
@@ -37,14 +39,52 @@ class FederatedTests(unittest.TestCase):
         # we can assume for now that the data is preprocessed
 
         # download from here: https://drive.google.com/file/d/1qTfiZP4g2ZPS5zlxU51G-GDCGGr23nvt/view
-        self.corpus = load_data('/Users/ebagdasaryan/Downloads/corpus_80000.pt.tar')
+        self.corpus = load_data('/Users/ebagdasaryan/Downloads/old_stuff/corpus_80000.pt.tar')
+        self.corpus.train = self.corpus.train[:20]
 
     def init_model(self):
-        with open('ancile/lib/federated/utils/words.yaml') as f:
+        with open('ancile/lib/federated_helpers/utils/words.yaml') as f:
             params = yaml.load(f)
         self.helper = TextHelper(params=params, current_time='None',
                                  name='databox', n_tokens=self.corpus.no_tokens)
         self.model = self.helper.create_one_model()
+
+
+    def test_ancile_controlled(self):
+        self.load_data()
+
+        self.init_model()
+        model = DataPolicyPair('ANYF*')
+        model._data = self.model.state_dict()
+        self.helper.load_data(self.corpus)  # parses data
+
+        for epoch in range(1, 10):
+            participants = random.sample(range(0, 10), 1)
+            weight_accumulator = DataPolicyPair(policy='ANYF*')
+            weight_accumulator._data = dict()
+
+            for participant in participants:
+                ## this should happen on the client
+                train_data = self.helper.train_data[participant]
+                train_dpp = DataPolicyPair('ANYF*')
+                train_dpp._data = train_dpp
+                ## client-side
+
+                # pickle data so we can send it over
+                data = pickle.dumps({'helper': self.helper,
+                                     'global_model': model,
+                                     'train_data': train_dpp,
+                                     'model_id': participant
+                                     })
+                updated_weights = train_local(data=data)
+                model_state_dict = pickle.loads(updated_weights)
+                print('training done')
+                weight_accumulator = accumulate(incoming_dp=model_state_dict, summed_dps=weight_accumulator)
+                print('acc done')
+            model = average(summed_dps=weight_accumulator, global_model=model, eta=100, diff_privacy=None)
+            print('avg done')
+        return True
+
 
     def test_run_federated(self):
         # AncileWeb part:

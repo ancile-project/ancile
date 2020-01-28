@@ -5,14 +5,49 @@ import dill
 name = 'federated'
 
 
-
-@TransformDecorator()
+# @TransformDecorator()
 def train_local(data):
+    """
+    This part simulates the
+
+    """
     unpickled = dill.loads(data)
-    data = dill.dumps(_train_local(**unpickled))
+    output = _train_local(**unpickled)
+    data = dill.dumps(output)
     return data
 
- 
+
 @TransformDecorator()
-def average(data_policy_pairs):
-    return data_policy_pairs[0]
+def accumulate(incoming_dp, summed_dps):
+    import torch
+    # averaging part
+    for name, data in incoming_dp.items():
+        #### don't scale tied weights:
+        if name == 'decoder.weight' or '__' in name:
+            continue
+        if not summed_dps.get(name, False):
+            summed_dps[name] = torch.zeros_like(data, requires_grad=True)
+        with torch.no_grad():
+            summed_dps[name].add_(data)
+
+    return summed_dps
+
+
+@TransformDecorator()
+def average(summed_dps, global_model, eta, diff_privacy=None):
+    import torch
+
+    for name, data in global_model.items():
+        #### don't scale tied weights:
+        if name == 'decoder.weight' or '__' in name:
+            continue
+
+        update_per_layer = summed_dps[name] * eta
+        if diff_privacy:
+            noised_layer = torch.cuda.FloatTensor(data.shape).normal_(mean=0, std=diff_privacy['sigma'])
+            update_per_layer.add_(noised_layer)
+
+        with torch.no_grad():
+            data.add_(update_per_layer)
+
+    return global_model
