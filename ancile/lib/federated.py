@@ -25,7 +25,7 @@ def accumulate(incoming_dp, summed_dps):
         #### don't scale tied weights:
         if name == 'decoder.weight' or '__' in name:
             continue
-        if not summed_dps.get(name, False):
+        if summed_dps.get(name, False) is False:
             summed_dps[name] = torch.zeros_like(data, requires_grad=True)
         with torch.no_grad():
             summed_dps[name].add_(data)

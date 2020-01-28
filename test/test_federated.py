@@ -54,20 +54,18 @@ class FederatedTests(unittest.TestCase):
         self.load_data()
 
         self.init_model()
-        model = DataPolicyPair('ANYF*')
-        model._data = self.model.state_dict()
+        model = self.model.state_dict()
         self.helper.load_data(self.corpus)  # parses data
 
         for epoch in range(1, 10):
-            participants = random.sample(range(0, 10), 1)
-            weight_accumulator = DataPolicyPair(policy='ANYF*')
-            weight_accumulator._data = dict()
+            participants = random.sample(range(0, 10), 2)
+            weight_accumulator = dict()
 
             for participant in participants:
                 ## this should happen on the client
                 train_data = self.helper.train_data[participant]
-                train_dpp = DataPolicyPair('ANYF*')
-                train_dpp._data = train_dpp
+                train_dpp = DataPolicyPair('(_train_local.accumulate* + average*)*')
+                train_dpp._data = train_data
                 ## client-side
 
                 # pickle data so we can send it over
@@ -82,7 +80,7 @@ class FederatedTests(unittest.TestCase):
                 weight_accumulator = accumulate(incoming_dp=model_state_dict, summed_dps=weight_accumulator)
                 print('acc done')
             model = average(summed_dps=weight_accumulator, global_model=model, eta=100, diff_privacy=None)
-            print('avg done')
+            print(f'avg done. policy: {model._policy}')
         return True
 
 
