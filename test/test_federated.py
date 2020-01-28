@@ -57,7 +57,8 @@ class FederatedTests(unittest.TestCase):
         model = self.model.state_dict()
         self.helper.load_data(self.corpus)  # parses data
 
-        for epoch in range(1, 10):
+        for epoch in range(1, 2):
+            print(f'epoch: {epoch}.')
             participants = random.sample(range(0, 10), 2)
             weight_accumulator = dict()
 
@@ -76,11 +77,11 @@ class FederatedTests(unittest.TestCase):
                                      })
                 updated_weights = train_local(data=data)
                 model_state_dict = pickle.loads(updated_weights)
-                print('training done')
+                print('Participant: {participant}. Training done.')
                 weight_accumulator = accumulate(incoming_dp=model_state_dict, summed_dps=weight_accumulator)
-                print('acc done')
+                print('Accumulation done.')
             model = average(summed_dps=weight_accumulator, global_model=model, eta=100, diff_privacy=None)
-            print(f'avg done. policy: {model._policy}')
+            print(f'Avg done. policy: {model._policy}')
         return True
 
 
