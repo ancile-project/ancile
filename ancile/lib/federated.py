@@ -21,6 +21,7 @@ def train_local(data):
 def accumulate(incoming_dp, summed_dps):
     import torch
     # averaging part
+    incoming_dp = dill.loads(incoming_dp)
     for name, data in incoming_dp.items():
         #### don't scale tied weights:
         if name == 'decoder.weight' or '__' in name:

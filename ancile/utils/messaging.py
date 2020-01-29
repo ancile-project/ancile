@@ -4,6 +4,11 @@ import uuid
 from time import sleep
 from ancile.core.primitives import DataPolicyPair
 import json
+import pickle
+from ancile.lib.federated import accumulate
+
+def debug(user, msg):
+    print(f"[{user}] {msg}")
 
 class RpcClient(object):
 
@@ -13,29 +18,37 @@ class RpcClient(object):
         self.responses = list()
         self.resp_parts = dict()
         self.error = None
+        self.weights = dict()
+
+        self.connection = pika.BlockingConnection(
+            pika.ConnectionParameters(host="localhost", heartbeat=600, blocked_connection_timeout=600))
+        self.channel = self.connection.channel()
+        self.channel.basic_qos(prefetch_count=1, global_qos=True)
 
     def on_response(self, ch, method, props, body):
-        print("received message")
+        print("Received message")
         if (not self.error) and props.correlation_id in self.cor_id_con_map:
+            user = self.cor_id_con_map[props.correlation_id]
             if body:
                 self.resp_parts[props.correlation_id] = self.resp_parts.get(props.correlation_id, b"") + body
-                print("part processed")
+                debug(user, "Part processed")
                 return
-
             body = self.resp_parts.pop(props.correlation_id)
-            connection = self.cor_id_con_map.pop(props.correlation_id)
-            print("starting loading")
+            self.cor_id_con_map.pop(props.correlation_id)
+            debug(user, "Starting loading")
             response = dill.loads(body)
-            print("loading done")
-
+            debug(user, "Loading done")
+            
             if "error" in response:
+                debug(user, response["error"])
                 self.error = response["error"]
                 return
-
+            
+            debug(user, "Accumulating")
             dp = response["data_policy_pair"]
-            self.responses.append(dp)
-
-            print("message processed")
+            weight_accumulator = accumulate(incoming_dp=dp, summed_dps=self.weights)
+            debug(user, "Done accumulating")
+            debug(user, "Model processed")
 
     def queue(self, user, policy, data, host, program):
         print(f"Queuing {user}")
@@ -48,23 +61,20 @@ class RpcClient(object):
         
         body = {"program": program, "data_policy_pair": data_policy_pair}
         pickled_body = dill.dumps(body)
-
-        connection = pika.BlockingConnection(
-            pika.ConnectionParameters(host=host, heartbeat=600, blocked_connection_timeout=600))
-        channel = connection.channel()
-        channel.basic_qos(prefetch_count=1, global_qos=True)
-        result = channel.queue_declare(queue='ancile_reply')
+        
+        result = self.channel.queue_declare(queue=user+'_reply')
         callback_queue = result.method.queue
-        channel.basic_consume(
+        self.channel.basic_consume(
             queue=callback_queue,
             on_message_callback=self.on_response,
             auto_ack=True)
-        
+
+         
         corr_id = str(uuid.uuid4())
-        self.cor_id_con_map[corr_id] = connection
-        channel.basic_publish(
+        self.cor_id_con_map[corr_id] = user
+        self.channel.basic_publish(
             exchange='',
-            routing_key='ancile',
+            routing_key=user,
             properties=pika.BasicProperties(
                 reply_to=callback_queue,
                 correlation_id=corr_id,
@@ -73,8 +83,7 @@ class RpcClient(object):
     
     def loop(self):
         while True:
-            for connection in tuple(self.cor_id_con_map.values()):
-                connection.process_data_events()
+            self.connection.process_data_events()
             if self.error or not self.cor_id_con_map:
                 break
         if self.cor_id_con_map:
