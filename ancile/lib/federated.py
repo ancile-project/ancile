@@ -5,7 +5,7 @@ import dill
 name = 'federated'
 
 
-# @TransformDecorator()
+@TransformDecorator()
 def train_local(data):
     """
     This part simulates the

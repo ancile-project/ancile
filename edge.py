@@ -3,11 +3,14 @@ import dill
 import ancile
 from ancile.core.core import execute
 from time import sleep
+from socket import gethostname
 
-connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
+creds = pika.PlainCredentials('test', 'test')
+connection = pika.BlockingConnection(pika.ConnectionParameters(host='143.229.6.212', credentials=creds))
 channel = connection.channel()
-channel.queue_declare(queue='ancile')
-
+hostname = gethostname()
+channel.queue_declare(queue=hostname)
+print("listening on", hostname)
 
 def callback(ch, method, properties, body):
     print(" [x] Received message of length {}".format(len(body)))
@@ -41,10 +44,10 @@ def callback(ch, method, properties, body):
     part_num = 0
     while index < len(pickled_body):
         part_num += 1
-        new_index = min(index+5000000, len(pickled_body))
+        new_index = min(index+100000000, len(pickled_body))
         channel.basic_publish(
                 exchange='',
-                routing_key='ancile_reply',
+                routing_key=hostname+'_reply',
                 properties=pika.BasicProperties(
                     correlation_id=properties.correlation_id,
                 ),
@@ -53,14 +56,14 @@ def callback(ch, method, properties, body):
         index = new_index
     channel.basic_publish(
             exchange='',
-            routing_key='ancile_reply',
+            routing_key=hostname+'_reply',
             properties=pika.BasicProperties(
                 correlation_id=properties.correlation_id,
             ),
             body="")
     print("sent final blank message")
 
-channel.basic_consume(queue='ancile', on_message_callback=callback, auto_ack=True)
+channel.basic_consume(queue=hostname, on_message_callback=callback, auto_ack=True)
 print(' [*] Waiting for messages. To exit press CTRL+C')
 channel.start_consuming()
 
