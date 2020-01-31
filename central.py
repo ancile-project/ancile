@@ -9,19 +9,18 @@ from random import sample
 
 def execute(users):
     remote_program = '''
-dpp = data_policy_pairs.pop()
-dpp = federated.train_local(data=dpp)
-result.return_to_web(dpp=dpp)
+model = data_policy_pairs.pop()
+reddit_data = databox.get_latest_reddit_data(session="")
+trained_model = federated.train_local(model=model, data_point=reddit_data)
+result.return_to_web(dpp=trained_model)
     '''
 
     print("Loading dataset...")
-    corpus = load_data('./corpus_80000.pt.tar')
     with open('ancile/lib/federated_helpers/utils/words.yaml') as f:
         params = yaml.load(f)
     helper = TextHelper(params=params, current_time='None',
-                        name='databox', n_tokens=corpus.no_tokens)
+                        name='databox', n_tokens=50000)
     model = helper.create_one_model().state_dict()
-    helper.load_data(corpus=corpus)
     
     with open("delays.txt") as f:
         delay_list = sample([float(ts) for ts in f.read().split('\n') if ts], len(users))
@@ -30,29 +29,16 @@ result.return_to_web(dpp=dpp)
     client = RpcClient(app_id=1)
 
     for index, user in enumerate(users):
-        train_data = helper.train_data[index]
-
-
-        # backup dataset
-        temp_train_data = helper.train_data
-        temp_corpus = helper.corpus
-        helper.train_data = None
-        helper.corpus = None
-
         data = dill.dumps({
             'helper': helper,
             'global_model': model,
-            'model_id': index,
-            'train_data': train_data})
-
-        helper.train_data = temp_train_data
-        helper.corpus = temp_corpus
+            'model_id': index})
 
         # need to fetch user policy and hostnames
-        policy = "(train_local.accumulate*+average*)*"
+        policy = "ANYF*"
         host = "localhost"
 
-        client.queue(user, policy, data, host, remote_program, delay_list[index])
+        client.queue(user, policy, data, host, remote_program)
 
     print("Starting loop...")
     client.loop()

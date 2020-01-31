@@ -19,7 +19,6 @@ class RpcClient(object):
         self.error = None
         self.weights = dict()
         self.times = list()
-        self.delays = dict()
 
         self.connection = pika.BlockingConnection(
             pika.ConnectionParameters(host="localhost", heartbeat=600, blocked_connection_timeout=600))
@@ -52,9 +51,9 @@ class RpcClient(object):
             self.weights = accumulate(incoming_dp=dp, summed_dps=self.weights)
             debug(user, "Done accumulating")
             debug(user, "Model processed")
-            self.times.append((user, self.delays[user], time()-self.begin_time, ))
+            self.times.append((user, time()-self.begin_time, ))
 
-    def queue(self, user, policy, data, host, program, delay):
+    def queue(self, user, policy, data, host, program):
         debug(user, "Queuing model")
         data_policy_pair = DataPolicyPair(policy=policy,
                         username=user,
@@ -63,7 +62,7 @@ class RpcClient(object):
                         name=user)
         data_policy_pair._data = data
         
-        body = {"program": program, "data_policy_pair": data_policy_pair, "delay": delay}
+        body = {"program": program, "data_policy_pair": data_policy_pair} 
         pickled_body = dill.dumps(body)
         
         result = self.channel.queue_declare(queue=user+'_reply')
@@ -76,7 +75,6 @@ class RpcClient(object):
          
         corr_id = str(uuid.uuid4())
         self.cor_id_con_map[corr_id] = user
-        self.delays[user] = delay
         self.channel.basic_publish(
             exchange='',
             routing_key=user,
