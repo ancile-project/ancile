@@ -9,6 +9,7 @@ import pickle
 from ancile.utils.messaging import RpcClient
 import dill
 from ancile.lib.federated import average
+from random import sample
 
 def execute(users):
     remote_program = '''
@@ -26,6 +27,9 @@ result.return_to_web(dpp=dpp)
     model = helper.create_one_model().state_dict()
     helper.load_data(corpus=corpus)
     
+    with open("delays.txt") as f:
+        delay_list = sample([float(ts) for ts in f.read().split('\n') if ts], len(users))
+
     print("Connecting to RMQ server...")
     client = RpcClient(app_id=1)
 
@@ -49,10 +53,10 @@ result.return_to_web(dpp=dpp)
         helper.corpus = temp_corpus
 
         # need to fetch user policy and hostnames
-        policy = "train_local.accumulate.average"
+        policy = "(train_local.accumulate*+average*)*"
         host = "localhost"
 
-        client.queue(user, policy, data, host, remote_program)
+        client.queue(user, policy, data, host, remote_program, delay_list[index])
 
     print("Starting loop...")
     client.loop()
@@ -65,4 +69,6 @@ result.return_to_web(dpp=dpp)
         print(f'Avg done. policy:', policy)
 
 #execute(["turing", "mote"])
-execute(["sp309-17" + str(i) for i in  range(10)])
+
+import sys
+execute(sys.argv[1:])
