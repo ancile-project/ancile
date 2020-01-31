@@ -6,7 +6,7 @@ from time import sleep, time
 from socket import gethostname
 
 creds = pika.PlainCredentials('test', 'test')
-connection = pika.BlockingConnection(pika.ConnectionParameters(host='143.229.6.212', credentials=creds))
+connection = pika.BlockingConnection(pika.ConnectionParameters(host='54.241.202.32', credentials=creds))
 channel = connection.channel()
 hostname = gethostname()
 channel.queue_declare(queue=hostname)
@@ -20,9 +20,6 @@ def callback(ch, method, properties, body):
 
     dpp = request.get("data_policy_pair")
     program = request.get("program")
-    delay = request.get("delay")
-
-    sleep(delay)
 
     if not dpp:
         message = {"error": "data_policy_pair missing"}

@@ -6,12 +6,13 @@ name = 'federated'
 
 
 @TransformDecorator()
-def train_local(data):
+def train_local(model, data_point):
     """
     This part simulates the
 
     """
-    unpickled = dill.loads(data)
+    unpickled = dill.loads(model)
+    unpickled["train_data"] = data_point
     output = _train_local(**unpickled)
     data = dill.dumps(output)
     return data
