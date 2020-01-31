@@ -44,54 +44,59 @@ def get_weight_accumulator(model, helper):
 
 
 @TransformDecorator()
-def _train_local(helper, model_id, train_data, global_model):
+def _train_local(helper, model_id, train_data, global_model, perform_training=False):
+
+    #tokenize
+    train_data = helper.corpus.tokenize_string(train_data)
 
     model = helper.create_one_model()
     model.copy_params(global_model)
-    optimizer = torch.optim.SGD(model.parameters(), lr=helper.lr,
-                                momentum=helper.momentum,
-                                weight_decay=helper.decay)
-    model.train()
 
-    # ntokens = helper.n_tokens
-    # hidden = model.init_hidden(helper.batch_size)
-    #
-    # for internal_epoch in range(1, helper.retrain_no_times + 1):
-    #     total_loss = 0.
-    #     data_iterator = range(0, train_data.size(0) - 1, helper.bptt)
-    #
-    #     for batch_id, batch in enumerate(data_iterator):
-    #         optimizer.zero_grad()
-    #         data, targets = helper.get_batch(train_data, batch,
-    #                                          evaluation=False)
-    #         hidden = helper.repackage_hidden(hidden)
-    #         output, hidden = model(data, hidden)
-    #         loss = criterion(output.view(-1, ntokens), targets)
-    #
-    #         loss.backward()
-    #
-    #         # `clip_grad_norm` helps prevent the exploding gradient
-    #         # problem in RNNs / LSTMs.
-    #         torch.nn.utils.clip_grad_norm_(model.parameters(), helper.params['clip'])
-    #         optimizer.step()
-    #
-    #         total_loss += loss.item()
-    #
-    #         if helper.report_train_loss and batch_id % helper.params[
-    #             'log_interval'] == 0 and batch_id > 0:
-    #             cur_loss = total_loss.item() / helper.log_interval
-    #             elapsed = time.time() - start_time
-    #             logger.info('model {} | epoch {:3d} | internal_epoch {:3d} '
-    #                         '| {:5d}/{:5d} batches | lr {:02.2f} | ms/batch {:5.2f} | '
-    #                         'loss {:5.2f} | ppl {:8.2f}'
-    #                         .format(model_id, epoch, internal_epoch,
-    #                                 batch_id, train_data.size(0) // helper.bptt,
-    #                                 helper.params['lr'],
-    #                                 elapsed * 1000 / helper.log_interval,
-    #                                 cur_loss,
-    #                                 math.exp(cur_loss) if cur_loss < 30 else -1.))
-    #             total_loss = 0
-    #             start_time = time.time()
+
+    if perform_training:
+        optimizer = torch.optim.SGD(model.parameters(), lr=helper.lr,
+                                    momentum=helper.momentum,
+                                    weight_decay=helper.decay)
+        model.train()
+
+        ntokens = helper.n_tokens
+        hidden = model.init_hidden(helper.batch_size)
+        for internal_epoch in range(1, helper.retrain_no_times + 1):
+            total_loss = 0.
+            data_iterator = range(0, train_data.size(0) - 1, helper.bptt)
+
+            for batch_id, batch in enumerate(data_iterator):
+                optimizer.zero_grad()
+                data, targets = helper.get_batch(train_data, batch,
+                                                 evaluation=False)
+                hidden = helper.repackage_hidden(hidden)
+                output, hidden = model(data, hidden)
+                loss = criterion(output.view(-1, ntokens), targets)
+
+                loss.backward()
+
+                # `clip_grad_norm` helps prevent the exploding gradient
+                # problem in RNNs / LSTMs.
+                torch.nn.utils.clip_grad_norm_(model.parameters(), helper.params['clip'])
+                optimizer.step()
+
+                total_loss += loss.item()
+
+                if helper.report_train_loss and batch_id % helper.params[
+                    'log_interval'] == 0 and batch_id > 0:
+                    cur_loss = total_loss.item() / helper.log_interval
+                    elapsed = time.time() - start_time
+                    logger.info('model {} | epoch {:3d} | internal_epoch {:3d} '
+                                '| {:5d}/{:5d} batches | lr {:02.2f} | ms/batch {:5.2f} | '
+                                'loss {:5.2f} | ppl {:8.2f}'
+                                .format(model_id, epoch, internal_epoch,
+                                        batch_id, train_data.size(0) // helper.bptt,
+                                        helper.params['lr'],
+                                        elapsed * 1000 / helper.log_interval,
+                                        cur_loss,
+                                        math.exp(cur_loss) if cur_loss < 30 else -1.))
+                    total_loss = 0
+                    start_time = time.time()
 
     # substract global model
     weights = dict()

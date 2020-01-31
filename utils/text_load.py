@@ -116,6 +116,12 @@ class Corpus(object):
 
         return ids
 
+    def tokenize_string(self, input_string):
+        words = get_word_list(input_string, self.dictionary)
+        word_list = [self.dictionary.word2idx[x] for x in words]
+
+        ids = torch.LongTensor(word_list)
+
 
 def load_data(path):
     corpus = torch.load(path)
