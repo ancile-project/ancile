@@ -1,12 +1,9 @@
 import pika
 import dill
 import uuid
-from time import sleep, time
+from time import time
 from ancile.core.primitives import DataPolicyPair
-import json
-import pickle
 from ancile.lib.federated import accumulate
-
 from statistics import mean
 
 def debug(user, msg):

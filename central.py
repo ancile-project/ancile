@@ -1,11 +1,7 @@
-import pickle
-import json
-from ancile.core.core import execute
 # ML stuff
 import yaml
 from utils.text_load import load_data
 from ancile.lib.federated_helpers.utils.text_helper import TextHelper
-import pickle
 from ancile.utils.messaging import RpcClient
 import dill
 from ancile.lib.federated import average
@@ -70,5 +66,6 @@ result.return_to_web(dpp=dpp)
 
 #execute(["turing", "mote"])
 
-import sys
-execute(sys.argv[1:])
+if __name__ == "__main__":
+    import sys
+    execute(sys.argv[1:])
