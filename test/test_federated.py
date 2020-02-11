@@ -68,11 +68,16 @@ class FederatedTests(unittest.TestCase):
         self.helper.load_data(self.corpus)  # parses data
 
         print("Training...")
+        train_data_total = self.helper.train_data
+        self.helper.train_data = None
+        self.helper.corpus.test = None
+        self.helper.corpus.train = None
+
 
         # weight_accumulator = get_weight_accumulator(self.model, self.helper)
 
-        for participant in random.sample(range(len(self.helper.train_data)), 100):
-            train_data = self.helper.train_data[participant]
+        for participant in random.sample(range(len(train_data_total)), 100):
+            train_data = train_data_total[participant]
 
             # pickle data so we can send it over
             params = pickle.dumps({'global_model': self.model.state_dict(),
