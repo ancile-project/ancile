@@ -121,7 +121,7 @@ class Corpus(object):
         word_list = [self.dictionary.word2idx[x] for x in words]
 
         ids = torch.LongTensor(word_list)
-
+        return ids
 
 def load_data(path):
     corpus = torch.load(path)
