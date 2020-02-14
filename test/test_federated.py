@@ -22,7 +22,7 @@ import pandas as pd
 
 from tqdm import tqdm
 
-SLEEP_TIME = 2
+SLEEP_TIME = 5
 
 def sample(data):
     data['a'] = 0
