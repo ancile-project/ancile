@@ -46,7 +46,7 @@ class FederatedTests(unittest.TestCase):
         # we can assume for now that the data is preprocessed
 
         # download from here: https://drive.google.com/file/d/1qTfiZP4g2ZPS5zlxU51G-GDCGGr23nvt/view
-        self.corpus = load_data('/Users/ebagdasaryan/Downloads/old_stuff/corpus_80000.pt.tar')
+        self.corpus = load_data('/home/databox/corpus_80000.pt.tar')
 
     def init_model(self):
         with open('ancile/lib/federated_helpers/utils/words.yaml') as f:
