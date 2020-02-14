@@ -46,10 +46,10 @@ class FederatedTests(unittest.TestCase):
         # we can assume for now that the data is preprocessed
 
         # download from here: https://drive.google.com/file/d/1qTfiZP4g2ZPS5zlxU51G-GDCGGr23nvt/view
-        self.corpus = load_data('/home/databox/corpus_80000.pt.tar')
+        self.corpus = load_data('/Users/ebagdasaryan/Downloads/old_stuff/corpus_80000.pt.tar')
 
     def init_model(self):
-        with open('ancile/lib/federated/utils/words.yaml') as f:
+        with open('ancile/lib/federated_helpers/utils/words.yaml') as f:
             params = yaml.load(f)
         self.helper = TextHelper(params=params, current_time='None',
                                  name='databox', n_tokens=self.corpus.no_tokens)
@@ -82,26 +82,34 @@ class FederatedTests(unittest.TestCase):
 
         for participant in tqdm(random.sample(range(len(train_data_total)), 1000)):
             train_data = train_data_total[participant]
+            train_data = json.dumps(self.helper.get_sentence(train_data.view(-1)))
 
             # pickle data so we can send it over
-            params = pickle.dumps({'global_model': self.model.state_dict(),
-                                  'model_id': participant, 'train_data': train_data})
+            params = pickle.dumps((self.model.state_dict(),train_data))
 
-            helper_dumps = pickle.dumps(self.helper)
+            # helper_dumps = pickle.dumps(self.helper)
 
-            tqdm.write("Size (in MB) of helper: %f" % (sys.getsizeof(helper_dumps) / 1024.0 / 1024.0))
+
+            # tqdm.write("Size (in MB) of helper: %f" % (sys.getsizeof(helper_dumps) / 1024.0 / 1024.0))
 
             # << Evaluation Start >>
-            time.sleep(SLEEP_TIME)
+            # time.sleep(SLEEP_TIME)
             start_time = time.time()
+            # load things
+            model, data =  pickle.loads(params)
+            time_delta1 = time.time()
 
-            updated_weights, mid_time = _train_local(helper=self.helper, params=params)
-
+            updated_weights = _train_local(helper=self.helper, global_model= model,
+                                                     model_id=participant, train_data=data)
+            time_delta2 = time.time()
+            model_state_dict = pickle.dumps(updated_weights)
             end_time = time.time()
-            time.sleep(SLEEP_TIME)
+            print(f"AAAA: {end_time-start_time}")
+            # time.sleep(SLEEP_TIME)
+
             # << Evaluation End >>
 
-            model_state_dict = pickle.loads(updated_weights)
+
 
             # # averaging part
             # for name, data in model_state_dict.items():
@@ -110,8 +118,8 @@ class FederatedTests(unittest.TestCase):
             #         continue
             #     weight_accumulator[name].add_(data - self.model.state_dict()[name])
 
-            part_1_delta = float(mid_time - start_time)
-            part_2_delta = float(end_time - mid_time)
+            part_1_delta = float(time_delta1 - start_time)
+            part_2_delta = float(end_time - time_delta2)
 
             timedelta = float(end_time - start_time)
             tqdm.write('Participant: %s - Training Duration (sec): %.4f (%.4f + %.4f)- Data Size: %d' % (participant, timedelta, part_1_delta, part_2_delta, len(train_data)))
@@ -216,7 +224,7 @@ if __name__ == "__main__":
     print("Process ID: %d" % os.getpid())
 
     print("Starting in 10 seconds...\n")
-    time.sleep(10)
+    # time.sleep(10)
 
     print("Started at: %s" % (datetime.now()))
     start_time = time.time()
