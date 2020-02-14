@@ -86,6 +86,11 @@ def counter(data: dict):
 # =============================================================================
 
 @TransformDecorator()
+def sample_data_policy_pairs(data_policy_pairs, sample_number):
+    from random import sample
+    return sample(data_policy_pairs, sample_number)
+
+@TransformDecorator()
 def keep_keys(data, keys):
     """
     Remove all keys except those listed from a DataPolicyPair.

@@ -20,7 +20,7 @@ class Dictionary(object):
 
 
 def get_word_list(line, dictionary):
-    splitted_words = json.loads(line.lower()).split()
+    splitted_words = json.loads(line.lower())
     words = ['<bos>']
     for word in splitted_words:
         word = filter_symbols.search(word)[0]

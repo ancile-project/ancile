@@ -7,17 +7,17 @@ name="databox"
 
 @ExternalDecorator()
 def get_latest_reddit_data(user, session):
-    return ""
     import requests
     import dill
 
     url = "https://127.0.0.1/app-ancile/ui/tsblob/latest"
     payload = { "data_source_id": "redditSimulatorData"}
-    headers = { "session": session}
+    headers = { "session": session }
     res = requests.get(url, cookies=headers, params=payload, verify=False)
     if res.status_code == 200:
         data = res.json()
     else:
         raise AncileException("Couldn't fetch data from databox.")
-    print(data, flush=True)
-    return data
+    string = data['data'][0]['data']['data']
+    print(string, flush=True)
+    return string

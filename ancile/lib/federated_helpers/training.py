@@ -44,11 +44,11 @@ def get_weight_accumulator(model, helper):
 
 
 @TransformDecorator()
-def _train_local(helper, model_id, train_data, global_model, perform_training=False):
+def _train_local(helper, model_id, train_data, global_model, perform_training=True):
 
     #tokenize
     train_data = helper.corpus.tokenize_string(train_data)
-
+    train_data = helper.batchify(train_data, helper.batch_size)
     model = helper.create_one_model()
     model.copy_params(global_model)
 
