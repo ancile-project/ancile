@@ -1,6 +1,7 @@
 import unittest
 
 import yaml
+import sys
 
 from ancile.core.primitives.data_policy_pair import DataPolicyPair
 from ancile.core.user_secrets import UserSecrets
@@ -19,7 +20,9 @@ from datetime import datetime, timedelta
 import os
 import pandas as pd
 
-SLEEP_TIME = 5
+from tqdm import tqdm
+
+SLEEP_TIME = 2
 
 def sample(data):
     data['a'] = 0
@@ -76,12 +79,16 @@ class FederatedTests(unittest.TestCase):
 
         # weight_accumulator = get_weight_accumulator(self.model, self.helper)
 
-        for participant in random.sample(range(len(train_data_total)), 100):
+        for participant in tqdm(random.sample(range(len(train_data_total)), 100)):
             train_data = train_data_total[participant]
 
             # pickle data so we can send it over
             params = pickle.dumps({'global_model': self.model.state_dict(),
                                   'model_id': participant, 'train_data': train_data})
+
+            helper_dumps = pickle.dumps(self.helper)
+
+            tqdm.write("Size (in MB) of helper: %f" % (sys.getsizeof(helper_dumps) / 1024.0 / 1024.0))
 
             # << Evaluation Start >>
             time.sleep(SLEEP_TIME)
@@ -103,7 +110,7 @@ class FederatedTests(unittest.TestCase):
             #     weight_accumulator[name].add_(data - self.model.state_dict()[name])
 
             timedelta = float(end_time - start_time)
-            print('Participant: %s - Training Duration (sec): %.4f - Data Size: %d' % (participant, timedelta, len(train_data)))
+            tqdm.write('Participant: %s - Training Duration (sec): %.4f - Data Size: %d' % (participant, timedelta, len(train_data)))
 
             # Add to df
             data = {columns[0]: start_time,
