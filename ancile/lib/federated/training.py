@@ -59,6 +59,8 @@ def train_local(helper, params):
     ntokens = helper.n_tokens
     hidden = model.init_hidden(helper.batch_size)
 
+    mid_time = time.time()
+
     for internal_epoch in range(1, helper.retrain_no_times + 1):
         total_loss = 0.
         data_iterator = range(0, train_data.size(0) - 1, helper.bptt)
@@ -96,7 +98,7 @@ def train_local(helper, params):
                 total_loss = 0
                 start_time = time.time()
 
-    return pickle.dumps(model.state_dict())
+    return (pickle.dumps(model.state_dict()), mid_time)
 
 
 def train(helper, epoch, train_data_sets, local_model, target_model, last_weight_accumulator):

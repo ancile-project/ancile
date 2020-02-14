@@ -94,7 +94,7 @@ class FederatedTests(unittest.TestCase):
             time.sleep(SLEEP_TIME)
             start_time = time.time()
 
-            updated_weights = train_local(helper=self.helper, params=params)
+            updated_weights, mid_time = train_local(helper=self.helper, params=params)
 
             end_time = time.time()
             time.sleep(SLEEP_TIME)
@@ -109,8 +109,11 @@ class FederatedTests(unittest.TestCase):
             #         continue
             #     weight_accumulator[name].add_(data - self.model.state_dict()[name])
 
+            part_1_delta = float(mid_time - start_time)
+            part_2_delta = float(end_time - mid_time)
+
             timedelta = float(end_time - start_time)
-            tqdm.write('Participant: %s - Training Duration (sec): %.4f - Data Size: %d' % (participant, timedelta, len(train_data)))
+            tqdm.write('Participant: %s - Training Duration (sec): %.4f (%.4f + %.4f)- Data Size: %d' % (participant, timedelta, part_1_delta, part_2_delta len(train_data)))
 
             # Add to df
             data = {columns[0]: start_time,
