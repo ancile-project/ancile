@@ -1,23 +1,30 @@
 import unittest
 
 import yaml
+import sys
 
 from ancile.core.primitives.data_policy_pair import DataPolicyPair
 from ancile.core.user_secrets import UserSecrets
 from ancile.core.decorators import *
 from ancile.lib.federated_helpers.models.word_model import RNNModel
 from ancile.lib.federated_helpers.training import *
+from ancile.lib.federated_helpers.training import _train_local
 from ancile.lib.federated_helpers.utils.text_helper import TextHelper
-from ancile.lib.federated import *
 from utils.text_load import *
-import sys
 import random
-name='test_module_name'
+name = 'test_module_name'
 import pickle
 
+import time
+from datetime import datetime, timedelta
 
+import os
+import pandas as pd
 
-@TransformDecorator(scopes=None)
+from tqdm import tqdm
+
+SLEEP_TIME = 5
+
 def sample(data):
     data['a'] = 0
     return data
@@ -39,87 +46,89 @@ class FederatedTests(unittest.TestCase):
         # we can assume for now that the data is preprocessed
 
         # download from here: https://drive.google.com/file/d/1qTfiZP4g2ZPS5zlxU51G-GDCGGr23nvt/view
-        self.corpus = load_data('/Users/ebagdasaryan/Downloads/old_stuff/corpus_80000.pt.tar')
-        self.corpus.train = self.corpus.train[:20]
+        self.corpus = load_data('/home/databox/corpus_80000.pt.tar')
 
     def init_model(self):
-        with open('ancile/lib/federated_helpers/utils/words.yaml') as f:
+        with open('ancile/lib/federated/utils/words.yaml') as f:
             params = yaml.load(f)
         self.helper = TextHelper(params=params, current_time='None',
                                  name='databox', n_tokens=self.corpus.no_tokens)
         self.model = self.helper.create_one_model()
 
-
-    def test_ancile_controlled(self):
-        self.load_data()
-
-        self.init_model()
-        model = self.model.state_dict()
-        self.helper.load_data(self.corpus)  # parses data
-
-        for epoch in range(1, 2):
-            print(f'epoch: {epoch}.')
-            participants = random.sample(range(0, 10), 2)
-            weight_accumulator = dict()
-
-            for participant in participants:
-                ## this should happen on the client
-                train_data = self.helper.train_data[participant]
-                train_dpp = DataPolicyPair('(_train_local.accumulate* + average*)*')
-                train_dpp._data = train_data
-                ## client-side
-
-                # pickle data so we can send it over
-                data = pickle.dumps({'helper': self.helper,
-                                     'global_model': model,
-                                     'train_data': train_dpp,
-                                     'model_id': participant
-                                     })
-                updated_weights = train_local(data=data)
-                model_state_dict = pickle.loads(updated_weights)
-                print('Participant: {participant}. Training done.')
-                weight_accumulator = accumulate(incoming_dp=model_state_dict, summed_dps=weight_accumulator)
-                print('Accumulation done.')
-            model = average(summed_dps=weight_accumulator, global_model=model, eta=100, diff_privacy=None)
-            print(f'Avg done. policy: {model._policy}')
-        return True
-
-
-    def test_run_federated(self):
+    def test_run_federated(self, output_csv=None):
         # AncileWeb part:
 
+        # init df
+        columns = ['Start Time', 'End Time', 'Duration', 'Data Size']
+        df = pd.DataFrame(columns=columns)
+
+        print("Loading data...")
         # this is artificial code to preload all the data
         # in real we would load data on each device:
         self.load_data()
 
         self.init_model()
-        self.helper.load_data(self.corpus) # parses data
+        print("Parsing data...")
+        self.helper.load_data(self.corpus)  # parses data
 
-        # this is the main cycle
-        for epoch in range(1, 10):
-            participants = random.sample(range(0, 79999), 10)
-            weight_accumulator = get_weight_accumulator(self.model, self.helper)
+        print("Training...")
+        train_data_total = self.helper.train_data
+        self.helper.train_data = None
+        self.helper.corpus.test = None
+        self.helper.corpus.train = None
 
-            for participant in participants:
-                train_data = self.helper.train_data[participant]
 
-                # pickle data so we can send it over
-                params = pickle.dumps({'global_model': self.model.state_dict(),
-                            'model_id': participant, 'train_data': train_data})
-                updated_weights = train_local(helper=self.helper, params=params)
-                model_state_dict = pickle.loads(updated_weights)
+        # weight_accumulator = get_weight_accumulator(self.model, self.helper)
 
-                # averaging part
-                for name, data in model_state_dict.items():
-                    #### don't scale tied weights:
-                    if self.helper.params.get('tied', False) and name == 'decoder.weight' or '__' in name:
-                        continue
-                    weight_accumulator[name].add_(data - self.model.state_dict()[name])
-                print(f'participant: {participant}')
+        for participant in tqdm(random.sample(range(len(train_data_total)), 1000)):
+            train_data = train_data_total[participant]
 
-            # apply averaging to the main model
-            helper.average_shrink_models(weight_accumulator, self.model, epoch)
+            # pickle data so we can send it over
+            params = pickle.dumps({'global_model': self.model.state_dict(),
+                                  'model_id': participant, 'train_data': train_data})
 
+            helper_dumps = pickle.dumps(self.helper)
+
+            tqdm.write("Size (in MB) of helper: %f" % (sys.getsizeof(helper_dumps) / 1024.0 / 1024.0))
+
+            # << Evaluation Start >>
+            time.sleep(SLEEP_TIME)
+            start_time = time.time()
+
+            updated_weights, mid_time = _train_local(helper=self.helper, params=params)
+
+            end_time = time.time()
+            time.sleep(SLEEP_TIME)
+            # << Evaluation End >>
+
+            model_state_dict = pickle.loads(updated_weights)
+
+            # # averaging part
+            # for name, data in model_state_dict.items():
+            #     # don't scale tied weights:
+            #     if self.helper.params.get('tied', False) and name == 'decoder.weight' or '__' in name:
+            #         continue
+            #     weight_accumulator[name].add_(data - self.model.state_dict()[name])
+
+            part_1_delta = float(mid_time - start_time)
+            part_2_delta = float(end_time - mid_time)
+
+            timedelta = float(end_time - start_time)
+            tqdm.write('Participant: %s - Training Duration (sec): %.4f (%.4f + %.4f)- Data Size: %d' % (participant, timedelta, part_1_delta, part_2_delta, len(train_data)))
+
+            # Add to df
+            data = {columns[0]: start_time,
+                    columns[1]: end_time,
+                    columns[2]: timedelta,
+                    columns[3]: len(train_data)}
+            df = df.append(pd.Series(data=data, name=participant))
+
+        # apply averaging to the main model
+        # self.helper.average_shrink_models(weight_accumulator, self.model, epoch)
+
+        # save to csv
+        if output_csv is not None:
+            df.to_csv(output_csv)
 
     def test_run_non_federated(self):
 
@@ -142,16 +151,18 @@ class FederatedTests(unittest.TestCase):
 
                 data_iterator = range(0, train_data.size(0) - 1, self.helper.bptt)
                 for batch_id, batch in enumerate(data_iterator):
+                    print(f'batch {batch_id}')
+
                     optimizer.zero_grad()
                     data, targets = self.helper.get_batch(train_data, batch,
-                                                     evaluation=False)
+                                                          evaluation=False)
                     hidden = self.helper.repackage_hidden(hidden)
                     output, hidden = self.model(data, hidden)
+                    print('output')
                     loss = criterion(output.view(-1, self.helper.n_tokens), targets)
-
+                    print('loss')
                     loss.backward()
                     print(f'batch_id: {batch_id}')
-
 
     def mixed_learning(self):
         # Everything except data fetching should run on the AncileWeb
@@ -188,26 +199,30 @@ class FederatedTests(unittest.TestCase):
                     # pickle data so we can send it over
                     params = pickle.dumps({'global_model': self.model.state_dict(),
                                            'model_id': participant, 'train_data': train_data})
-                    updated_weights = train_local(helper=self.helper, params=params)
+                    updated_weights = _train_local(helper=self.helper, params=params)
                     model_state_dict = pickle.loads(updated_weights)
 
                     # averaging part
                     for name, data in model_state_dict.items():
-                        #### don't scale tied weights:
+                        # don't scale tied weights:
                         if self.helper.params.get('tied', False) and name == 'decoder.weight' or '__' in name:
                             continue
                         weight_accumulator[name].add_(data - self.model.state_dict()[name])
-                    print(f'participant: {participant}')
+                    print(f'Participant: {participant}')
 
 
+if __name__ == "__main__":
 
+    print("Process ID: %d" % os.getpid())
 
+    print("Starting in 10 seconds...\n")
+    time.sleep(10)
 
+    print("Started at: %s" % (datetime.now()))
+    start_time = time.time()
 
+    FederatedTests().test_run_federated(output_csv='evaluation_federated.csv')
 
-
-
-
-
-
-
+    # save and report elapsed time
+    elapsed_time = time.time() - start_time
+    print("\nSuccess! Duration: %s" % str(timedelta(seconds=int(elapsed_time))))
