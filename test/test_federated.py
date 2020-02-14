@@ -113,7 +113,7 @@ class FederatedTests(unittest.TestCase):
             part_2_delta = float(end_time - mid_time)
 
             timedelta = float(end_time - start_time)
-            tqdm.write('Participant: %s - Training Duration (sec): %.4f (%.4f + %.4f)- Data Size: %d' % (participant, timedelta, part_1_delta, part_2_delta len(train_data)))
+            tqdm.write('Participant: %s - Training Duration (sec): %.4f (%.4f + %.4f)- Data Size: %d' % (participant, timedelta, part_1_delta, part_2_delta, len(train_data)))
 
             # Add to df
             data = {columns[0]: start_time,
