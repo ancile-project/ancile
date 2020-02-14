@@ -79,7 +79,7 @@ class FederatedTests(unittest.TestCase):
 
         # weight_accumulator = get_weight_accumulator(self.model, self.helper)
 
-        for participant in tqdm(random.sample(range(len(train_data_total)), 100)):
+        for participant in tqdm(random.sample(range(len(train_data_total)), 1000)):
             train_data = train_data_total[participant]
 
             # pickle data so we can send it over
