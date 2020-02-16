@@ -4,7 +4,7 @@ from multiprocessing import Process
 
 def send_message(target, body, corr_id, channel, callback):
 
-    callback_queue = channel.queue_declare(queue=f'{target}_reply').method.queue
+    callback_queue = channel.queue_declare(queue=f'{target}_reply', durable=True).method.queue
     channel.basic_consume(
         queue=callback_queue,
         on_message_callback=callback,
@@ -25,7 +25,7 @@ def start_server(corr_id, msg, target, channel):
     app.add_url_rule(f'/{corr_id}', corr_id, handle)
     server = Process(target=app.run, kwargs={"port": port, "host": "0.0.0.0"})
     server.start()
-    channel.queue_declare(queue=target)
+    channel.queue_declare(queue=target, durable=True)
     channel.basic_publish(
             exchange='',
             routing_key=target,

@@ -85,7 +85,6 @@ def counter(data: dict):
 # Transformation Functions
 # =============================================================================
 
-@TransformDecorator()
 def sample_data_policy_pairs(data_policy_pairs, sample_number):
     from random import sample
     return sample(data_policy_pairs, sample_number)

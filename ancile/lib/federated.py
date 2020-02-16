@@ -56,24 +56,22 @@ class RemoteClient:
         import requests
         if (not self.error) and props.correlation_id in self.correlation_ids:            
             self.correlation_ids.remove(props.correlation_id)
-            body = requests.get(body).content
-            response = dill.loads(body)
-            
+            print(f"Fetching from {body}")
+            response = dill.loads(requests.get(body).content)
+
             if "error" in response:
                 self.error = response["error"]
                 return
-            
             dpp = response["data_policy_pair"]
             self.callback_result = self.callback(initial=self.callback_result, dpp=dpp)
 
     def send_to_edge(self, model, participant_dpp, program):
         import dill
-        target_name = participant_dpp._data["target_name"]
-        model._data["model_id"] = participant_dpp._data["model_id"]
-        participant_dpp._data = model._data
-
-        participant_dpp = dill.dumps(participant_dpp)
+        target_name = participant_dpp._data.pop("target_name")
+        participant_dpp._data["global_model"] = model._data["model"]
+        participant_dpp._data["helper"] = model._data["helper"]
         body = {"program": program, "data_policy_pair": participant_dpp} 
+        body = dill.dumps(body)
         self.request_queue.put((target_name, body, ))
 
     def poll_and_process_responses(self, callback):
@@ -90,7 +88,7 @@ class RemoteClient:
         channel = connection.channel()
         channel.basic_qos(prefetch_count=1, global_qos=True)
 
-        while self.request_queue:
+        while not self.request_queue.empty():
             target, body = self.request_queue.get()
             correlation_id = str(uuid.uuid4())
             self.correlation_ids.add(correlation_id)
@@ -104,9 +102,9 @@ class RemoteClient:
         while True:
             connection.process_data_events()
             if self.error:
-                raise Exception("Ancile Error")
+                raise Exception(self.error)
             if not self.correlation_ids:
-                break
+                return self.callback_result
             
                 # add timeout
         if self.correlation_ids:
@@ -126,14 +124,12 @@ def train_local(model, data_point):
 
 @TransformDecorator()
 def accumulate(initial, dpp):
-    import dill
     import torch
     # averaging part
-    incoming_dp = dill.loads(dpp)
     initial = initial or dict()
     counter = initial.pop("counter", 0)
     initial = initial.pop("initial", dict())
-    for name, data in incoming_dp.items():
+    for name, data in dpp.items():
         #### don't scale tied weights:
         if name == 'decoder.weight' or '__' in name:
             continue
@@ -141,11 +137,9 @@ def accumulate(initial, dpp):
             initial[name] = torch.zeros_like(data, requires_grad=True)
         with torch.no_grad():
             initial[name].add_(data)
-    return {
-        "initial": initial,
-        "counter": counter + 1
-    }
-
+    initial["counter"] = counter+1
+    initial["initial"] = initial
+    return initial
 
 @TransformDecorator()
 def average(accumulated, model, enforce_user_count=0): #summed_dps, global_model, eta, diff_privacy=None, enforce_user_count=0):
@@ -153,9 +147,9 @@ def average(accumulated, model, enforce_user_count=0): #summed_dps, global_model
 
     eta = 100
     diff_privacy = None
-    model = model.get(model, dict())
-
-    if enforce_user_count and enforce_user_count > accumulated.get(counter, 0):
+    model = model.get("model", dict())
+    accumulated = accumulated or dict()
+    if enforce_user_count and enforce_user_count > accumulated.get("counter", 0):
         raise Exception("User count mismatch")
 
     accumulated = accumulated.get("initial", {})
