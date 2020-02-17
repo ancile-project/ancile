@@ -104,8 +104,8 @@ class FederatedTests(unittest.TestCase):
             time_delta2 = time.time()
             model_state_dict = pickle.dumps(updated_weights)
             end_time = time.time()
-            print(f"AAAA: {end_time-start_time}")
-            # time.sleep(SLEEP_TIME)
+            # print(f"AAAA: {end_time-start_time}")
+            time.sleep(SLEEP_TIME)
 
             # << Evaluation End >>
 
@@ -224,7 +224,7 @@ if __name__ == "__main__":
     print("Process ID: %d" % os.getpid())
 
     print("Starting in 10 seconds...\n")
-    # time.sleep(10)
+    time.sleep(10)
 
     print("Started at: %s" % (datetime.now()))
     start_time = time.time()
