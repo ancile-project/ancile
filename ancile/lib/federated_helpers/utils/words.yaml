@@ -11,7 +11,7 @@ batch_size: 20
 # FedLearning params
 no_models: 100
 epochs: 5010
-retrain_no_times: 2
+retrain_no_times: 10
 number_of_total_participants: 80000
 eta: 800
 
