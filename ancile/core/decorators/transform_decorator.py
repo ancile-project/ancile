@@ -27,6 +27,8 @@ class TransformDecorator(BaseDecorator):
             new_dp_pair = DataPolicyPair.combine_dpps_dict(dp_pairs)
             new_dp_pair._data = new_dp_pair._call_transform(command=command, keys=list(dp_pairs.keys()))
             #logger.error(new_dp_pair._data)
+
+        del dp_pairs
         return new_dp_pair
 
     @staticmethod

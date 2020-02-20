@@ -1,3 +1,4 @@
+#from memory_profiler import profile
 from ancile.core.decorators import TransformDecorator
 name = 'federated'
 
@@ -25,7 +26,7 @@ def select_users(user_count):
     dpps = []
     
     with open('users.txt') as f:
-        users = f.read().split('\n')
+        users = [u for u in f.read().split('\n') if u]
 
     if len(users) < user_count:
         raise Exception("Not enough users")
@@ -44,71 +45,111 @@ def select_users(user_count):
 
 
 class RemoteClient:
-    def __init__(self, app_id=None):
+    def __init__(self, callback):
         from queue import Queue
+        import pika
+        self.callback = callback
         self.error = None
         self.correlation_ids = set()
-        self.request_queue = Queue()
         self.callback_result = None
+        self.time = None
+        self.queue = Queue()
+        params = pika.ConnectionParameters(host='localhost',
+                                           heartbeat=3600,
+                                           blocked_connection_timeout=600)
+        self.connection = pika.BlockingConnection(params)
+        self.channel = self.connection.channel()
+        self.channel.basic_qos(prefetch_count=1, global_qos=True)
 
     def __on_response(self, ch, method, props, body):
+        from time import sleep, time
         import dill
-        import requests
+        import os
+        arrived = time() - self.time
         if (not self.error) and props.correlation_id in self.correlation_ids:            
             self.correlation_ids.remove(props.correlation_id)
-            print(f"Fetching from {body}")
-            response = dill.loads(requests.get(body).content)
+            print(props.correlation_id)
+            with open(f'/var/www/html/model', 'rb') as f:
+               response = dill.load(f)
 
             if "error" in response:
                 self.error = response["error"]
                 return
+
             dpp = response["data_policy_pair"]
+            dpp._data = dpp._data["global_model"]
             self.callback_result = self.callback(initial=self.callback_result, dpp=dpp)
+            self.__log((self.time, arrived, time()-self.time, bytes.decode(body), ))
+
 
     def send_to_edge(self, model, participant_dpp, program):
-        import dill
-        target_name = participant_dpp._data.pop("target_name")
-        participant_dpp._data["global_model"] = model._data["model"]
-        participant_dpp._data["helper"] = model._data["helper"]
-        body = {"program": program, "data_policy_pair": participant_dpp} 
-        body = dill.dumps(body)
-        self.request_queue.put((target_name, body, ))
+        from ancile.core.primitives import DataPolicyPair
+        from time import time
+        self.time = self.time or time()
+        dpp_to_send = DataPolicyPair(policy=participant_dpp._policy)
+        dpp_to_send._data = {
+                "global_model": model._data["model"],
+                "helper": model._data["helper"],
+                "model_id": participant_dpp._data["model_id"]
+                }
+        target_name = participant_dpp._data["target_name"]
+        body = {"program": program, "data_policy_pair": dpp_to_send}
 
-    def poll_and_process_responses(self, callback):
+        self.queue.put((target_name, body,))
+    @staticmethod
+    def __log(tupl):
+        import os
+
+        to_write = []
+        if not os.path.isfile('times.csv'):
+            to_write.append("initial request,response arrival (in seconds),processing time (in seconds),execution time (in seconds)")
+        to_write.append(','.join(map(str,tupl)))
+        to_write.append('')
+        with open('times.csv', 'a') as f:
+            f.write('\n'.join(to_write))
+
+    def poll_and_process_responses(self):
+        from time import time
         import uuid
-        import pika
         from ancile.lib.federated_helpers.messaging import send_message
 
-        self.callback = callback
+        create = True
+        while not self.queue.empty():
 
-        params = pika.ConnectionParameters(host='localhost',
-                                           heartbeat=600,
-                                           blocked_connection_timeout=600)
-        connection = pika.BlockingConnection(params)
-        channel = connection.channel()
-        channel.basic_qos(prefetch_count=1, global_qos=True)
-
-        while not self.request_queue.empty():
-            target, body = self.request_queue.get()
+            target, body = self.queue.get()
+            print(f"queuing {target}")
             correlation_id = str(uuid.uuid4())
             self.correlation_ids.add(correlation_id)
-            
             send_message(target,
-                        body,
-                        correlation_id,
-                        channel,
-                        self.__on_response)
+                         body,
+                         correlation_id,
+                         self.channel,
+                         self.__on_response,
+                         create
+                         )
+            create = False
 
         while True:
-            connection.process_data_events()
+            try:
+                self.connection.process_data_events()
+            except (KeyboardInterrupt, SystemExit):
+                self.connection.close()
+                raise
+            except Exception:
+                self.connection.close()
+                raise
+
             if self.error:
+                self.connection.close()
                 raise Exception(self.error)
             if not self.correlation_ids:
-                return self.callback_result
-            
+                res = self.callback_result
+                self.callback_result = None
+                return res
                 # add timeout
         if self.correlation_ids:
             self.error = "One or more nodes timed out"
+
 
 @TransformDecorator()
 def train_local(model, data_point):
@@ -123,8 +164,12 @@ def train_local(model, data_point):
 
 
 @TransformDecorator()
+#@profile
 def accumulate(initial, dpp):
     import torch
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.enabled= True
+    torch.backends.cudnn.benchmark= True
     # averaging part
     initial = initial or dict()
     counter = initial.pop("counter", 0)
@@ -137,9 +182,11 @@ def accumulate(initial, dpp):
             initial[name] = torch.zeros_like(data, requires_grad=True)
         with torch.no_grad():
             initial[name].add_(data)
+        del data
     initial["counter"] = counter+1
     initial["initial"] = initial
     return initial
+
 
 @TransformDecorator()
 def average(accumulated, model, enforce_user_count=0): #summed_dps, global_model, eta, diff_privacy=None, enforce_user_count=0):
@@ -147,7 +194,8 @@ def average(accumulated, model, enforce_user_count=0): #summed_dps, global_model
 
     eta = 100
     diff_privacy = None
-    model = model.get("model", dict())
+    helper = model["helper"]
+    model = model["model"]
     accumulated = accumulated or dict()
     if enforce_user_count and enforce_user_count > accumulated.get("counter", 0):
         raise Exception("User count mismatch")
@@ -163,8 +211,6 @@ def average(accumulated, model, enforce_user_count=0): #summed_dps, global_model
         if diff_privacy:
             noised_layer = torch.cuda.FloatTensor(data.shape).normal_(mean=0, std=diff_privacy['sigma'])
             update_per_layer.add_(noised_layer)
-
         with torch.no_grad():
             data.add_(update_per_layer)
-
     return model

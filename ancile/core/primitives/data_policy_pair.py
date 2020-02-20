@@ -61,7 +61,7 @@ class DataPolicyPair:
                              name=self._name, username=self._username,
                              private_data=self._private_data, app_id=self._app_id)
         if self._data is not None:
-            dpp._data = copy(self._data)
+            dpp._data = self._data
         else:
             dpp._data = None
         dpp._expires_at = self._expires_at
@@ -102,7 +102,7 @@ class DataPolicyPair:
         Combine dpps when they are provided as a list. Not used yet.
         """
 
-        new_dpp = deepcopy(dpp_list[0])
+        new_dpp = dcopy(dpp_list[0])
         new_dpp._data = [new_dpp._data]
         for dpp in dpp_list[1:]:
             if new_dpp._name != dpp._name:
@@ -129,7 +129,7 @@ class DataPolicyPair:
         new_dpp = None
         for key, dpp in dpp_dict.items():
             if new_dpp is None:
-                new_dpp = deepcopy(dpp)
+                new_dpp = copy(dpp)
                 new_dpp._data = {}
             else:
                 if new_dpp._name != dpp._name:
