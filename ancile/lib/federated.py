@@ -105,7 +105,7 @@ class RemoteClient:
         correlation_id = str(uuid.uuid4())
         self.correlation_ids.add(correlation_id)
 
-        #self.lock.acquire()
+        self.lock.acquire()
         print(f"queuing {target_name}")
         send_message(target_name,
                          body,
@@ -114,7 +114,7 @@ class RemoteClient:
                          self.__on_response,
                          not self.polling
                          )
-        #self.lock.release()
+        self.lock.release()
 
         if not self.polling:
             self.polling = True
