@@ -47,13 +47,16 @@ def select_users(user_count):
 class RemoteClient:
     def __init__(self, callback):
         from queue import Queue
+        from threading import Lock
         import pika
         self.callback = callback
         self.error = None
         self.correlation_ids = set()
         self.callback_result = None
         self.time = None
-        self.queue = Queue()
+        self.lock = Lock()
+        self.polling = False
+
         params = pika.ConnectionParameters(host='localhost',
                                            heartbeat=3600,
                                            blocked_connection_timeout=600)
@@ -62,12 +65,11 @@ class RemoteClient:
         self.channel.basic_qos(prefetch_count=1, global_qos=True)
 
     def __on_response(self, ch, method, props, body):
-        from time import sleep, time
+        from time import time
         import dill
-        import os
         arrived = time() - self.time
-        if (not self.error) and props.correlation_id in self.correlation_ids:            
-            self.correlation_ids.remove(props.correlation_id)
+
+        if (not self.error) and props.correlation_id in self.correlation_ids:
             print(props.correlation_id)
             with open(f'/var/www/html/model', 'rb') as f:
                response = dill.load(f)
@@ -79,12 +81,17 @@ class RemoteClient:
             dpp = response["data_policy_pair"]
             dpp._data = dpp._data["global_model"]
             self.callback_result = self.callback(initial=self.callback_result, dpp=dpp)
-            self.__log((self.time, arrived, time()-self.time, bytes.decode(body), ))
+            self.__log((arrived, time()-self.time, bytes.decode(body), ))
+            self.correlation_ids.remove(props.correlation_id)
 
 
     def send_to_edge(self, model, participant_dpp, program):
         from ancile.core.primitives import DataPolicyPair
         from time import time
+        import uuid
+        from ancile.lib.federated_helpers.messaging import send_message
+        from threading import Thread
+
         self.time = self.time or time()
         dpp_to_send = DataPolicyPair(policy=participant_dpp._policy)
         dpp_to_send._data = {
@@ -95,61 +102,55 @@ class RemoteClient:
         target_name = participant_dpp._data["target_name"]
         body = {"program": program, "data_policy_pair": dpp_to_send}
 
-        self.queue.put((target_name, body,))
+        correlation_id = str(uuid.uuid4())
+        self.correlation_ids.add(correlation_id)
+
+        #self.lock.acquire()
+        print(f"queuing {target_name}")
+        send_message(target_name,
+                         body,
+                         correlation_id,
+                         self.channel,
+                         self.__on_response,
+                         not self.polling
+                         )
+        #self.lock.release()
+
+        if not self.polling:
+            self.polling = True
+            Thread(target=self.__loop, daemon=True).start()
+
     @staticmethod
     def __log(tupl):
         import os
 
         to_write = []
-        if not os.path.isfile('times.csv'):
-            to_write.append("initial request,response arrival (in seconds),processing time (in seconds),execution time (in seconds)")
+        path = f'times-{self.time}.csv'
+        if not os.path.isfile(path):
+            to_write.append("response arrival (in seconds),processing time (in seconds),execution time (in seconds)")
         to_write.append(','.join(map(str,tupl)))
         to_write.append('')
-        with open('times.csv', 'a') as f:
+        with open(path, 'a') as f:
             f.write('\n'.join(to_write))
 
+    def __loop(self):
+
+        self.channel.start_consuming()
+        while False:
+            self.lock.acquire()
+            self.connection.process_data_events()
+            self.lock.release()
+
     def poll_and_process_responses(self):
-        from time import time
-        import uuid
-        from ancile.lib.federated_helpers.messaging import send_message
-
-        create = True
-        while not self.queue.empty():
-
-            target, body = self.queue.get()
-            print(f"queuing {target}")
-            correlation_id = str(uuid.uuid4())
-            self.correlation_ids.add(correlation_id)
-            send_message(target,
-                         body,
-                         correlation_id,
-                         self.channel,
-                         self.__on_response,
-                         create
-                         )
-            create = False
-
         while True:
-            try:
-                self.connection.process_data_events()
-            except (KeyboardInterrupt, SystemExit):
-                self.connection.close()
-                raise
-            except Exception:
-                self.connection.close()
-                raise
-
             if self.error:
-                self.connection.close()
-                raise Exception(self.error)
-            if not self.correlation_ids:
-                res = self.callback_result
-                self.callback_result = None
-                return res
-                # add timeout
-        if self.correlation_ids:
-            self.error = "One or more nodes timed out"
+                raise self.error
 
+            if not self.correlation_ids:
+                self.polling = False
+                self.time = None
+                self.callback_result = None
+                return self.callback_result
 
 @TransformDecorator()
 def train_local(model, data_point):

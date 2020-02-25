@@ -4,7 +4,7 @@ import pika
 
 def send_message(target, body, corr_id, channel, callback, create=False):
 
-    url = "http://143.229.6.212"
+    url = "http://143.229.6.52"
     port = "80"
 
     callback_queue = channel.queue_declare(queue=f'{target}_reply', durable=True).method.queue
@@ -12,10 +12,11 @@ def send_message(target, body, corr_id, channel, callback, create=False):
         queue=callback_queue,
         on_message_callback=callback,
         auto_ack=True)
-    filename = f'./model'
-    if create:
-        with open(filename, 'wb') as f:
-            dill.dump(body, f)
+    filename = f'/var/www/html/model'
+    if not create:
+        filename = "/dev/null"
+    with open(filename, 'wb') as f:
+        dill.dump(body, f)
 
     channel.basic_publish(
             exchange='',
