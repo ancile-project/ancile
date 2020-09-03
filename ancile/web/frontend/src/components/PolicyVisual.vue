@@ -5,6 +5,9 @@
 
 <script>
 import mermaid from 'mermaid';
+mermaidAPI.initialize({    
+    securityLevel: 'antiscript' 
+});
 
 export default {
   name: "PolicyVisual",
